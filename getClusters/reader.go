@@ -1,4 +1,4 @@
-package get_clusters
+package getClusters
 
 import (
     "io/ioutil"
@@ -18,7 +18,7 @@ func check(e error) {
 * @returns string - the file's contents
 */
 
-func readFile(filename string) string{
+func ReadFile(filename string) string{
 
     dat, err := ioutil.ReadFile(filename)
     check(err)
