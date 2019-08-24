@@ -1,2 +1,2 @@
 # msa
-Multiple sequence alignment
+Multiple sequence alignment in c++
