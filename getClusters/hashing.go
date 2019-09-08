@@ -15,10 +15,12 @@ import (
 */
 
 func ComputeHash(text string, hashType string) []byte {
+    var res []byte
     switch hashType {
     case "md5":
-        return computeMd5(text)
+        res = computeMd5(text)
     }
+    return res
 }
 
 /**
@@ -29,5 +31,5 @@ func ComputeHash(text string, hashType string) []byte {
 func computeMd5(text string) []byte {
     h := md5.New()
     h.Write([]byte(text))
-    return h
+    return h.Sum(nil)
 }

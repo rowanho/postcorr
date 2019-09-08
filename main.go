@@ -9,5 +9,6 @@ import (
 func main(){
     filename := os.Args[1]
     text := getClusters.ReadFile(filename)
-    fmt.Println(text)
+    fingerprints := getClusters.Kgram(text, 5, "md5")
+    fmt.Println(fingerprints)
 }
