@@ -1,13 +1,13 @@
 package main
 
 import (
-  "msa/getClusters"
-  "fmt"
-  "os"
+    "postCorr/getClusters"
+    "fmt"
+    "os"
 )
 
 func main(){
-  filename := os.Args[1]
-  text := getClusters.ReadFile(filename)
-  fmt.Println(text)
+    filename := os.Args[1]
+    text := getClusters.ReadFile(filename)
+    fmt.Println(text)
 }

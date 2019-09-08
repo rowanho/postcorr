@@ -1,2 +1,2 @@
 # msa
-Multiple sequence alignment in c++
+Post OCR correction with go

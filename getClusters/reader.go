@@ -19,7 +19,6 @@ func check(e error) {
 */
 
 func ReadFile(filename string) string{
-
     dat, err := ioutil.ReadFile(filename)
     check(err)
     return string(dat)
