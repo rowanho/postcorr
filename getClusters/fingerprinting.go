@@ -10,9 +10,14 @@ package getClusters
 * @returns array of strings - the array of fingerprints
 */
 
-func Kgram(text string, windowSize int, hashType string) []byte{
+func Kgram(text string, windowSize int, hashType string) [][]byte{
     i := 0
+    fingerprints := make([]byte, 3)
+
     for i + windowSize < len(text) {
-        ComputeHash
+        fp := ComputeHash(text[i:i + windowSize], hashType)
+        fingerprints = append(fingerprints, fp)
     }
+
+    return fingerprints
 }

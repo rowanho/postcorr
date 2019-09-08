@@ -3,7 +3,6 @@ package getClusters
 
 import (
     "crypto/md5"
-    "encoding/hex"
 )
 
 
@@ -15,7 +14,7 @@ import (
 * @returns string - the hashed result
 */
 
-func ComputeHash(text string, hashType string) string {
+func ComputeHash(text string, hashType string) []byte {
     switch hashType {
     case "md5":
         return computeMd5(text)
@@ -27,8 +26,8 @@ func ComputeHash(text string, hashType string) string {
 * @parameter text - The string to hash
 * @returns string - The md5 hash of the string
 */
-func computeMd5(text string) string {
+func computeMd5(text string) []byte {
     h := md5.New()
     h.Write([]byte(text))
-    return hex.EncodeToString(h.Sum(nil))
+    return h
 }
