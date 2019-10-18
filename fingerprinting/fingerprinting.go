@@ -3,7 +3,7 @@ package getClusters
 
 
 /**
-* Function Kgram - the simplest overlap methods
+* Function Kgram - the simplest overlap method
 * @parameter text - The string to turn into fingerprints
 * @parameter windowSize - the size of the sliding window to use
 * @parameter hashType - the type of hashing function to use
@@ -21,3 +21,8 @@ func Kgram(text string, windowSize int, hashType string) [][]byte{
 
     return fingerprints
 }
+
+/**
+Function 
+
+*/
