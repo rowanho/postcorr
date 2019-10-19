@@ -1,4 +1,4 @@
-package getClusters
+package fingerprinting
 
 
 import (
