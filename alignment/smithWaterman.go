@@ -44,14 +44,13 @@ func SmithWaterman(r1 []rune, r2 []rune, matchReward float64, gapCost float64) (
 
     r1Len := len(r1)
     r2Len := len(r2)
-
     // Initialise the scoring matrix
     d := make([][]float64, r1Len)
     // Initialise the matrix for reconstructing the alignment
     a := make([][]int, r1Len)
     for i := range d {
         d[i] = make([]float64, r2Len)
-        a[i] = make([]int, r1Len)
+        a[i] = make([]int, r2Len)
     }
 
     var maxSoFar float64
@@ -107,18 +106,18 @@ func SmithWaterman(r1 []rune, r2 []rune, matchReward float64, gapCost float64) (
     return maxI, maxJ, maxSoFar, a
 }
 
-func ReconstructSolution(r1 []rune, r2 []rune, maxI int, maxJ int, a[][]float64) []rune{
+func ReconstructSolution(r1 []rune, r2 []rune, maxI int, maxJ int, a[][]int) []rune{
     i := maxI 
     j := maxJ
     var solution []rune
     
-    for i > 0 && j > 0 {
+    for i >= 0 && j >= 0 {
         if a[i][j] == 1 {
             i -= 1
         } else if a[i][j] == 2{
             j -= 1
         } else {
-            solution = append(solution, r1[i])
+            solution = append( []rune{r1[i]}, solution ...)
             i -= 1
             j -= 1
         }

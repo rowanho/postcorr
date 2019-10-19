@@ -1,4 +1,4 @@
-package getClusters
+package reader
 
 import (
     "io/ioutil"
