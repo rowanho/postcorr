@@ -14,8 +14,8 @@ func check(e error) {
 
 /**
 * Function readfile
-* @parameter filename - the name of the file's contents to read
-* @returns string - the file's contents
+* parameter filename - the name of the file's contents to read
+* returns string - the file's contents
 */
 
 func ReadFile(filename string) string{

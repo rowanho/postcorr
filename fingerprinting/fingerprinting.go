@@ -3,26 +3,23 @@ package fingerprinting
 
 
 /**
-* Function Kgram - the simplest overlap method
-* @parameter text - The string to turn into fingerprints
-* @parameter windowSize - the size of the sliding window to use
-* @parameter hashType - the type of hashing function to use
-* @returns array of byte arrays - the array of fingerprints
+* Function ModP - Simple overlap fingerprinting with downsampling
+* parameter text - The string to turn into fingerprints
+* parameter windowSize - the size of the sliding window to use
+* parameter 
+* parameter hashType - the type of hashing function to use
+* returns array of byte arrays - the array of fingerprints
 */
 
-func Kgram(text string, windowSize int, hashType string) [][]byte{
 
-    fingerprints := make([][]byte, 0)
-
+func ModP(text string, windowSize int, p uint64) []uint64{
+    fingerprints := make([]uint64, 0)
     for i := 0; i + windowSize < len(text); i++ {
-        fp := ComputeHash(text[i:i + windowSize], hashType)
-        fingerprints = append(fingerprints, fp)
+        fp := ComputeFNV64(text[i:i + windowSize])
+        // Apply mod, check if 0
+        if fp % p == 0 {
+            fingerprints = append(fingerprints, fp)
+        }
     }
-
     return fingerprints
 }
-
-/**
-Function 
-
-*/

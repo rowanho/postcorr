@@ -10,15 +10,15 @@ import (
 func getFingerprints(){
     filename := "test.txt"
     text := reader.ReadFile(filename)
-    fingerprints := fingerprinting.Kgram(text, 5, "md5")
+    fingerprints := fingerprinting.ModP(text, 5,4)
     fmt.Println(len(fingerprints))
     fmt.Println(fingerprints[0])
 
 }
 
 func getAlignments(){
-    r1 := []rune("gattcaa")
-    r2 := []rune("gatctca")
+    r1 := []rune("gattc")
+    r2 := []rune("gattc")
     i, j, score, a := alignment.SmithWaterman(r1,r2,1.0,1.0)
     solution := alignment.ReconstructSolution(r1,r2,i,j,a)
     fmt.Println(string(solution))
