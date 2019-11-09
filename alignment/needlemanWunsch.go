@@ -30,9 +30,11 @@ func updateMax(newMax float64, i int, j int, maxSoFar *float64, maxI *int, maxJ 
         a[i][j] = 3    
     }
     
-    *maxSoFar = newMax
-    *maxI = i
-    *maxJ = j
+    if newMax > *maxSoFar {
+        *maxSoFar = newMax
+        *maxI = i
+        *maxJ = j
+    }
 }
 
 
@@ -87,6 +89,71 @@ func SmithWaterman(r1 []rune, r2 []rune, matchReward float64, gapCost float64) (
     return maxI, maxJ, maxSoFar, a
 }
 
+func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b[]rune) (float64,[]int, []int ) {
+    lenA = len(a)
+    lenB = len(b)
+    
+    d = make([][]float64, lenA +  1)
+    r = make([][]int, lenB + 1)
+    
+    for i := range d {
+        d[i] = make([]float64, lenA + 1)
+        r[i] = make([]int, lenB + 1)
+    }
+    
+    for i := 1; i < lenA + 1; i ++ {
+        d[i][0] = gapCost * i
+    }
+    
+    for j := 1; j < lenA + 1; j ++ {
+        d[0][j] = gapCost * j
+    }    
+    
+    var maxSoFar float64
+    var maxI int 
+    var maxJ int
+    
+    for i := 1; i < lenA + 1; i ++ {
+        for j := 1; j < lenB + 1; j ++ {
+            match := d[i-1][j-1] + matchReward;
+            del := d[i-1][j] - gapCost
+            ins = d[i][j-1] - gapCost
+            d[i][j] = math.Max(mach, del, ins)
+            updateMax(d[i][j],i,j,&maxSoFar, &maxI, &maxJ, r)
+        }
+    }
+    
+    var indicesA []int 
+    var indicesB []int
+    i := lenA 
+    j := lenB
+    
+    for i > 0 && b > 0 {
+        if r[i][j] == 1 {
+            i -= 1
+        } else if r[i][j] == 2 {
+            j -= 1
+        } else {
+            indicesA = append([]int{i-1}, indicesA...)
+            indicesB = append([]int{j-1}, indicesB...)
+            i -= 1
+            j -= 1
+        }
+    }
+    
+    if i > 0 {
+        for k = i; k > 0; k -- {
+            indicesA = append([]int{k-1}, indicesA...)
+        }
+    } else if j > 0 {
+        for k = j; k > 0; k -- {
+            indicesB = append([]int{k-1}, indicesB...)
+        }
+    }
+    
+    return maxSoFar, indicesA, indicesB
+}
+
 func ReconstructSolution(r1 []rune, r2 []rune, maxI int, maxJ int, a[][]int) []rune{
     i := maxI 
     j := maxJ
@@ -101,8 +168,10 @@ func ReconstructSolution(r1 []rune, r2 []rune, maxI int, maxJ int, a[][]int) []r
             solution = append( []rune{r1[i-1]}, solution ...)
             i -= 1
             j -= 1
+            
         }
     }
+    
     
     return solution
 }
