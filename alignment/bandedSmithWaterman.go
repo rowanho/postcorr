@@ -2,10 +2,23 @@ package alignment
 
 import (
     "math"
-    "sort"
 )
 
-func nwScore( a []rune, b []rune, matchReward float64, gapCost float64) []int {
+func ReverseRune(f []rune) []rune {
+    for i, j := 0, len(f)-1; i < j; i, j = i+1, j-1 {
+        f[i], f[j] = f[j], f[i]
+    }
+    return f
+}
+
+func ReverseFloat(f []float64) []float64 {
+    for i, j := 0, len(f)-1; i < j; i, j = i+1, j-1 {
+        f[i], f[j] = f[j], f[i]
+    }
+    return f
+}
+
+func nwScore( matchReward float64, gapCost float64, a []rune, b []rune) []float64 {
     
     score := make([][]float64, 2)
     
@@ -21,7 +34,7 @@ func nwScore( a []rune, b []rune, matchReward float64, gapCost float64) []int {
             match := score[0][j - 1] + matchReward
             delete := score[0][j] - gapCost
             insert := score[1][j-1] - gapCost
-            score[1][j] = math.Max(match, delete, insert)
+            score[1][j] = math.Max(match, math.Max(delete, insert))
         }
         score[0] = score[1]
     }
@@ -29,11 +42,11 @@ func nwScore( a []rune, b []rune, matchReward float64, gapCost float64) []int {
     return score[1]
 }
 
-func swScore( a []rune, b []rune, matchReward float64, gapCost float64) (int, int) {
+func swScore( matchReward float64, gapCost float64,  a []rune, b []rune) (int, int) {
     
     max_i := 0
     max_j := 0
-    max_val := 0 
+    max_val := 0.0 
     score := make([][]float64, 2)
     
     for i := 0; i < 2; i++ {
@@ -45,7 +58,7 @@ func swScore( a []rune, b []rune, matchReward float64, gapCost float64) (int, in
             match := score[0][j - 1] + matchReward
             delete := score[0][j] - gapCost
             insert := score[1][j-1] - gapCost
-            score[1][j] = math.Max(match, delete, insert)
+            score[1][j] = math.Max(match, math.Max(delete, insert))
             if score[1][j] > max_val{
                 max_val = score[1][j]
                 max_i = i
@@ -58,11 +71,8 @@ func swScore( a []rune, b []rune, matchReward float64, gapCost float64) (int, in
     return max_i, max_j
 }
 
-func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offsetA int, offsetB int) (int, []int, []int) {
+func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offsetA int, offsetB int) (float64, []int, []int) {
     
-    var indicesA []int 
-    var indicesB []int
-    maxScore := 0
     lenA := len(a)
     lenB := len(b)
     
@@ -71,37 +81,37 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
         for i := 0; i < lenB; i++ {
             l[i] = i + offsetB
         }
-        return 0, [], l
+        return 0, []int{}, l
     } else if lenB == 0 {
         l := make([]int, lenA)
         for i := 0; i < lenA; i++ {
             l[i] = i + offsetA
         }
-        return 0, l, []      
+        return 0, l, []int{}      
     } else if lenA == 1 || lenB == 1 {
-        nwResult = NeedlemanWunsch(matchReward, gapCost, a, b)
+        nwRes0, nwRes1, nwRes2 := NeedlemanWunsch(matchReward, gapCost, a, b)
         listA := make([]int, lenA)
         listB := make([]int, lenB)
         for i := 0; i < lenA; i++ {
-            listA[i] = nwResult[1][i] + offsetA
+            listA[i] = nwRes1[i] + offsetA
         }
         for i := 0; i < lenB; i++ {
-            listB[i] = nwResult[2][i] + offsetB
+            listB[i] = nwRes2[i] + offsetB
         }
-        return nwResult[0], listA, listB
+        return nwRes0, listA, listB
     }
     
     midA := lenA / 2
     
     lastlineLeft := nwScore(matchReward, gapCost, a[0: midA + 1], b)
-    revA = sort.Reverse(a)
+    revA := ReverseRune(a)
     mid2 := lenA - midA
-    lastlineRight := nwScore(matchReward, gapCost, a[0: mid2])
-    lastlineRight := sort.Reverse(a)
+    lastlineRight := nwScore(matchReward, gapCost, revA[0: mid2], b)
+    lastlineRight = ReverseFloat(lastlineRight)
     
-    max := 0
+    max := 0.0
     maxIndice := 0
-    for i = 0; i < len(lastlineLeft){
+    for i := 0; i < len(lastlineLeft); i++ {
         if max < lastlineLeft[i] + lastlineRight[i]{
             max = lastlineLeft[i] + lastlineRight[i]
             maxIndice = i
@@ -109,12 +119,12 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
     }
     midB := maxIndice
     
-    firstRes = hirschberg(matchReward, gapCost, a[0:midA], b[0:midB], aOffset, bOffset)
-    secondRes = hirschberg(matchReward, gapCost, a[midA:], b[midB:], midA + aOffset, midB + bOffset)
+    firstRes0, firstRes1, firstRes2 := hirschberg(matchReward, gapCost, a[0:midA], b[0:midB], offsetA, offsetB)
+    secondRes0, secondRes1, secondRes2 := hirschberg(matchReward, gapCost, a[midA:], b[midB:], midA + offsetA, midB + offsetB)
 
-    score := firstRes[0] + secondRes[0]
-    aIndices := append(firstRes[1], secondRes[1]...)
-    bIndices := append(firstRes[2], secondRes[2])
+    score := firstRes0 + secondRes0
+    aIndices := append(firstRes1, secondRes1...)
+    bIndices := append(firstRes2, secondRes2...)
     
     return score, aIndices, bIndices
     
