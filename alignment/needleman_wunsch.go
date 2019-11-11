@@ -8,20 +8,19 @@ import (
 /**
 Updates the maximum value of the alignment found, and adds to array a accordingly
 **/
-func updateMax(newMax float64, i int, j int, maxSoFar *float64, maxI *int, maxJ *int, a [][]int) {
+func updateMax(newMax float64, i int, j int, maxSoFar *float64, d [][]float64, r [][]int) {
     
-    if  *maxI < i && *maxJ == j{
-        a[i][j] = 1
-    } else if *maxJ < j && *maxI == i{
-        a[i][j] = 2
+    m := math.Max(d[i-1][j-1], math.Max(d[i][j-1], d[i-1][j]))
+    if d[i-1][j-1] == m{
+        r[i][j] = 3
+    } else if  d[i][j-1] == m{
+        r[i][j] = 2
     } else {
-        a[i][j] = 3    
+        r[i][j] = 1  
     }
     
     if newMax > *maxSoFar {
         *maxSoFar = newMax
-        *maxI = i
-        *maxJ = j
     }
 }
 
@@ -32,10 +31,10 @@ func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b[]rune) (f
     lenB := len(b)
     
     d := make([][]float64, lenA +  1)
-    r := make([][]int, lenB + 1)
+    r := make([][]int, lenA + 1)
     
     for i := range d {
-        d[i] = make([]float64, lenA + 1)
+        d[i] = make([]float64, lenB + 1)
         r[i] = make([]int, lenB + 1)
     }
     
@@ -43,21 +42,24 @@ func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b[]rune) (f
         d[i][0] = d[i-1][0] - gapCost
     }
     
-    for j := 1; j < lenA + 1; j ++ {
+    for j := 1; j < lenB + 1; j ++ {
         d[0][j] = d[0][j-1] - gapCost
     }    
     
     var maxSoFar float64
-    var maxI int 
-    var maxJ int
     
     for i := 1; i < lenA + 1; i ++ {
         for j := 1; j < lenB + 1; j ++ {
-            match := d[i-1][j-1] + matchReward
+            var match float64
+            if a[i-1] == b[j-1]{
+                match = d[i-1][j-1] + matchReward                
+            } else {
+                match = d[i-1][j-1] - matchReward                                
+            }
             del := d[i-1][j] - gapCost
             ins := d[i][j-1] - gapCost
             d[i][j] = math.Max(match, math.Max(del, ins))
-            updateMax(d[i][j],i,j,&maxSoFar, &maxI, &maxJ, r)
+            updateMax(d[i][j],i,j,&maxSoFar, d, r)
         }
     }
     
