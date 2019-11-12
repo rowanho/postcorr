@@ -25,16 +25,17 @@ func nwScore( matchReward float64, gapCost float64, a []rune, b []rune) []float6
     score := make([][]float64, 2)
     
     for i := 0; i < 2; i++ {
-        score[i] = make([]float64, len(b))
+        score[i] = make([]float64, len(b) + 1)
     }
     
-    for j := 1; j < len(b); j++ {
+    for j := 1; j < len(b) + 1; j++ {
         score[0][j] = score[0][j-1] - gapCost
     }
-    for i := 0; i < len(a); i++ {
-        for j := 1; j < len(b); j++ {
+    for i := 1; i < len(a) + 1; i++ {
+        score[1][0] = score[0][0] - gapCost
+        for j := 1; j < len(b) + 1; j++ {
             var match float64
-            if a[i] == b[j] {
+            if a[i-1] == b[j-1] {
                 match = score[0][j - 1] + matchReward                
             } else{
                 match = score[0][j - 1] - matchReward                                
@@ -61,13 +62,13 @@ func swScore( matchReward float64, gapCost float64,  a []rune, b []rune) (int, i
     lenA := len(a)
     lenB := len(b)
     for i := 0; i < 2; i++ {
-        score[i] = make([]float64, len(b))
+        score[i] = make([]float64, len(b) + 1)
     }
     
-    for i := 1; i < lenA; i++ {
-        for j := 1; j < lenB; j++ {
+    for i := 1; i < lenA + 1; i++ {
+        for j := 1; j < lenB + 1; j++ {
             var match float64
-            if a[i] == b[j] {
+            if a[i-1] == b[j-1] {
                 match = score[0][j - 1] + matchReward                
             } else{
                 match = score[0][j - 1] -  matchReward                                
@@ -88,7 +89,7 @@ func swScore( matchReward float64, gapCost float64,  a []rune, b []rune) (int, i
 
     }
     
-    return max_i, max_j
+    return max_i -1, max_j - 1
 }
 
 func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offsetA int, offsetB int) (float64, []int, []int) {
