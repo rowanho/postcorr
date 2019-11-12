@@ -2,7 +2,6 @@ package alignment
 
 import (
     "math"
-    "fmt"
 )
 
 func reverseRune(r []rune) []rune {
@@ -164,12 +163,5 @@ func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (fl
     startA := len(a) - 1 - revStartA    
     startB := len(b) - 1 - revStartB
     
-    fmt.Println(string(a[startA: endA + 1]))
-    fmt.Println(string(b[startB: endB +1]))
-    if endA  - startA > endB - startB {
-        return hirschberg(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1], startA, startB)
-    } else {
-        return hirschberg(matchReward, gapCost, b[startB: endB + 1], a[startA: endA +1], startB, startA)        
-    }
-    //return NeedlemanWunsch(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1])
+    return hirschberg(matchReward, gapCost, b[startB: endB + 1], a[startA: endA +1], startB, startA)        
 }

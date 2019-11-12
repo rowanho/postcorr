@@ -2,7 +2,7 @@ package alignment
 
 import (
     "testing"
-    "fmt"
+    //"fmt"
 )
 var tests = []struct {
     s1 string
@@ -41,8 +41,6 @@ func TestSmithWaterman(t *testing.T) {
     gapCost := 0.5
 	for _, tt := range tests {
 		score, indicesA, indicesB := SmithWaterman(matchReward, gapCost,[]rune(tt.s1), []rune(tt.s2))
-        fmt.Println(indicesA)
-        fmt.Println(indicesB)
 		if score != tt.score {
 			t.Errorf("SmithWaterman('%s', '%s') = %v, want %v", tt.s1, tt.s2, score, tt.score)
 		}
