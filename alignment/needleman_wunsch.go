@@ -12,7 +12,11 @@ func updateMax( i int, j int, d [][]float64, r [][]int) {
     
     m := math.Max(d[i-1][j-1], math.Max(d[i][j-1], d[i-1][j]))
     if d[i-1][j-1] == m{
-        r[i][j] = 3
+        if d[i][j] > d[i-1][j-1]{
+            r[i][j] = 4
+        } else {
+            r[i][j] = 3
+        }
     } else if  d[i][j-1] == m{
         r[i][j] = 2
     } else {
@@ -64,28 +68,19 @@ func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b[]rune) (f
     j := lenB
     
     for i > 0 && j > 0 {
-        if r[i][j] == 1 {
+        if i > 0 && r[i][j] == 1{
             i -= 1
-        } else if r[i][j] == 2 {
+        } else if j > 0 && r[i][j] == 2 {
             j -= 1
         } else {
-            indicesA = append([]int{i-1}, indicesA...)
-            indicesB = append([]int{j-1}, indicesB...)
+            if r[i][j] == 4 {
+                indicesA = append([]int{i-1}, indicesA...)
+                indicesB = append([]int{j-1}, indicesB...)
+            }
             i -= 1
             j -= 1
         }
     }
-    
-    if i > 0 {
-        for k := i; k > 0; k -- {
-            indicesA = append([]int{k-1}, indicesA...)
-        }
-    } else if j > 0 {
-        for k := j; k > 0; k -- {
-            indicesB = append([]int{k-1}, indicesB...)
-        }
-    }
-    
     return d[lenA][lenB], indicesA, indicesB
 }
 

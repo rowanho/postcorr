@@ -1,7 +1,9 @@
 package alignment
 
-import "testing"
-
+import (
+    "testing"
+    "fmt"
+)
 var tests = []struct {
     s1 string
     s2 string
@@ -28,6 +30,7 @@ var tests = []struct {
     	{"Schßüler", "Schüßler", 6.0},
     	{"Schüßler", "Schüler", 6.5},
     	{"Schüßler", "Schüßlers", 8.0},
+        {"ggajppp","ggafffppp", 4.0},
     
     
 }
@@ -37,8 +40,9 @@ func TestSmithWaterman(t *testing.T) {
     matchReward := 1.0
     gapCost := 0.5
 	for _, tt := range tests {
-        //score, _, _ := NeedlemanWunsch(matchReward, gapCost,[]rune(tt.s1), []rune(tt.s2))
-		score, _, _ := SmithWaterman(matchReward, gapCost,[]rune(tt.s1), []rune(tt.s2))
+		score, indicesA, indicesB := SmithWaterman(matchReward, gapCost,[]rune(tt.s1), []rune(tt.s2))
+        fmt.Println(indicesA)
+        fmt.Println(indicesB)
 		if score != tt.score {
 			t.Errorf("SmithWaterman('%s', '%s') = %v, want %v", tt.s1, tt.s2, score, tt.score)
 		}

@@ -97,16 +97,20 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
     
     if lenA == 0 {
         l := make([]int, lenB)
+        score := 0.0
         for i := 0; i < lenB; i++ {
             l[i] = i + offsetB
+            score -= gapCost
         }
-        return 0.0, []int{}, l
+        return score, []int{}, l
     } else if lenB == 0 {
         l := make([]int, lenA)
+        score := 0.0
         for i := 0; i < lenA; i++ {
             l[i] = i + offsetA
+            score -= gapCost
         }
-        return 0.0, l, []int{}      
+        return score, l, []int{}      
     } else if lenA == 1 || lenB == 1 {
         score, nwResA, nwResB := NeedlemanWunsch(matchReward, gapCost, a, b)
         listA := make([]int, len(nwResA))
@@ -158,12 +162,11 @@ func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (fl
     revA := reverseRune(a)
     revB := reverseRune(b)
     revStartA, revStartB := swScore(matchReward, gapCost, revA, revB)
-    startA := len(a) - 1 - revStartA
+    startA := len(a) - 1 - revStartA    
     startB := len(b) - 1 - revStartB
     
     fmt.Println(string(a[startA: endA + 1]))
     fmt.Println(string(b[startB: endB +1]))
-    
     return NeedlemanWunsch(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1])
     //return hirschberg(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1], startA, startB)
 }
