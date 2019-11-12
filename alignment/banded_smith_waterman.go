@@ -44,7 +44,9 @@ func nwScore( matchReward float64, gapCost float64, a []rune, b []rune) []float6
             insert := score[1][j-1] - gapCost
             score[1][j] = math.Max(match, math.Max(delete, insert))
         }
-        score[0] = score[1]
+        for j:= 1; j < len(b); j++ {
+            score[0][j] = score[1][j]
+        }
     }
 
     return score[1]
@@ -91,7 +93,6 @@ func swScore( matchReward float64, gapCost float64,  a []rune, b []rune) (int, i
 }
 
 func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offsetA int, offsetB int) (float64, []int, []int) {
-    
     lenA := len(a)
     lenB := len(b)
     
@@ -111,7 +112,7 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
             score -= gapCost
         }
         return score, l, []int{}      
-    } else if lenA == 1 || lenB == 1 {
+    } else if lenA <= 3 || lenB <= 3 {
         score, nwResA, nwResB := NeedlemanWunsch(matchReward, gapCost, a, b)
         listA := make([]int, len(nwResA))
         listB := make([]int, len(nwResB))
@@ -124,27 +125,25 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
         return score, listA, listB
     }
     
-    midA := lenA / 2
+    midA  := lenA / 2
     
-    lastlineLeft := nwScore(matchReward, gapCost, a[0: midA + 1], b)
-    revA := reverseRune(a)
+    lastlineLeft := nwScore(matchReward, gapCost, a[0: midA], b)
+    revASlice := reverseRune(a[midA:])
     revB := reverseRune(b)
-    mid2 := lenA - midA
-    lastlineRight := nwScore(matchReward, gapCost, revA[0: mid2], revB)
+    lastlineRight := nwScore(matchReward, gapCost, revASlice, revB)
     lastlineRight = reverseFloat(lastlineRight)
     
     max := 0.0
     maxIndice := 0
     for i := 0; i < len(lastlineLeft); i++ {
-        if max < lastlineLeft[i] + lastlineRight[i]{
+        if max <= lastlineLeft[i] + lastlineRight[i]{
             max = lastlineLeft[i] + lastlineRight[i]
             maxIndice = i
         }
     }
-    midB := maxIndice
-    
+    midB := maxIndice 
     firstScore, firstRes1, firstRes2 := hirschberg(matchReward, gapCost, a[0:midA], b[0:midB], offsetA, offsetB)
-    secondScore, secondRes1, secondRes2 := hirschberg(matchReward, gapCost, a[midA:], b[midB:], midA + offsetA, midB + offsetB)
+    secondScore, secondRes1, secondRes2 := hirschberg(matchReward, gapCost, a[midA:], b[midB:], midA  + offsetA, midB + offsetB)
 
     score := firstScore + secondScore
     aIndices := append(firstRes1, secondRes1...)
@@ -167,6 +166,10 @@ func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (fl
     
     fmt.Println(string(a[startA: endA + 1]))
     fmt.Println(string(b[startB: endB +1]))
-    return NeedlemanWunsch(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1])
-    //return hirschberg(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1], startA, startB)
+    if endA  - startA > endB - startB {
+        return hirschberg(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1], startA, startB)
+    } else {
+        return hirschberg(matchReward, gapCost, b[startB: endB + 1], a[startA: endA +1], startB, startA)        
+    }
+    //return NeedlemanWunsch(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1])
 }
