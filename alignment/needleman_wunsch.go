@@ -8,7 +8,7 @@ import (
 /**
 Updates the maximum value of the alignment found, and adds to array a accordingly
 **/
-func updateMax(newMax float64, i int, j int, maxSoFar *float64, d [][]float64, r [][]int) {
+func updateMax( i int, j int, d [][]float64, r [][]int) {
     
     m := math.Max(d[i-1][j-1], math.Max(d[i][j-1], d[i-1][j]))
     if d[i-1][j-1] == m{
@@ -17,10 +17,6 @@ func updateMax(newMax float64, i int, j int, maxSoFar *float64, d [][]float64, r
         r[i][j] = 2
     } else {
         r[i][j] = 1  
-    }
-    
-    if newMax > *maxSoFar {
-        *maxSoFar = newMax
     }
 }
 
@@ -46,7 +42,6 @@ func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b[]rune) (f
         d[0][j] = d[0][j-1] - gapCost
     }    
     
-    var maxSoFar float64
     
     for i := 1; i < lenA + 1; i ++ {
         for j := 1; j < lenB + 1; j ++ {
@@ -59,7 +54,7 @@ func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b[]rune) (f
             del := d[i-1][j] - gapCost
             ins := d[i][j-1] - gapCost
             d[i][j] = math.Max(match, math.Max(del, ins))
-            updateMax(d[i][j],i,j,&maxSoFar, d, r)
+            updateMax(i,j, d, r)
         }
     }
     
@@ -91,6 +86,6 @@ func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b[]rune) (f
         }
     }
     
-    return maxSoFar, indicesA, indicesB
+    return d[lenA][lenB], indicesA, indicesB
 }
 
