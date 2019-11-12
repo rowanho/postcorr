@@ -40,7 +40,7 @@ func TestSmithWaterman(t *testing.T) {
     matchReward := 1.0
     gapCost := 0.5
 	for _, tt := range tests {
-		score, indicesA, indicesB := SmithWaterman(matchReward, gapCost,[]rune(tt.s1), []rune(tt.s2))
+		score, _ , _ := SmithWaterman(matchReward, gapCost,[]rune(tt.s1), []rune(tt.s2))
 		if score != tt.score {
 			t.Errorf("SmithWaterman('%s', '%s') = %v, want %v", tt.s1, tt.s2, score, tt.score)
 		}

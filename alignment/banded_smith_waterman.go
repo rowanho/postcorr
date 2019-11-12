@@ -96,21 +96,17 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
     lenB := len(b)
     
     if lenA == 0 {
-        l := make([]int, lenB)
         score := 0.0
         for i := 0; i < lenB; i++ {
-            l[i] = i + offsetB
             score -= gapCost
         }
-        return score, []int{}, l
+        return score, []int{}, []int{}
     } else if lenB == 0 {
-        l := make([]int, lenA)
         score := 0.0
         for i := 0; i < lenA; i++ {
-            l[i] = i + offsetA
             score -= gapCost
         }
-        return score, l, []int{}      
+        return score, []int{}, []int{}      
     } else if lenA <= 3 || lenB <= 3 {
         score, nwResA, nwResB := NeedlemanWunsch(matchReward, gapCost, a, b)
         listA := make([]int, len(nwResA))
