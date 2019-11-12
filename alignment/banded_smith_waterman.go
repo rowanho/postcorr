@@ -31,7 +31,7 @@ func nwScore( matchReward float64, gapCost float64, a []rune, b []rune) []float6
     for j := 1; j < len(b); j++ {
         score[0][j] = score[0][j-1] - gapCost
     }
-    for i := 1; i < len(a); i++ {
+    for i := 0; i < len(a); i++ {
         for j := 1; j < len(b); j++ {
             var match float64
             if a[i] == b[j] {
