@@ -2,16 +2,19 @@ package alignment
 
 import (
     "math"
+    "fmt"
 )
 
-func reverseRune(f []rune) []rune {
+func reverseRune(r []rune) []rune {
+    f := append([]rune{}, r...)
     for i, j := 0, len(f)-1; i < j; i, j = i+1, j-1 {
         f[i], f[j] = f[j], f[i]
     }
     return f
 }
 
-func reverseFloat(f []float64) []float64 {
+func reverseFloat(r []float64) []float64 {
+    f := append([]float64{}, r...)
     for i, j := 0, len(f)-1; i < j; i, j = i+1, j-1 {
         f[i], f[j] = f[j], f[i]
     }
@@ -43,7 +46,7 @@ func nwScore( matchReward float64, gapCost float64, a []rune, b []rune) []float6
         }
         score[0] = score[1]
     }
-    
+
     return score[1]
 }
 
@@ -54,17 +57,19 @@ func swScore( matchReward float64, gapCost float64,  a []rune, b []rune) (int, i
     max_val := 0.0 
     score := make([][]float64, 2)
     
+    lenA := len(a)
+    lenB := len(b)
     for i := 0; i < 2; i++ {
         score[i] = make([]float64, len(b))
     }
     
-    for i := 1; i < len(a); i++ {
-        for j := 1; j < len(b); j++ {
+    for i := 1; i < lenA; i++ {
+        for j := 1; j < lenB; j++ {
             var match float64
             if a[i] == b[j] {
                 match = score[0][j - 1] + matchReward                
             } else{
-                match = score[0][j - 1] - matchReward                                
+                match = score[0][j - 1] -  matchReward                                
             }
             delete := score[0][j] - gapCost
             insert := score[1][j-1] - gapCost
@@ -75,7 +80,11 @@ func swScore( matchReward float64, gapCost float64,  a []rune, b []rune) (int, i
                 max_j = j
             }
         }
-        score[0] = score[1]
+        
+        for j:= 1; j < lenB; j++ {
+            score[0][j] = score[1][j]
+        }
+
     }
     
     return max_i, max_j
@@ -152,5 +161,9 @@ func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (fl
     startA := len(a) - 1 - revStartA
     startB := len(b) - 1 - revStartB
     
-    return hirschberg(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1], startA, startB)
+    fmt.Println(string(a[startA: endA + 1]))
+    fmt.Println(string(b[startB: endB +1]))
+    
+    return NeedlemanWunsch(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1])
+    //return hirschberg(matchReward, gapCost, a[startA: endA + 1], b[startB: endB +1], startA, startB)
 }
