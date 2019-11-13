@@ -13,6 +13,12 @@ import (
 
 var es, _ = elasticsearch.NewDefaultClient()
 
+// Index the documents, which are split into a list of component strings
+func IndexDocuments(indexName string, documents  ) bool {
+    
+}
+
+
 func IndexFingerPrints(indexName string, documentID int, fpCounts map[uint64]int) bool {
     // build request body
     var body  strings.Builder
@@ -48,5 +54,10 @@ func IndexFingerPrints(indexName string, documentID int, fpCounts map[uint64]int
       }
         return true 
     }    
+}
+
+
+func IndexAlignments(indexName string, documentID int, alignments) bool {
+    
 }
 
