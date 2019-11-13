@@ -1,11 +1,11 @@
 package main
 
 import (
+    "postCorr/fingerprinting"
+    "postCorr/reader"
+    
 	"fmt"
 
-	"postCorr/fingerprinting"
-	"postCorr/reader"
-	//"postCorr/elasticlink"
 )
 
 func getFingerprints() {

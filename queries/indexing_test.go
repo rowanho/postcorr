@@ -1,7 +1,8 @@
-package elasticlink
+package queries
 
 import (
 	"postCorr/fingerprinting"
+    "strconv"
 	"testing"
 )
 
@@ -11,6 +12,12 @@ var testStrings = []string{
 	"test unicode 切分钟",
 }
 
+/**
+func TestDocumentIndexing(t *testing.T) {
+    indexName := "test_fingerprints"
+    
+}
+**/
 func TestFpIndexing(t *testing.T) {
 	indexName := "test_fingerprints"
 	fpMaps := make([]map[uint64]int, 0)
@@ -20,8 +27,9 @@ func TestFpIndexing(t *testing.T) {
 	}
 
 	for i, fps := range fpMaps {
-
-		b := IndexFingerPrints(indexName, i, fps)
+        
+        s := strconv.Itoa(i + 5)
+		b := IndexFingerPrints(indexName, s, fps)
 		if b == false {
 			t.Errorf("Got error")
 		}

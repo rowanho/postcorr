@@ -3,8 +3,9 @@ package common
 
 // Represents an entire document, in such a way we can reconstruct the original OCR representation
 type Document struct {
+    ID string  
     // textComponents maps a component id to a string
-    textComponents map[string][]rune    
+    TextComponents map[string][]rune  
 }
 
 
@@ -13,7 +14,7 @@ type Document struct {
 func AllStrings(doc *Document) []rune {
     
     all := make([]rune, 0)    
-    for _, s := range doc {
+    for _, s := range doc.TextComponents {
         all = append(all, s...)
     }
     

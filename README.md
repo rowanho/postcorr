@@ -24,7 +24,7 @@ Contains common objects (structs) used throughout the other parts of the codebas
 This includes efficient ways to represent documents once they are converted out of various
 OCR formats, and ways to represent clusters of alignments.
 
-### Es
+### Queries
 
 Functions that connect to elasticsearch and performing indexing, aggregations and search.
 Makes use of the go elasticsearch client https://github.com/elastic/go-elasticsearch

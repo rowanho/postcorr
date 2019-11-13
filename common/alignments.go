@@ -10,13 +10,13 @@ package common
 **/
 
 type AlignmentCluster = struct {
-    primaryAlRange []int
+    PrimaryAlRange []int
     
-    primaryAls [][]int
-    primaryDocumentID int
-    primaryComponentIDs []string 
+    PrimaryAls [][]int
+    PrimaryDocumentID string
+    PrimaryComponentIDs []string 
     
-    secondaryAls [][]int
-    secondaryDocumentIDs []int
-    secondaryComponentIDs [][]string
+    SecondaryAls [][]int
+    SecondaryDocumentIDs []string
+    SecondaryComponentIDs [][]string
 }
