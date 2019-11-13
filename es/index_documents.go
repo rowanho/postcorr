@@ -14,10 +14,15 @@ import (
 var es, _ = elasticsearch.NewDefaultClient()
 
 // Index the documents, which are split into a list of component strings
-func IndexDocuments(indexName string, documents  ) bool {
+func IndexDocuments(indexName string, documents ) bool {
     
 }
 
+/**
+* Puts a map with counts of occuring fingerprints into the elasticsearch index
+* Mappings are converted to json to be es friendly
+* Mappings have a corresponding documentID, and represent a whole document
+**/
 
 func IndexFingerPrints(indexName string, documentID int, fpCounts map[uint64]int) bool {
     // build request body

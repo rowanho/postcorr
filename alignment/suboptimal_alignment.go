@@ -1,8 +1,9 @@
-// Performs suboptimal alignment between the two strings
-// This finds disjoint regions of similar substrings
-
 package alignment
 
+/**
+* Performs suboptimal alignment between the two strings
+* This finds disjoint regions of similar substrings
+**/
 func SuboptimalAlignment(matchReward float64, gapCost float64, a []rune, b []rune, stopAt int) (scores []float64, listIndicesA [][]int, listIndicesB [][]int) {
 
 	scores = make([]float64, 0)

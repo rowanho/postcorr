@@ -5,7 +5,7 @@ import (
 )
 
 /**
-Updates the maximum value of the alignment found, and adds to array a accordingly
+* Updates the maximum value of the alignment found, and adds to array a accordingly
 **/
 func updateMax(i int, j int, d [][]float64, r [][]int) {
 
@@ -23,6 +23,9 @@ func updateMax(i int, j int, d [][]float64, r [][]int) {
 	}
 }
 
+/**
+* The needleman wunsch local alignment algorithm
+**/
 func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b []rune) (float64, []int, []int) {
 	lenA := len(a)
 	lenB := len(b)
