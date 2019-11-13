@@ -11,7 +11,7 @@ type Document struct {
 
 // Member functions 
 
-func AllStrings(doc *Document) []rune {
+func (doc Document) AllStrings() []rune {
     
     all := make([]rune, 0)    
     for _, s := range doc.TextComponents {

@@ -13,26 +13,14 @@ var tests = []struct {
 	// insertion
 	{"car", "carssss", 3.0},
 	// substitution
-	{"library", "librari", 6.0},
-	// deletion
-	{"library", "librar", 6.0},
-	// transposition
-	{"library", "librayr", 5.5},
-	// one empty, left
-	{"", "library", 0.0},
-	// one empty, right
-	{"library", "", 0.0},
+	{"", "hello", 0.0},
+	{"hello", "", 0.0},
 	// two empties
 	{"", "", 0.0},
 	// unicode stuff!
-	{"Schüßler", "Schübler", 6.0},
-	{"Ant Zucaro", "Anthony Zucaro", 8.0},
-	{"Schüßler", "Schüßler", 8.0},
-	{"Schßüler", "Schüßler", 6.0},
-	{"Schüßler", "Schüler", 6.5},
-	{"Schüßler", "Schüßlers", 8.0},
-	{"ggajppp", "ggafffppp", 4.0},
-}
+	{"你好 再见", "你好 再见", 5.0},
+    {"gatcatc", "atcgatc", 5.5}
+
 
 // Smith-Waterman
 func TestSmithWaterman(t *testing.T) {
