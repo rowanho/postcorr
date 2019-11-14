@@ -1,2 +1,4 @@
 github.com/elastic/go-elasticsearch/v7 v7.4.2-0.20191112174940-44daba1f27f0 h1:OdcWsN2feo4H0TeAIrReZbZi89R5hdXATT1HVNfxW6I=
 github.com/elastic/go-elasticsearch/v7 v7.4.2-0.20191112174940-44daba1f27f0/go.mod h1:OJ4wdbtDNk5g503kvlHLyErCgQwwzmDtaFC4XyOxXA4=
+github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
+github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=

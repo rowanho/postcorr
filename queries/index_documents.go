@@ -6,6 +6,7 @@ import (
     "log"
     "context"
     "strings"
+    "strconv"
     "encoding/json"
     
     "github.com/elastic/go-elasticsearch/v7" 
@@ -38,13 +39,22 @@ func makeESIndexRequest(req esapi.IndexRequest) bool {
         return true 
     }    
 }
+
+
 // Index the documents, which are split into a list of component 
 func IndexDocument(indexName string, doc common.Document ) bool {
     
     var body strings.Builder
-    body.WriteString(`{"components" : `)
-    j, _ := json.Marshal(doc.TextComponents)
-    body.WriteString(string(j))
+    body.WriteString(`{"components" : {`)
+    last := len(doc.ComponentOrder) -1
+    for i, compID := range doc.ComponentOrder {
+        body.WriteString(`"` + compID + `"` + ` : `)
+        body.WriteString(`"` + string(doc.TextComponents[compID]) + `"`)
+        if i < last {
+            body.WriteString(` ,`)
+        }
+    }
+    body.WriteString(`}`)
     body.WriteString(`}`)
     
     req := esapi.IndexRequest{
@@ -73,6 +83,7 @@ func IndexFingerPrints(indexName string, documentID string, fpCounts map[uint64]
     body.WriteString(string(j))
     body.WriteString(`}`)
     
+    
     req := esapi.IndexRequest{
         Index: indexName,
         DocumentID: documentID,
@@ -84,8 +95,78 @@ func IndexFingerPrints(indexName string, documentID string, fpCounts map[uint64]
  
 }
 
- /**
-func IndexAlignments(indexName string, documentID string, alignments) bool {
-    
-}
+/** 
+* Puts an alignment into elasticsearch
+* The id field is made up of the priamry document ID, component ID, and start/end indices
+* 
+*
 **/
+ 
+func IndexAlignments(indexName string, docID string, alignment common.AlignmentCluster) bool {
+    var body  strings.Builder
+    body.WriteString(`{"primaryDocumentID" : `)
+    body.WriteString(`"` + alignment.PrimaryDocumentID + `"` )
+    body.WriteString(`, `)
+    
+    body.WriteString(`"primaryAlignmentIndices" : `)
+    body.WriteString(`{`)
+    last := len(alignment.PrimaryComponentIDs) - 1
+    for i, compID := range alignment.PrimaryComponentIDs {
+        body.WriteString(`"` + compID + `" : `)
+        a, _ := json.Marshal(alignment.PrimaryAl[i])
+        if i < last {
+            body.WriteString(string(a) + `,`)
+        } else {
+            body.WriteString(string(a))            
+        }
+
+    }
+    body.WriteString(`}, `)
+    
+    body.WriteString(`"primaryStartIndex" : `)
+    body.WriteString(strconv.Itoa(alignment.PrimaryStartIndex))
+    body.WriteString(`, `)
+    
+    body.WriteString(`"primaryEndIndex" : `)
+    body.WriteString(strconv.Itoa(alignment.PrimaryEndIndex))        
+    body.WriteString(`, `)
+    
+    body.WriteString(`"primaryStartComponent" : `)
+    body.WriteString(`"` + alignment.PrimaryStartComponent  + `"`)
+    body.WriteString(`, `)
+    
+    body.WriteString(`"primaryEndComponent" : `)
+    body.WriteString(`"` + alignment.PrimaryEndComponent + `"`)        
+    body.WriteString(`, `)
+    
+    body.WriteString(`"secondaryDocumentID" : `)
+    body.WriteString(`"` + alignment.SecondaryDocumentID + `"`)
+    body.WriteString(`, `)
+    
+    
+    body.WriteString(`"secondaryAlignmentIndices" : `)
+    body.WriteString(`{`)
+
+    last = len(alignment.SecondaryComponentIDs) - 1
+    for i, compID  := range alignment.SecondaryComponentIDs {
+        body.WriteString(`"` + compID + `" : `)
+        a,_ := json.Marshal(alignment.SecondaryAl[i])
+        if i < last {
+            body.WriteString(string(a) + `,`)
+        } else {
+            body.WriteString(string(a))            
+        }
+    }
+    body.WriteString(`}`)
+    body.WriteString(`} `)
+        
+    req := esapi.IndexRequest{
+        Index: indexName,
+        DocumentID: docID,
+        Body: strings.NewReader(body.String()),
+        Refresh: "true",
+    }
+    
+    return makeESIndexRequest(req)
+
+}
