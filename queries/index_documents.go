@@ -102,7 +102,7 @@ func IndexFingerPrints(indexName string, documentID string, fpCounts map[uint64]
 *
 **/
  
-func IndexAlignments(indexName string, docID string, alignment common.AlignmentCluster) bool {
+func IndexAlignments(indexName string, docID string, alignment common.Alignment) bool {
     var body  strings.Builder
     body.WriteString(`{"primaryDocumentID" : `)
     body.WriteString(`"` + alignment.PrimaryDocumentID + `"` )

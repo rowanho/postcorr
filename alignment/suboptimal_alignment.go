@@ -4,7 +4,111 @@ import (
 	"postCorr/common"
 )
 
+// We use segments to track continuous groups of text
+// They have  a start and end component indice
+// As well as a start and end position
 
+type Segment = struct {
+	StartComp int
+	EndComp int
+	StartPos int
+	EndPos int
+	Text []rune
+}
+
+/**
+* Gets a new list of segmnets after we remove the segment with the alignment
+* The removed segment has to be a sub-segment of one of the previous list
+**/
+
+func getNewSegments(prevSegments []Segment, removedSeg Segment, componentOrder []string, components map[string][]rune
+					) []Segment {
+	
+	segs := make([]Segment, 0)
+	for _, s := range prevSegments {
+		// If removedSeg is a sub-segment of r
+		if r.StartComp <= removedSeg.StartComp && r.EndComp >= removedSeg.EndComp{
+			if r.StartPos <= removedSeg.StartPos && r.EndPos >= removedSeg.EndPos {
+				// Get the other two sub segments, if they are big enough
+				
+			} else{
+				segs = append(segs, r)
+			}
+			
+		} else {
+			segs = append(segs, r)
+		} 
+	}
+	return segs
+}
+
+
+/**
+* Given a list of indices, that may span multiple components,
+* generates a list of per-component indices instead
+* We can then use this in our alignment representation
+**/
+
+func rescoreIndices(indices []int, componentLengths []int, startIndex int, endIndex int 
+					) [][]int {
+	newIndices := make([][]int, 0)
+	
+	lastEnd := 0
+	
+	currentIndices := make([]int)
+	c := 0
+	cLen := componentLengths[c]
+	for _, indice := range indices {
+		// Now on the next component
+		if indice > lastEnd + cLen - 1{
+			c += 1
+			newIndices := append(newIndices, currentIndices)
+			currentIndices = []int{}
+			lastEnd += cLen
+			cLen = componentLengths[c]
+		}
+		currentIndices = append(currentIndices, indice - lastEnd)
+	}
+	
+	return newIndices
+}
+
+/**
+* The initial segment of a document, ie all strings
+* Wrapped in a slice
+**/
+
+func getInitialSegment(doc common.Document) []Segment {
+	lastCompID :=  doc.ComponentOrder[len(doc.ComponentOrder) -1]
+	lastCompLen := len(doc.TextComponents[lastCompID])
+	initialSegments:= []Segment{ Segment{
+			StartComp : 0,
+			EndComp : len(doc.ComponentOrder),
+			StartPos : 0,
+			EndPos : lastCompLen,
+			Text : doc.AllStrings()
+		}
+	}
+	
+}
+
+
+func getComponentLengths(doc common.Document) []int {
+	lengths := make([]int, len(doc.ComponentOrder))
+	
+	for i, compID :=  range doc.ComponentOrder {
+		lengths[i] = len(doc.TextComponents[compID])
+	}
+	return lengths
+}
+
+
+
+func createAlignment(primID string, secID string, primAls [][]int, secAls [][]int,
+	 				primCompIDs []string, secCompIDs []string) common.Alignment {
+	
+	
+}
 /**
 * Takes in two document objects
 * Returns a list of the alignment objects between them
@@ -15,120 +119,36 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 					   
 	alignments := make([]common.Alignment, 0)
 	
-	// Stores the ranges of components that are still 'in'
-	// Stores a start and end point for a component
-		
-	primRanges, primCompLengths := getComponentLengths(primary.ComponentOrder, primary.TextComponents)
-	secRanges, secCompLengths := getComponentLengths(secondary.ComponentOrder, secondary.TextComponents)
 	
-	// Nested for loop, then repeat the process
-	// Technically this is an n^2 operation, however n should stay small
+	primarySegments := getInitialSegment(primary)
+	secondarySegments := getInitialSegment(secondary)
 	
-	for i, pci := range primCompIndices {
-		primRunes, primStringIndices, primCompIndices := allStringsInRange(primary.ComponentOrder, 
-			primary.TextComponents, primCompLengths, primRanges ) 
-		secRunes, secStringIndices, secCompIndices := allStringsInRange(secondary.ComponentOrder, 
-			secondary.TextComponents, secCompLengths, secRanges ) 
+	primCompLengths := getComponentLengths(primary)
+	secCompLengths := getComponentLengths(secondary)
+	
+	count := 0
+	
+	var removedPrimSeg Segment
+	var removedSecSeg Segment 
+	for count < stopAt  {
+		for i, pSeg := range primarySegments {
+			for j, sSeg := range secondarySegments {
+				score, primIndices, secIndices := SmithWaterman(matchReward, gapCost, primarySegments, secondarySegments)
+				rescoredPrims := rescoreIndices(indices, primCompLengths[pSeg.StartComp:pSeg.EndComp + 1 ], pSeg.StartPos, pSeg.EndPos)
+				rescoredSecs := rescoreIndices(indices, secCompLengths[sSeg.StartComp:sSeg.EndComp + 1 ], sSeg.StartPos, sSeg.EndPos)
+				al := createAlignment(primary.ID, secondary.ID, rescoredPrims, rescoredSecs, 
+									  primary.ComponentOrder[pSeg.StartComp:pSeg.EndComp + 1 ],
+								  	  secondary.ComponentOrder[sSeg.StartComp:sSeg.EndComp + 1 ])
+								  
+				alignments = append(alignments, al)
 				
-		psi := primStringIndices[i]
-		pr := primRunes[i]
-		for j, sci := range secCompIndices {
-			ssi := secStringIndices[j]
-			sr := secRunes[j]
-			
-			score, pIndices, sIndices := SmithWaterman(matchReward, gapCost, pr, sr)
-			
-			pIndiceList := rescoreIndices(pIndices, primStringIndices, primCompIndices)
-			sIndiceList := rescoreIndices(sIndices, secStringIndices, secCompIndices)
-		
-		}
-	}
-}
-
-/**
-* Returns two maps, which take component ids as keys
-* The first is simply the lengths of the component texts
-* The second is the start and end indexes, for convenience as this is needed in GetAlignments 
-**/
-func getComponentLengths(componentOrder []string, components map[string][]rune) (map[string][]int,map[string]int) {
-	lengths := make(map[string]int)
-	ranges := make(map[string][]int)
-	
-	for _, compID := range componentOrder {
-		l := len(components[compID])
-		lengths[compID] = l
-		ranges[compID] = []int{0, l - 1}
-	}
-	
-	return ranges, lengths
-}
-
-
-/**
-* Takes in the component ids, the component lengths and their ranges
-* If two consecutive components have been separated by a previous alignment, they are now considered disjoint
-* Otherwise they are considered connected
-* We look through connected components and build a list of the text segments we need for the actual alignment
-* Each can be represented by a starting and ending component ids (stored as their indices in the list),
-* As well as a starting and ending indice in that component
-**/
-func allStringsInRange(componentOrder []string, components map[string][]rune, lengths map[string]int, ranges map[string][]int,
-					   )  ([][]rune, [][]int, [][]int) { 
-	
-	componentListIndexes := make([][]int, 0)
-	runeIndexes := make([][]int, 0)
-	runes := make([][]rune, 0)
-	
-	window := make([]int, 2)
-	windowIndexes := make([]int, 2)
-	runeBuf := make([]rune, 0)
-	
-	connectedPrev := false
-	
-	noComponents := len(componentOrder)
-	
-	for i, compID := range componentOrder {
-			
-		
-		r := ranges[compID]
-		l := lengths[compID]
-		
-		currentRune := components[compID]
-		
-		if r[0] > 0 {
-			connectedPrev = false
-		}
-		
-		// if we could be connected to the next component
-		if (r[1] == l -1) && (i < noComponents -1) {
-			if connectedPrev == true {
-				runeBuf = append(runeBuf, currentRune[r[0]:]...)
-				continue;
-			} else {
-				runeBuf = currentRune[r[0]:]
-				window[0] = r[0]
-				windowIndexes[0] = i
-				connectedPrev = true
 			}
-		} else { // Not connected to the next
-			if connectedPrev == true {
-				runeBuf = append(runeBuf, currentRune[r[0]: r[1]]...)
-				window[1] = r[1]
-				windowIndexes[1] = i				
-			} else {
-				runeBuf = currentRune[r[0]: r[1]]
-				window[0] = r[0]
-				window[1] = r[1]
-				windowIndexes[0] = i				
-				windowIndexes[1] = i				
-			}
-			runeIndexes = append(runeIndexes, window)
-			componentListIndexes = append(componentListIndexes, windowIndexes)
-			runes = append(runes, runeBuf)
 		}
+		primarySegments = getNewSegments(primarySegments)
+		secondarySegments = getNewSegments(secondarySegments)
+		count += 1 
 	}
-	
-	return runes, runeIndexes, componentListIndexes
-	
+	return alignments
+
 }
 

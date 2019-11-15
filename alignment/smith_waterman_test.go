@@ -19,9 +19,9 @@ var tests = []struct {
 	{"", "", 0.0},
 	// unicode stuff!
 	{"你好 再见", "你好 再见", 5.0},
-    {"gatcatc", "atcgatc", 5.5}
+    {"gatcatc", "atcgatc", 5.5},
 
-
+}
 // Smith-Waterman
 func TestSmithWaterman(t *testing.T) {
 	matchReward := 1.0

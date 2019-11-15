@@ -9,7 +9,7 @@ package common
 * but spanning multiple components
 **/
 
-type AlignmentCluster = struct {
+type Alignment = struct {
     
     
     PrimaryAl [][]int
