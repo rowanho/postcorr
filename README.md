@@ -11,8 +11,8 @@ https://www.elastic.co/guide/en/elasticsearch/reference/7.4/install-elasticsearc
 
 ## Structure of the Project
 
-The code is structured into folders which are all parts of the golang module "postCorr"
-Each folder is a pckage of the same name
+The code is structured into folders which are all parts of the golang module "postCorr".
+Each folder is a package of the folder's name.
 
 ### Alignment 
 
