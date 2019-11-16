@@ -2,7 +2,6 @@ package alignment
 
 import (
 	"postCorr/common"
-    "fmt"
 )
 
 // We use segments to track continuous groups of text
@@ -39,7 +38,7 @@ func fillSegmentText(s Segment, componentOrder []string, components map[string][
 		if i == s.StartComp {
 			s.Text = append(s.Text, comp[s.StartPos:]...)			
 		} else if i == s.EndComp {
-			s.Text = append(s.Text, comp[: s.EndPos + 1]...)
+			s.Text = append(s.Text, comp[:s.EndPos + 1]...)
 		} else {
 			s.Text = append(s.Text, comp...)
 		}
@@ -66,7 +65,7 @@ func getNewSegments(prevSegments []Segment, affectedSegs []int, removedSegs []Se
 			if s.StartComp < r.StartComp {
 				if r.EndPos > 0 {
 					before.EndComp = r.StartComp
-					before.EndPos = r.EndPos -1
+					before.EndPos = r.StartPos -1
 				} else {
 					before.EndComp = r.StartComp - 1
 					l := len(components[componentOrder[before.EndComp]])
@@ -87,9 +86,6 @@ func getNewSegments(prevSegments []Segment, affectedSegs []int, removedSegs []Se
 			// Build the 'after' segment
 			var after Segment
 			
-			fmt.Println(s.EndPos)
-			fmt.Println(r.EndPos)
-			fmt.Println(len(components[componentOrder[r.EndComp]]))
 			
 			after.EndPos = s.EndPos
 			after.EndComp = s.EndComp					
@@ -143,7 +139,7 @@ func rescoreIndices(indices []int, componentLengths []int, startIndex int, endIn
 		// Now on the next component
 		for indice >= (lastEnd + cLen){
 			c += 1
-			if firstAffected == -1 && i == 0{
+			if i == 0{
 				firstAffected = c
 			} 
 			lastAffected = c
@@ -255,11 +251,6 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 					 																 pSeg.StartPos, pSeg.EndPos, pSeg.StartComp)
 				rescoredSecs, secFirstAffected, secLastAffected := rescoreIndices(secIndices, secCompLengths[sSeg.StartComp:sSeg.EndComp + 1 ],
 					 															  sSeg.StartPos, sSeg.EndPos, sSeg.StartComp)
-				fmt.Println(rescoredPrims)
-				fmt.Println(primCompLengths)
-				fmt.Println(secFirstAffected)
-				fmt.Println(rescoredSecs)
-				fmt.Println(secCompLengths)
 
 				al := createAlignment(score, primary.ID, secondary.ID, rescoredPrims, rescoredSecs, 
 									  primary.ComponentOrder[pSeg.StartComp:pSeg.EndComp + 1 ],

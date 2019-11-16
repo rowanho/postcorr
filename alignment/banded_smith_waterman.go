@@ -164,5 +164,19 @@ func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (fl
 	revStartA, revStartB := swScore(matchReward, gapCost, revA, revB)
 	startA := len(a) - 1 - revStartA
 	startB := len(b) - 1 - revStartB
+	
+	if startA > endA {
+		temp := endA
+		endA = startA
+		startA = temp
+	}
+	
+	if startB > endB {
+		temp := endB
+		endB = startB
+		startB = temp
+	}
+
+
 	return hirschberg(matchReward, gapCost, a[startA:endA+1], b[startB:endB+1], startA, startB)
 }
