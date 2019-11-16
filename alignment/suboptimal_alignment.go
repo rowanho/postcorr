@@ -2,6 +2,7 @@ package alignment
 
 import (
 	"postCorr/common"
+    "fmt"
 )
 
 // We use segments to track continuous groups of text
@@ -27,14 +28,14 @@ func contains(s []int, e int) int {
 
 
 // Fills the missing text of a segment
-func FillSegmentText(s Segment, componentOrder []string, components map[string][]rune) {
+func fillSegmentText(s Segment, componentOrder []string, components map[string][]rune) {
 	
 	if s.StartComp == s.EndComp {
 		comp := components[componentOrder[s.StartComp]]
 		s.Text = comp[s.StartPos: s.EndPos + 1]
 	}
 	for i := s.StartComp; i < s.EndComp + 1; i ++ {
-		comp := components[componentOrder[s.StartComp]]
+		comp := components[componentOrder[i]]
 		if i == s.StartComp {
 			s.Text = append(s.Text, comp[s.StartPos:]...)			
 		} else if i == s.EndComp {
@@ -64,21 +65,21 @@ func getNewSegments(prevSegments []Segment, affectedSegs []int, removedSegs []Se
 			before.StartPos = s.StartPos
 			if s.StartComp < r.StartComp {
 				if r.EndPos > 0 {
-					before.EndComp = r.EndComp
+					before.EndComp = r.StartComp
 					before.EndPos = r.EndPos -1
 				} else {
-					before.EndComp = r.EndComp - 1
+					before.EndComp = r.StartComp - 1
 					l := len(components[componentOrder[before.EndComp]])
 					before.EndPos = l - 1
 				}
-				FillSegmentText(before, componentOrder, components)
+				fillSegmentText(before, componentOrder, components)
 				segs = append(segs, before)
 				
 			} else {
 				before.EndComp = s.StartComp
 				if s.StartPos < r.StartPos {
 					before.EndPos = r.StartPos - 1
-					FillSegmentText(before, componentOrder, components)
+					fillSegmentText(before, componentOrder, components)
 					segs = append(segs, before)
 				}
 			}
@@ -86,24 +87,28 @@ func getNewSegments(prevSegments []Segment, affectedSegs []int, removedSegs []Se
 			// Build the 'after' segment
 			var after Segment
 			
+			fmt.Println(s.EndPos)
+			fmt.Println(r.EndPos)
+			fmt.Println(len(components[componentOrder[r.EndComp]]))
+			
 			after.EndPos = s.EndPos
 			after.EndComp = s.EndComp					
 			if r.EndComp < s.EndComp {
-				if r.EndPos < len(components[componentOrder[r.EndComp]]) - 1{
-					after.StartComp = r.EndComp
+				if r.EndPos == len(components[componentOrder[r.EndComp]]) - 1{
+					after.StartComp = r.EndComp + 1
 					after.StartPos = 0
 				} else {
-					after.StartComp = r.EndComp + 1
+					after.StartComp = r.EndComp
 					after.StartPos = r.EndPos + 1
 				}
-				FillSegmentText(after, componentOrder, components)
+				fillSegmentText(after, componentOrder, components)
 				segs = append(segs, after)
 	
 			} else {
 				after.StartComp = s.EndComp
 				if r.StartPos < s.StartPos {
 					before.StartPos = r.EndPos + 1
-					FillSegmentText(after, componentOrder, components)
+					fillSegmentText(after, componentOrder, components)
 					segs = append(segs, after)				
 				}
 			}
@@ -133,24 +138,29 @@ func rescoreIndices(indices []int, componentLengths []int, startIndex int, endIn
 	cLen := componentLengths[c]
 	
 	firstAffected := -1
-	lastAffected := -1
-	for _, indice := range indices {
+	lastAffected := 0
+	for i, indice := range indices {
 		// Now on the next component
-		if indice > lastEnd + cLen - 1{
-			if firstAffected == -1 {
+		for indice >= (lastEnd + cLen){
+			c += 1
+			if firstAffected == -1 && i == 0{
 				firstAffected = c
 			} 
 			lastAffected = c
-			c += 1
-			newIndices = append(newIndices, currentIndices)
-			currentIndices = []int{}
+			if len(currentIndices) > 0{
+				newIndices = append(newIndices, currentIndices)
+				currentIndices = []int{}
+			}
 			lastEnd += cLen
 			cLen = componentLengths[c]
 		}
 		currentIndices = append(currentIndices, indice - lastEnd)
 	}
-	
-	return newIndices, startCompIndex + firstAffected, startCompIndex + lastAffected
+	if firstAffected == -1 {
+		firstAffected = 0
+	}
+	newIndices = append(newIndices, currentIndices)	
+	return newIndices, startCompIndex + firstAffected, startCompIndex + lastAffected // TODO: Fix broken login with first ans last affected
 }
 
 /**
@@ -163,9 +173,9 @@ func getInitialSegment(doc common.Document) []Segment {
 	lastCompLen := len(doc.TextComponents[lastCompID])
 	initialSegments:= []Segment{ Segment{
 			StartComp : 0,
-			EndComp : len(doc.ComponentOrder),
+			EndComp : len(doc.ComponentOrder) -1,
 			StartPos : 0,
-			EndPos : lastCompLen,
+			EndPos : lastCompLen - 1,
 			Text : doc.AllStrings(),
 		},
 	}
@@ -237,10 +247,20 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 		for i, pSeg := range primarySegments {
 			for j, sSeg := range secondarySegments {
 				score, primIndices, secIndices := SmithWaterman(matchReward, gapCost, pSeg.Text, sSeg.Text)
+				
+				if len(primIndices) == 0 {
+					continue;
+				}
 				rescoredPrims, primFirstAffected, primLastAffected := rescoreIndices(primIndices, primCompLengths[pSeg.StartComp:pSeg.EndComp + 1 ],
 					 																 pSeg.StartPos, pSeg.EndPos, pSeg.StartComp)
 				rescoredSecs, secFirstAffected, secLastAffected := rescoreIndices(secIndices, secCompLengths[sSeg.StartComp:sSeg.EndComp + 1 ],
 					 															  sSeg.StartPos, sSeg.EndPos, sSeg.StartComp)
+				fmt.Println(rescoredPrims)
+				fmt.Println(primCompLengths)
+				fmt.Println(secFirstAffected)
+				fmt.Println(rescoredSecs)
+				fmt.Println(secCompLengths)
+
 				al := createAlignment(score, primary.ID, secondary.ID, rescoredPrims, rescoredSecs, 
 									  primary.ComponentOrder[pSeg.StartComp:pSeg.EndComp + 1 ],
 								  	  secondary.ComponentOrder[sSeg.StartComp:sSeg.EndComp + 1 ])
