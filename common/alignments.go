@@ -11,6 +11,7 @@ package common
 
 type Alignment = struct {
     
+    Score float64
     
     PrimaryAl [][]int
     PrimaryDocumentID string
@@ -24,4 +25,5 @@ type Alignment = struct {
     SecondaryAl [][]int
     SecondaryDocumentID string
     SecondaryComponentIDs []string
+    
 }
