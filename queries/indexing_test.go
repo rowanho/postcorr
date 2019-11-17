@@ -43,8 +43,9 @@ var testDocs = []common.Document{
     
 }
 
-var testAlignments = []common.AlignmentCluster{
+var testAlignments = []common.Alignment{
     {
+         Score: 5.0,
          PrimaryAl : [][]int{{1,2,3,4},  {1,2,3},},
          PrimaryDocumentID : "doc1",
          PrimaryComponentIDs : []string{"comp1", "comp2",},
@@ -58,6 +59,7 @@ var testAlignments = []common.AlignmentCluster{
     },
     
     {
+        Score: 5.0,
         PrimaryAl : [][]int{{7,8}, {9,11}, {1,2,3}},
         PrimaryDocumentID : "doc9",
         PrimaryComponentIDs : []string{"comp5", "comp6", "comp7"},

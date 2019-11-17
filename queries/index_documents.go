@@ -8,6 +8,7 @@ import (
     "strings"
     "strconv"
     "encoding/json"
+    "fmt"
     
     "github.com/elastic/go-elasticsearch/v7" 
     "github.com/elastic/go-elasticsearch/v7/esapi"  
@@ -54,7 +55,10 @@ func IndexDocument(indexName string, doc common.Document ) bool {
             body.WriteString(` ,`)
         }
     }
-    body.WriteString(`}`)
+    body.WriteString(`},`)
+    body.WriteString(`"componentOrder" : `)
+    j, _ := json.Marshal(doc.ComponentOrder)
+    body.WriteString(string(j))
     body.WriteString(`}`)
     
     req := esapi.IndexRequest{
@@ -129,6 +133,10 @@ func IndexAlignments(indexName string, docID string, alignment common.Alignment)
     
     body.WriteString(`"primaryEndIndex" : `)
     body.WriteString(strconv.Itoa(alignment.PrimaryEndIndex))        
+    body.WriteString(`, `)
+    
+    body.WriteString(`"score" : `)
+    body.WriteString(fmt.Sprintf("%f", alignment.Score))
     body.WriteString(`, `)
     
     body.WriteString(`"primaryStartComponent" : `)
