@@ -2,12 +2,12 @@ package common
 
 // Represents an entire document, in such a way we can reconstruct the original OCR representation
 type Document struct {
-	ID string
+	ID string `json:"id"`
 	// textComponents maps a component id to a string
-	TextComponents map[string][]rune
+	TextComponents map[string][]rune `json:"components"`
 	// The component order gives a 'reading order' to the component IDs
 	// In some datasets we may not be able to fully complete component orders
-	ComponentOrder []string
+	ComponentOrder []string `json:"componentOrder"`
 }
 
 // Member functions

@@ -5,7 +5,7 @@ import (
 	"postCorr/fingerprinting"
 
 	"testing"
-
+    
 	"github.com/google/uuid"
 )
 
@@ -92,24 +92,25 @@ func TestDocumentRetrieval(t *testing.T) {
 	}
 }
 
+
 func TestFpIndexing(t *testing.T) {
 
 	for _, doc := range testDocs {
 		s := doc.AllStrings()
-		fps := fingerprinting.ModP(string(s), 2, 1)
-		b := IndexFingerPrints(fpIndexName, doc.ID, fps)
+		fpCounts := fingerprinting.ModP(string(s), 2, 1)
+        fps := common.Fingerprints{DocumentID: doc.ID, FpCounts: fpCounts}
+		b := IndexFingerPrints(fpIndexName, fps)
 		if b == false {
 			t.Errorf("Got error")
 		}
 	}
 
 }
-
 func TestAlignmentIndexing(t *testing.T) {
 
 	for _, alignment := range testAlignments {
-		docID := uuid.New().String()
-		b := IndexAlignments(alignmentIndexName, docID, alignment)
+		alignmentID := uuid.New().String()
+		b := IndexAlignments(alignmentIndexName, alignmentID, alignment)
 		if b == false {
 			t.Errorf("Got error")
 		}

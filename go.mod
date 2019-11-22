@@ -1,4 +1,4 @@
-require github.com/elastic/go-elasticsearch/v7 v7.4.2-0.20191112174940-44daba1f27f0
+require github.com/olivere/elastic/v7 v7.0.9
 
 require github.com/google/uuid v1.1.1
 
