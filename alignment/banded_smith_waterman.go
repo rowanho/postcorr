@@ -129,7 +129,7 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
 	lastlineRight := nwScore(matchReward, gapCost, revASlice, revB)
 	lastlineRight = reverseFloat(lastlineRight)
 
-	max := 0.0
+	max := -math.Inf
 	maxIndice := 0
 	for i := 0; i < len(lastlineLeft); i++ {
 		if max <= lastlineLeft[i]+lastlineRight[i] {
@@ -164,19 +164,18 @@ func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (fl
 	revStartA, revStartB := swScore(matchReward, gapCost, revA, revB)
 	startA := len(a) - 1 - revStartA
 	startB := len(b) - 1 - revStartB
-	
+
 	if startA > endA {
 		temp := endA
 		endA = startA
 		startA = temp
 	}
-	
+
 	if startB > endB {
 		temp := endB
 		endB = startB
 		startB = temp
 	}
-
 
 	return hirschberg(matchReward, gapCost, a[startA:endA+1], b[startB:endB+1], startA, startB)
 }

@@ -1,11 +1,10 @@
 package main
 
 import (
-    "postCorr/fingerprinting"
-    "postCorr/reader"
-    
-	"fmt"
+	"postCorr/fingerprinting"
+	"postCorr/reader"
 
+	"fmt"
 )
 
 func getFingerprints() {
