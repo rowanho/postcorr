@@ -21,3 +21,10 @@ func (doc Document) AllStrings() []rune {
 
 	return all
 }
+
+
+// Just contains the whole string of a document
+type DocString struct {
+	ID string `json:"id"`
+	Text string `json:"text"`
+}

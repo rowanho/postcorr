@@ -5,7 +5,7 @@ import (
 	"postCorr/fingerprinting"
 
 	"testing"
-	
+
 	"github.com/google/uuid"
 )
 
@@ -71,6 +71,7 @@ var testAlignments = []common.Alignment{
 
 var docIndexName = "test_documents"
 var fpIndexName = "test_fingerprints"
+var fpLSHIndexName = "test_lsh_fingerprints"
 var alignmentIndexName = "test_alignments"
 
 func TestDocumentIndexing(t *testing.T) {
@@ -108,6 +109,33 @@ func TestAlignmentIndexing(t *testing.T) {
 			t.Errorf("Got error")
 		}
 	}
+}
+
+func TestLSHFpIndexing(t *testing.T) {
+	
+	numBuckets := 100
+	shingleMin := 3
+	shingleMax := 5
+	
+	err := CreateLSHFingerprintIndex(fpLSHIndexName, shingleMin, shingleMax, numBuckets)
+	if err != nil {
+		t.Errorf("Error creating mappings")
+	}
+	
+	// Index DocStrings , which get hashed by elasticsearch
+	for _, doc := range testDocs {
+		docText := string(doc.AllStrings())
+		docString := common.DocString{
+			ID: doc.ID,
+			Text: docText,
+		}
+		b := IndexFingerPrintsForLSH(fpLSHIndexName, docString)
+		if b == false {
+			t.Errorf("Error indexing fingerprint with LSH")
+		}
+		
+	}
+	
 }
 
 

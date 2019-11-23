@@ -111,3 +111,12 @@ func GetAlignmentsBetween(indexName string, primaryID string, secondaryID string
     return alignments, nil
 }
 
+
+/**
+* Gets the similar fingerprints where we've used elastic's inbuild minhash locality sensitive hashing
+* Should return a list of document IDs of the fingerprints in the same bucket 
+**/
+
+func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
+    return []string{}, n
+}      

@@ -42,7 +42,6 @@ func IndexFingerPrints(indexName string, fps common.Fingerprints) bool {
 
     put, err := es.Index().
         Index(indexName).
-        Type("fingerprints").
         Id(fps.DocumentID).
         BodyJson(fps).
         Do(ctx)
@@ -53,6 +52,22 @@ func IndexFingerPrints(indexName string, fps common.Fingerprints) bool {
     }
     fmt.Printf("Indexed alignment %s to index %s\n", put.Id, put.Index)
     return true
+}
+
+func IndexFingerPrintsForLSH(indexName string, fps common.DocString) bool {
+	put, err := es.Index().
+        Index(indexName).
+        Id(fps.ID).
+        BodyJson(fps).
+        Do(ctx)
+    
+    if err != nil {
+        log.Printf("Error indexing alignment: %s", err)  
+        return false      
+    }
+    fmt.Printf("Indexed alignment %s to index %s\n", put.Id, put.Index)
+    return true
+	
 }
 
 /**
