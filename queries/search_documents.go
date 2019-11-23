@@ -20,7 +20,6 @@ func GetDocByID(indexName string, docID string) (common.Document, error) {
     
     get, err := es.Get().
         Index(indexName).
-        Type("document").
         Id(docID).
         Do(ctx)
     if err != nil {
@@ -45,13 +44,6 @@ func GetDocByID(indexName string, docID string) (common.Document, error) {
 
 func GetAlignmentsByPrimID(indexName string, primID string) ([]common.Alignment, error) {
     query := elastic.NewTermQuery("primaryDocumentID", primID)
-    
-    src, err := query.Source()
-    if err != nil {
-      panic(err)
-    } else {
-        fmt.Println(src)
-    }
     
     res, err := es.Search().
         Index(indexName).
@@ -83,13 +75,6 @@ func GetAlignmentsBetween(indexName string, primaryID string, secondaryID string
     query = query.Must(elastic.NewTermQuery("primaryDocumentID", primaryID))
     query = query.Must(elastic.NewTermQuery("secondaryDocumentID", secondaryID))
     
-    src, err := query.Source()
-    if err != nil {
-      panic(err)
-    } else {
-        fmt.Println(src)
-    }
-    
     res, err := es.Search().
         Index(indexName).
         Query(query).
@@ -118,5 +103,47 @@ func GetAlignmentsBetween(indexName string, primaryID string, secondaryID string
 **/
 
 func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
-    return []string{}, n
+    get, err := es.Get().
+        Index(indexName).
+        Id(documentID).
+        Do(ctx)
+        
+    if err != nil {
+        fmt.Println("Couldn't find doc string")
+        return []string{}, err
+    }
+    
+    if !get.Found{
+        return []string{}, errors.New("Document not found")
+    } 
+    
+    var doc common.DocString
+    json.Unmarshal(get.Source, &doc)
+    query := elastic.NewMatchQuery("text", doc.Text)
+    
+    src, _ := query.Source()
+    fmt.Println(src)
+    res, err := es.Search().
+        Index(indexName).
+        Query(query).
+        Pretty(true).
+        Do(ctx)
+        
+    if err != nil {
+        fmt.Println("Couldn't search for doc strings")
+        return []string{}, err
+    }
+    if res.Hits.TotalHits.Value > 0 {
+        fmt.Println("loop")
+        idList := make([]string, 0)
+        for _, hit := range res.Hits.Hits {
+            idList = append(idList, hit.Id)
+            fmt.Println(hit.Id)
+        }
+        return idList, nil
+    } 
+    
+    // No hits
+    return []string{}, nil
+    
 }      

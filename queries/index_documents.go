@@ -19,7 +19,6 @@ func IndexDocument(indexName string, doc common.Document) bool {
 
     put, err := es.Index().
         Index(indexName).
-        Type("document").
         Id(doc.ID).
         BodyJson(doc).
         Do(ctx)
@@ -81,7 +80,6 @@ func IndexAlignments(indexName string, alignmentID string, alignment common.Alig
 
     put, err := es.Index().
         Index(indexName).
-        Type("alignment").
         Id(alignmentID).
         BodyJson(alignment).
         Do(ctx)

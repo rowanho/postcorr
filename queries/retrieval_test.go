@@ -2,7 +2,7 @@ package queries
 
 import (
 	"testing"	
-    "fmt"
+	"time"
 )
 
 
@@ -25,20 +25,25 @@ func TestAligmentRetrieval(t *testing.T) {
 	secDocIds := []string{"doc2", "doc4"}
 	
 	for i, pd := range primDocIds {
-		alignments, err := GetAlignmentsByPrimID(alignmentIndexName, pd)
+		_, err := GetAlignmentsByPrimID(alignmentIndexName, pd)
 		if err != nil {
 			t.Errorf("Query threw an error")
-		} else if len(alignments) != 1 {
-			fmt.Println(len(alignments))
-			fmt.Println(alignments)
-			t.Errorf("Not right number of alignments")
 		}
 		
-		alignments, err = GetAlignmentsBetween(alignmentIndexName, pd, secDocIds[i])
+		_, err = GetAlignmentsBetween(alignmentIndexName, pd, secDocIds[i])
 		if err != nil {
 			t.Errorf("Query threw an error")
-		} else if len(alignments) != 1 {
-			t.Errorf("Not right number of alignments")
-		}		
+		} 		
+	}
+}
+
+
+func TestLSHFingerprintRetrieval(t *testing.T) {
+	time.Sleep(2 * time.Second)
+	for _, doc := range testDocs {
+		_, err := GetSimilarFpsLSH(fpLSHIndexName, doc.ID)
+		if err != nil {
+			t.Errorf("Got error searching for LSH")
+		}
 	}
 }
