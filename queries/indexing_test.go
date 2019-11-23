@@ -5,7 +5,7 @@ import (
 	"postCorr/fingerprinting"
 
 	"testing"
-    
+	
 	"github.com/google/uuid"
 )
 
@@ -83,15 +83,6 @@ func TestDocumentIndexing(t *testing.T) {
 
 }
 
-func TestDocumentRetrieval(t *testing.T) {
-	for _, doc := range testDocs {
-		_, err := GetDocByID(docIndexName, doc.ID)
-		if err != nil {
-			t.Errorf("Got error searching for document")
-		}
-	}
-}
-
 
 func TestFpIndexing(t *testing.T) {
 
@@ -106,6 +97,8 @@ func TestFpIndexing(t *testing.T) {
 	}
 
 }
+
+
 func TestAlignmentIndexing(t *testing.T) {
 
 	for _, alignment := range testAlignments {
@@ -116,3 +109,5 @@ func TestAlignmentIndexing(t *testing.T) {
 		}
 	}
 }
+
+
