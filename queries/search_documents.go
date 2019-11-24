@@ -8,7 +8,6 @@ import (
     "log"
     "reflect"
     "fmt"
-    "strconv"
     
     "github.com/olivere/elastic/v7"     
 ) 
@@ -190,7 +189,7 @@ func getMatchingAlignments(indexName string, primaryID string, primaryStartIndex
         Do(ctx)
         
     if err != nil {
-        retur
+        return []common.Alignment{}, err
     }
     
     alignments := make([]common.Alignment, 0)
@@ -200,5 +199,5 @@ func getMatchingAlignments(indexName string, primaryID string, primaryStartIndex
         al := item.(common.Alignment)
         alignments = append(alignments, al)
     }
-    return alignments
+    return alignments, nil
 }

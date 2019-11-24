@@ -52,30 +52,22 @@ var testDocs = []common.Document{
 var testAlignments = []common.Alignment{
 	{
 		Score:                 5.0,
-		PrimaryAl:             [][]int{{1, 2, 3, 4}, {1, 2, 3}},
+		PrimaryAl:             []int{1, 2, 3, 4},
 		PrimaryDocumentID:     "doc1",
-		PrimaryComponentIDs:   []string{"comp1", "comp2"},
-		PrimaryStartComponent: "comp1",
-		PrimaryEndComponent:   "comp2",
 		PrimaryStartIndex:     1,
 		PrimaryEndIndex:       3,
-		SecondaryAl:           [][]int{{5, 6, 7, 8}, {7, 8, 10}},
+		SecondaryAl:           []int{5, 6, 7, 8, 10},
 		SecondaryDocumentID:   "doc2",
-		SecondaryComponentIDs: []string{"comp7", "comp8"},
 	},
 
 	{
 		Score:                 5.0,
-		PrimaryAl:             [][]int{{7, 8}, {9, 11}, {1, 2, 3}},
+		PrimaryAl:             []int{7, 8, 9, 11},
 		PrimaryDocumentID:     "doc9",
-		PrimaryComponentIDs:   []string{"comp5", "comp6", "comp7"},
-		PrimaryStartComponent: "comp5",
-		PrimaryEndComponent:   "comp7",
 		PrimaryStartIndex:     7,
 		PrimaryEndIndex:       3,
-		SecondaryAl:           [][]int{{5, 6}, {9, 13}, {7, 8, 10}},
+		SecondaryAl:           []int{5, 6, 9, 13},
 		SecondaryDocumentID:   "doc4",
-		SecondaryComponentIDs: []string{"comp7", "comp8", "comp9"},
 	},
 }
 
