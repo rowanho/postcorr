@@ -43,7 +43,7 @@ func TestLSHFingerprintRetrieval(t *testing.T) {
 	for _, doc := range testDocs {
 		_, err := GetSimilarFpsLSH(fpLSHIndexName, doc.ID)
 		if err != nil {
-			t.Errorf("Got error searching for LSH")
+			t.Errorf("Got error searching for LSH: %s", err)
 		}
 	}
 }

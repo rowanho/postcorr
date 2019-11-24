@@ -31,6 +31,16 @@ var testDocs = []common.Document{
 	{
 		ID: uuid.New().String(),
 		TextComponents: map[string][]rune{
+			"comp1": []rune("test test test test"),
+			"comp2": []rune("this this thi this"),
+			"comp3": []rune("test this tet this"),
+		},
+		ComponentOrder: []string{"comp1", "comp2", "comp3"},
+	},
+
+	{
+		ID: uuid.New().String(),
+		TextComponents: map[string][]rune{
 			"comp1": []rune("test unicode"),
 			"comp2": []rune("你好 再见 你好 再见"),
 			"comp3": []rune("セプテンバー"),
@@ -113,9 +123,9 @@ func TestAlignmentIndexing(t *testing.T) {
 
 func TestLSHFpIndexing(t *testing.T) {
 	
-	numBuckets := 10
-	shingleMin := 3
-	shingleMax := 5
+	numBuckets := 512
+	shingleMin := 2
+	shingleMax := 3
 	
 	err := CreateLSHFingerprintIndex(fpLSHIndexName, shingleMin, shingleMax, numBuckets)
 	if err != nil {

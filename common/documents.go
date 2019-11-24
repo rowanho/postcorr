@@ -23,7 +23,7 @@ func (doc Document) AllStrings() []rune {
 }
 
 
-// Just contains the whole string of a document
+// For LSH
 type DocString struct {
 	ID string `json:"id"`
 	Text string `json:"text"`

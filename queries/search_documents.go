@@ -119,10 +119,18 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
     
     var doc common.DocString
     json.Unmarshal(get.Source, &doc)
-    query := elastic.NewMatchQuery("text", doc.Text)
+    fmt.Println(doc.Text)
+    query := elastic.NewMoreLikeThisQuery()
+    query.Field("text")
+    query.MinTermFreq(1)
+    query.MinDocFreq(1)
     
-    src, _ := query.Source()
-    fmt.Println(src)
+    it := elastic.NewMoreLikeThisQueryItem()
+    it.Index(indexName)
+    it.Id(doc.ID)
+    
+    query.LikeItems(it)
+    
     res, err := es.Search().
         Index(indexName).
         Query(query).
@@ -138,12 +146,15 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
         idList := make([]string, 0)
         for _, hit := range res.Hits.Hits {
             idList = append(idList, hit.Id)
-            fmt.Println(hit.Id)
+            var t common.DocString
+            json.Unmarshal(hit.Source, &t)
+            fmt.Println(t)
         }
         return idList, nil
     } 
     
     // No hits
+    fmt.Println("no hits")
     return []string{}, nil
     
 }      
