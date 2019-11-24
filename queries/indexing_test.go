@@ -123,7 +123,7 @@ func TestAlignmentIndexing(t *testing.T) {
 
 func TestLSHFpIndexing(t *testing.T) {
 	
-	numBuckets := 512
+	numBuckets := 10
 	shingleMin := 2
 	shingleMax := 3
 	

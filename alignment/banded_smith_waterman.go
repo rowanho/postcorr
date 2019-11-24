@@ -129,7 +129,7 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
 	lastlineRight := nwScore(matchReward, gapCost, revASlice, revB)
 	lastlineRight = reverseFloat(lastlineRight)
 
-	max := -math.Inf
+	max := math.Inf(-1)
 	maxIndice := 0
 	for i := 0; i < len(lastlineLeft); i++ {
 		if max <= lastlineLeft[i]+lastlineRight[i] {

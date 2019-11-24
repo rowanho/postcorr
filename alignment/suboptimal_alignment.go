@@ -4,115 +4,6 @@ import (
 	"postCorr/common"
 )
 
-// We use segments to track continuous groups of text
-// They have  a start and end component indice
-// As well as a start and end position
-
-type Segment = struct {
-	StartComp int
-	EndComp   int
-	StartPos  int
-	EndPos    int
-	Text      []rune
-}
-
-func contains(s []int, e int) int {
-	for i, a := range s {
-		if a == i {
-			return i
-		}
-	}
-	return -1
-}
-
-// Fills the missing text of a segment
-func fillSegmentText(s Segment, componentOrder []string, components map[string][]rune) {
-
-	if s.StartComp == s.EndComp {
-		comp := components[componentOrder[s.StartComp]]
-		s.Text = comp[s.StartPos : s.EndPos+1]
-	}
-	for i := s.StartComp; i < s.EndComp+1; i++ {
-		comp := components[componentOrder[i]]
-		if i == s.StartComp {
-			s.Text = append(s.Text, comp[s.StartPos:]...)
-		} else if i == s.EndComp {
-			s.Text = append(s.Text, comp[:s.EndPos+1]...)
-		} else {
-			s.Text = append(s.Text, comp...)
-		}
-	}
-}
-
-/**
-* Gets a new list of segmnets after we remove the segment with the alignment
-* The removed segment has to be a sub-segment of one of the previous list
-**/
-
-func getNewSegments(prevSegments []Segment, affectedSegs []int, removedSegs []Segment, componentOrder []string, components map[string][]rune,
-) []Segment {
-
-	segs := make([]Segment, 0)
-	for i, s := range prevSegments {
-		// If affected
-		if contains(affectedSegs, i) != -1 {
-			r := removedSegs[i]
-			// Build the before segment
-			var before Segment
-			before.StartComp = s.StartComp
-			before.StartPos = s.StartPos
-			if s.StartComp < r.StartComp {
-				if r.EndPos > 0 {
-					before.EndComp = r.StartComp
-					before.EndPos = r.StartPos - 1
-				} else {
-					before.EndComp = r.StartComp - 1
-					l := len(components[componentOrder[before.EndComp]])
-					before.EndPos = l - 1
-				}
-				fillSegmentText(before, componentOrder, components)
-				segs = append(segs, before)
-
-			} else {
-				before.EndComp = s.StartComp
-				if s.StartPos < r.StartPos {
-					before.EndPos = r.StartPos - 1
-					fillSegmentText(before, componentOrder, components)
-					segs = append(segs, before)
-				}
-			}
-
-			// Build the 'after' segment
-			var after Segment
-
-			after.EndPos = s.EndPos
-			after.EndComp = s.EndComp
-			if r.EndComp < s.EndComp {
-				if r.EndPos == len(components[componentOrder[r.EndComp]])-1 {
-					after.StartComp = r.EndComp + 1
-					after.StartPos = 0
-				} else {
-					after.StartComp = r.EndComp
-					after.StartPos = r.EndPos + 1
-				}
-				fillSegmentText(after, componentOrder, components)
-				segs = append(segs, after)
-
-			} else {
-				after.StartComp = s.EndComp
-				if r.StartPos < s.StartPos {
-					before.StartPos = r.EndPos + 1
-					fillSegmentText(after, componentOrder, components)
-					segs = append(segs, after)
-				}
-			}
-		} else {
-			segs = append(segs, s)
-		}
-
-	}
-	return segs
-}
 
 /**
 * Given a list of indices, that may span multiple components,
@@ -120,7 +11,7 @@ func getNewSegments(prevSegments []Segment, affectedSegs []int, removedSegs []Se
 * We can then use this in our alignment representation
 **/
 
-func rescoreIndices(indices []int, componentLengths []int, startIndex int, endIndex int,
+func perComponentIndices(indices []int, componentLengths []int, startIndex int, endIndex int,
 	startCompIndex int) ([][]int, int, int) {
 	newIndices := make([][]int, 0)
 
@@ -156,133 +47,101 @@ func rescoreIndices(indices []int, componentLengths []int, startIndex int, endIn
 	return newIndices, startCompIndex + firstAffected, startCompIndex + lastAffected // TODO: Fix broken login with first ans last affected
 }
 
-/**
-* The initial segment of a document, ie all strings
-* Wrapped in a slice
-**/
 
-func getInitialSegment(doc common.Document) []Segment {
-	lastCompID := doc.ComponentOrder[len(doc.ComponentOrder)-1]
-	lastCompLen := len(doc.TextComponents[lastCompID])
-	initialSegments := []Segment{{
-		StartComp: 0,
-		EndComp:   len(doc.ComponentOrder) - 1,
-		StartPos:  0,
-		EndPos:    lastCompLen - 1,
-		Text:      doc.AllStrings(),
-	},
-	}
-	return initialSegments
-}
 
-func getComponentLengths(doc common.Document) []int {
-	lengths := make([]int, len(doc.ComponentOrder))
-
-	for i, compID := range doc.ComponentOrder {
-		lengths[i] = len(doc.TextComponents[compID])
-	}
-	return lengths
-}
-
-func createAlignment(score float64, primID string, secID string, primAls [][]int, secAls [][]int,
-	primCompIDs []string, secCompIDs []string) common.Alignment {
-
-	lastAlign := primAls[len(primAls)-1]
+func createAlignment(score float64, primID string, secID string, primAl []int, secAl []int) common.Alignment {
 
 	a := common.Alignment{
 		Score:               score,
-		PrimaryAl:           primAls,
+		PrimaryAl:           primAl,
 		PrimaryDocumentID:   primID,
-		PrimaryComponentIDs: primCompIDs,
 
-		PrimaryStartComponent: primCompIDs[0],
-		PrimaryEndComponent:   primCompIDs[len(primCompIDs)-1],
-		PrimaryStartIndex:     primAls[0][0],
-		PrimaryEndIndex:       lastAlign[len(lastAlign)-1],
+		PrimaryStartIndex:     primAl[0],
+		PrimaryEndIndex:       primAl[len(primAl)-1],
 
-		SecondaryAl:           secAls,
+		SecondaryAl:           secAl,
 		SecondaryDocumentID:   secID,
-		SecondaryComponentIDs: secCompIDs,
 	}
 	return a
 }
 
-/**
-* Takes in two document objects
-* Returns a list of the alignment objects between them
-**/
-
-func GetAlignments(matchReward float64, gapCost float64, primary common.Document, secondary common.Document, stopAt int,
-) []common.Alignment {
-
-	alignments := make([]common.Alignment, 0)
-
-	primarySegments := getInitialSegment(primary)
-	secondarySegments := getInitialSegment(secondary)
-
-	primCompLengths := getComponentLengths(primary)
-	secCompLengths := getComponentLengths(secondary)
-
-	count := 0
-
-	for count < stopAt {
-
-		affectedPrim := make([]int, 0)
-		affectedSec := make([]int, 0)
-
-		removedPrimSegs := make([]Segment, 0)
-		removedSecSegs := make([]Segment, 0)
-
-		for i, pSeg := range primarySegments {
-			for j, sSeg := range secondarySegments {
-				score, primIndices, secIndices := SmithWaterman(matchReward, gapCost, pSeg.Text, sSeg.Text)
-
-				if len(primIndices) == 0 {
-					continue
-				}
-				rescoredPrims, primFirstAffected, primLastAffected := rescoreIndices(primIndices, primCompLengths[pSeg.StartComp:pSeg.EndComp+1],
-					pSeg.StartPos, pSeg.EndPos, pSeg.StartComp)
-				rescoredSecs, secFirstAffected, secLastAffected := rescoreIndices(secIndices, secCompLengths[sSeg.StartComp:sSeg.EndComp+1],
-					sSeg.StartPos, sSeg.EndPos, sSeg.StartComp)
-
-				al := createAlignment(score, primary.ID, secondary.ID, rescoredPrims, rescoredSecs,
-					primary.ComponentOrder[pSeg.StartComp:pSeg.EndComp+1],
-					secondary.ComponentOrder[sSeg.StartComp:sSeg.EndComp+1])
-
-				lastPrim := rescoredPrims[len(rescoredPrims)-1]
-				rPrim := Segment{
-					StartComp: primFirstAffected,
-					EndComp:   primLastAffected,
-					StartPos:  rescoredPrims[0][0],
-					EndPos:    lastPrim[len(lastPrim)-1],
-				}
-
-				lastPrim = rescoredSecs[len(rescoredSecs)-1]
-				rSec := Segment{
-					StartComp: secFirstAffected,
-					EndComp:   secLastAffected,
-					StartPos:  rescoredSecs[0][0],
-					EndPos:    lastPrim[len(lastPrim)-1],
-				}
-
-				removedPrimSegs = append(removedPrimSegs, rPrim)
-				removedSecSegs = append(removedSecSegs, rSec)
-
-				alignments = append(alignments, al)
-				affectedPrim = append(affectedPrim, i)
-				affectedSec = append(affectedSec, j)
-
-			}
-		}
-		primarySegments = getNewSegments(primarySegments, affectedPrim, removedPrimSegs, primary.ComponentOrder, primary.TextComponents)
-		secondarySegments = getNewSegments(secondarySegments, affectedSec, removedSecSegs, secondary.ComponentOrder, secondary.TextComponents)
-		affectedPrim = make([]int, 0)
-		affectedSec = make([]int, 0)
-
-		removedPrimSegs = make([]Segment, 0)
-		removedSecSegs = make([]Segment, 0)
-		count += 1
-	}
-	return alignments
-
+type Inc = struct{
+	Point int
+	Amount int
 }
+
+
+func rescoreIndices(indices []int, increments []Inc) []int {
+	 newIndices := make([]int, len(indices))
+	 copy(newIndices, indices)
+	 
+	 for _, increment := range increments {
+		 for i,_ := range newIndices {
+		 	if newIndices[i] >= increment.Point {
+				newIndices[i] += increment.Amount
+			}
+	 	}
+	}
+	 
+	 return newIndices
+}
+
+
+func GetAlignments(matchReward float64, gapCost float64, primary common.Document, 
+				  		 secondary common.Document, stopAt int) []common.Alignment {
+							 
+		primaryString := primary.AllStrings()
+		secondaryString := secondary.AllStrings()
+		
+		count := 0 
+		primIncrements := []Inc{Inc{Point:0, Amount: 0,}}
+		secIncrements  :=  []Inc{Inc{Point:0, Amount: 0,}}
+
+		alignments := make([]common.Alignment, 0)
+		
+		for count < stopAt {
+			score, primIndices, secIndices := SmithWaterman(matchReward, gapCost, primaryString, secondaryString)
+			newPrimIndices := rescoreIndices(primIndices, primIncrements)
+			newSecIndices := rescoreIndices(secIndices, secIncrements)
+			
+			// Insert into increments in a sorted manner
+			n :=  Inc{Point:0, Amount: 0,}
+			primIncrements = append(primIncrements, n)
+			secIncrements = append(secIncrements, n)
+			
+			posToInsert := 0
+			for i, inc := range primIncrements {
+				if inc.Point > newPrimIndices[0]{
+					posToInsert = i
+					break;
+				}
+			}
+			
+			copy(primIncrements[posToInsert + 1:], primIncrements[posToInsert:])
+			primIncrements[posToInsert] = Inc{
+				Point: newPrimIndices[0],
+				Amount: len(newPrimIndices),
+			}
+			
+			posToInsert = 0
+			for j, inc := range secIncrements {
+				if inc.Point > newSecIndices[0]{
+					posToInsert = j
+					break; 
+				}	
+			}
+			
+			copy(secIncrements[posToInsert + 1:], secIncrements[posToInsert:])
+			secIncrements[posToInsert] = Inc{
+				Point: newSecIndices[0],
+				Amount: len(newSecIndices),
+			}
+			count += 1			
+			al := createAlignment(score, primary.ID, secondary.ID, newPrimIndices, newSecIndices)
+			
+			alignments = append(alignments, al)
+		} 
+		
+		return alignments
+}
+

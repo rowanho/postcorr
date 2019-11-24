@@ -8,6 +8,7 @@ import (
     "log"
     "reflect"
     "fmt"
+    "strconv"
     
     "github.com/olivere/elastic/v7"     
 ) 
@@ -158,3 +159,46 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
     return []string{}, nil
     
 }      
+
+/**
+* Gets the alignments with similar looking priamry alignment texts 
+**/
+func getMatchingAlignments(indexName string, primaryID string, primaryStartIndex, 
+                           primaryEndIndex, tolerance int) ([]common.Alignment, error) {
+    query := elastic.NewBoolQuery()
+    query = query.Must(elastic.NewTermQuery("primaryDocumentID", primaryID))
+    
+    simScriptStart := elastic.NewScript(`doc[primaryStartIndex].value <=  params.primStartMax ||
+        || doc[PrimaryStartIndex].value >= params.primStartMin`)
+    simScriptStart.Param("primStartMax", primaryStartIndex + tolerance)
+    simScriptStart.Param("primStartMin", primaryStartIndex - tolerance)
+    simScriptStartQuery := elastic.NewScriptQuery(simScriptStart)
+        
+    simScriptEnd:= elastic.NewScript(`doc[primaryEndIndex].value <=  params.primEndMax ||
+        || doc[primaryEndIndex].value >= params.primEndMin`)
+    simScriptStart.Param("primEndMax", primaryEndIndex + tolerance)
+    simScriptStart.Param("primEndMin", primaryEndIndex - tolerance)
+    simScriptEndQuery := elastic.NewScriptQuery(simScriptEnd)
+        
+    query = query.Must(simScriptStartQuery)
+    query = query.Must(simScriptEndQuery)
+    
+    res, err := es.Search().
+        Index(indexName).
+        Query(query).
+        Pretty(true).
+        Do(ctx)
+        
+    if err != nil {
+        retur
+    }
+    
+    alignments := make([]common.Alignment, 0)
+    
+    var alType common.Alignment
+    for _, item := range res.Each(reflect.TypeOf(alType)) {
+        al := item.(common.Alignment)
+        alignments = append(alignments, al)
+    }
+    return alignments
+}
