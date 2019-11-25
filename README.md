@@ -28,7 +28,7 @@ OCR formats, and ways to represent clusters of alignments.
 ### Queries
 
 Functions that connect to elasticsearch and performing indexing, aggregations and search.
-Makes use of the go elasticsearch client https://github.com/elastic/go-elasticsearch
+Makes use of Olivere's excellent client https://github.com/olivere/elastic
  
 ### Fingerprinting
  
