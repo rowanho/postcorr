@@ -34,9 +34,7 @@ func TestAligmentRetrieval(t *testing.T) {
 		
 		for _, al := range als {
 			matching, err := GetMatchingAlignments(alignmentIndexName, 
-												   pd, 
-												   al.PrimaryStartIndex,
-											   	   al.PrimaryEndIndex, 3)
+												   al, 3)
 		   if err != nil {
 			   t.Errorf("Matching query threw an error %s: ", err)
 		   }

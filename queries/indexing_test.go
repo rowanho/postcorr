@@ -51,6 +51,7 @@ var testDocs = []common.Document{
 
 var testAlignments = []common.Alignment{
 	{
+		ID: 				   uuid.New().String(),
 		Score:                 5.0,
 		PrimaryAl:             []int{1, 2, 3, 4},
 		PrimaryDocumentID:     "doc1",
@@ -61,6 +62,7 @@ var testAlignments = []common.Alignment{
 	},
 
 	{
+		ID: 				   uuid.New().String(),
 		Score:                 5.0,
 		PrimaryAl:             []int{7, 8, 9, 11},
 		PrimaryDocumentID:     "doc9",
@@ -105,8 +107,7 @@ func TestFpIndexing(t *testing.T) {
 func TestAlignmentIndexing(t *testing.T) {
 
 	for _, alignment := range testAlignments {
-		alignmentID := uuid.New().String()
-		b := IndexAlignments(alignmentIndexName, alignmentID, alignment)
+		b := IndexAlignments(alignmentIndexName, alignment)
 		if b == false {
 			t.Errorf("Got error")
 		}

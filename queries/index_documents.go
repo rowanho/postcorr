@@ -76,11 +76,11 @@ func IndexFingerPrintsForLSH(indexName string, fps common.DocString) bool {
 *
 **/
 
-func IndexAlignments(indexName string, alignmentID string, alignment common.Alignment) bool {
+func IndexAlignments(indexName string, alignment common.Alignment) bool {
 
     put, err := es.Index().
         Index(indexName).
-        Id(alignmentID).
+        Id(alignment.ID).
         BodyJson(alignment).
         Do(ctx)
     

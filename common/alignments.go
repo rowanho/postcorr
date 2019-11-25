@@ -12,8 +12,10 @@ package common
 **/
 
 type Alignment = struct {
+	ID string `json:"id"`
+	
 	Score float64 `json:"score"`
-
+	
 	PrimaryAl             []int  `json:"primaryAl"`
 	PrimaryDocumentID     string   `json:"primaryDocumentID"`
 	PrimaryStartIndex     int      `json:"primaryStartIndex"`
@@ -21,11 +23,12 @@ type Alignment = struct {
 
 	SecondaryAl           []int  `json:"secondaryAl"`
 	SecondaryDocumentID   string   `json:"secondaryDocumentID"`
-	SecondaryComponentIDs []string `json:"secondaryComponentIDs"`
 }
 
 
 type TotalAlignment = struct {
+	ID string `json:"id"`
+
 	Score float64 `json:"score"`
 
 	PrimaryAl             [][]int  `json:"primaryAl"`
