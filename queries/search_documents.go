@@ -109,7 +109,7 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
         Do(ctx)
         
     if err != nil {
-        fmt.Println("Couldn't find doc string")
+        log.Println("Couldn't find doc string")
         return []string{}, err
     }
     
@@ -119,7 +119,6 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
     
     var doc common.DocString
     json.Unmarshal(get.Source, &doc)
-    fmt.Println(doc.Text)
     query := elastic.NewMoreLikeThisQuery()
     query.Field("text")
     query.MinTermFreq(1)
@@ -138,23 +137,19 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
         Do(ctx)
         
     if err != nil {
-        fmt.Println("Couldn't search for doc strings")
         return []string{}, err
     }
     if res.Hits.TotalHits.Value > 0 {
-        fmt.Println("loop")
         idList := make([]string, 0)
         for _, hit := range res.Hits.Hits {
             idList = append(idList, hit.Id)
             var t common.DocString
             json.Unmarshal(hit.Source, &t)
-            fmt.Println(t)
         }
         return idList, nil
     } 
     
     // No hits
-    fmt.Println("no hits")
     return []string{}, nil
     
 }      
@@ -162,26 +157,28 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
 /**
 * Gets the alignments with similar looking priamry alignment texts 
 **/
-func getMatchingAlignments(indexName string, primaryID string, primaryStartIndex, 
+func GetMatchingAlignments(indexName string, primaryID string, primaryStartIndex, 
                            primaryEndIndex, tolerance int) ([]common.Alignment, error) {
     query := elastic.NewBoolQuery()
     query = query.Must(elastic.NewTermQuery("primaryDocumentID", primaryID))
     
-    simScriptStart := elastic.NewScript(`doc[primaryStartIndex].value <=  params.primStartMax ||
-        || doc[PrimaryStartIndex].value >= params.primStartMin`)
+    
+    simScriptStart := elastic.NewScript(`doc['primaryStartIndex'].value <=  params.primStartMax
+        || doc['primaryStartIndex'].value >= params.primStartMin`)
     simScriptStart.Param("primStartMax", primaryStartIndex + tolerance)
     simScriptStart.Param("primStartMin", primaryStartIndex - tolerance)
     simScriptStartQuery := elastic.NewScriptQuery(simScriptStart)
         
-    simScriptEnd:= elastic.NewScript(`doc[primaryEndIndex].value <=  params.primEndMax ||
-        || doc[primaryEndIndex].value >= params.primEndMin`)
-    simScriptStart.Param("primEndMax", primaryEndIndex + tolerance)
-    simScriptStart.Param("primEndMin", primaryEndIndex - tolerance)
+    simScriptEnd:= elastic.NewScript(`doc['primaryEndIndex'].value <=  params.primEndMax
+        || doc['primaryEndIndex'].value >= params.primEndMin`)
+    simScriptEnd.Param("primEndMax", primaryEndIndex + tolerance)
+    simScriptEnd.Param("primEndMin", primaryEndIndex - tolerance)
     simScriptEndQuery := elastic.NewScriptQuery(simScriptEnd)
         
-    query = query.Must(simScriptStartQuery)
-    query = query.Must(simScriptEndQuery)
+    query = query.Filter(simScriptStartQuery)
+    query = query.Filter(simScriptEndQuery)
     
+    fmt.Println(query.Source())
     res, err := es.Search().
         Index(indexName).
         Query(query).

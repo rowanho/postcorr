@@ -3,11 +3,13 @@ package queries
 import (
 	"testing"	
 	"time"
+	"fmt"
 )
 
 
 
 func TestDocumentRetrieval(t *testing.T) {
+	time.Sleep(1 * time.Second)
 	for _, doc := range testDocs {
 		_, err := GetDocByID(docIndexName, doc.ID)
 		if err != nil {
@@ -18,17 +20,29 @@ func TestDocumentRetrieval(t *testing.T) {
 
 
 func TestAligmentRetrieval(t *testing.T) {
-	
+	time.Sleep(1 * time.Second)
 	// Test retrieving alignments by primary document ID
 	
 	primDocIds := []string{"doc1", "doc9"}
 	secDocIds := []string{"doc2", "doc4"}
 	
 	for i, pd := range primDocIds {
-		_, err := GetAlignmentsByPrimID(alignmentIndexName, pd)
+		als, err := GetAlignmentsByPrimID(alignmentIndexName, pd)
 		if err != nil {
 			t.Errorf("Query threw an error")
 		}
+		
+		for _, al := range als {
+			matching, err := GetMatchingAlignments(alignmentIndexName, 
+												   pd, 
+												   al.PrimaryStartIndex,
+											   	   al.PrimaryEndIndex, 3)
+		   if err != nil {
+			   t.Errorf("Matching query threw an error %s: ", err)
+		   }
+		   
+		   fmt.Printf("Alignment with primary ID %s matched with %d others. \n", pd, len(matching))
+	   }
 		
 		_, err = GetAlignmentsBetween(alignmentIndexName, pd, secDocIds[i])
 		if err != nil {
@@ -38,8 +52,9 @@ func TestAligmentRetrieval(t *testing.T) {
 }
 
 
+
 func TestLSHFingerprintRetrieval(t *testing.T) {
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 	for _, doc := range testDocs {
 		_, err := GetSimilarFpsLSH(fpLSHIndexName, doc.ID)
 		if err != nil {
