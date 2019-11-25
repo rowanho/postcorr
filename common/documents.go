@@ -10,6 +10,13 @@ type Document struct {
 	ComponentOrder []string `json:"componentOrder"`
 }
 
+// For LSH
+type DocString struct {
+	ID string `json:"id"`
+	Text string `json:"text"`
+}
+
+
 // Member functions
 
 func (doc Document) AllStrings() []rune {
@@ -23,8 +30,11 @@ func (doc Document) AllStrings() []rune {
 }
 
 
-// For LSH
-type DocString struct {
-	ID string `json:"id"`
-	Text string `json:"text"`
+
+func (doc Document) ToDocString() DocString {
+	return DocString{
+		ID: doc.ID,
+		Text: string(doc.AllStrings()),
+	}
 }
+

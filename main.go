@@ -1,21 +1,34 @@
 package main
 
 import (
-	"postCorr/fingerprinting"
 	"postCorr/reader"
-
+	"postCorr/common"
+	
 	"fmt"
+	"flag"
 )
 
-func getFingerprints() {
-	filename := "test.txt"
-	text := reader.ReadFile(filename)
-	fingerprints := fingerprinting.ModP(text, 5, 4)
-	fmt.Println(len(fingerprints))
-	fmt.Println(fingerprints[0])
-
-}
-
 func main() {
-	getFingerprints()
+	dirName := flag.String("dir","test_dataset","path to dataset")
+	formatType := flag.String("format", common.Plaintext, "the dataset file format")
+	
+	flag.Parse()
+	
+	execute(*dirName, *formatType)
 }
+
+
+func execute(dirName string, formatType string) {
+	
+	docIDList, docsErr := reader.TraverseAndIndexDocs(dirName, formatType)
+	
+	if docsErr != nil {
+		fmt.Println("Error indexing documents %s", docsErr)
+		return
+	}
+	
+	fmt.Println(docIDList)
+	
+}
+
+

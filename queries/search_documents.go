@@ -7,7 +7,6 @@ import (
     "errors"
     "log"
     "reflect"
-    "fmt"
     
     "github.com/olivere/elastic/v7"     
 ) 
@@ -178,7 +177,6 @@ func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int)
     query = query.Filter(simScriptStartQuery)
     query = query.Filter(simScriptEndQuery)
     
-    fmt.Println(query.Source())
     res, err := es.Search().
         Index(indexName).
         Query(query).
