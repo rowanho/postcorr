@@ -6,8 +6,8 @@ package common
 **/
 
 const FpLSHIndex = "test_lsh_fingerprints"
-const DocumentIndex = "test_document_index"
-
+const DocumentIndex = "test_documents"
+const AlignmentIndex = "test_alignments"
 /**
 * Define the types of files here, thus avoiding magic strings
 **/

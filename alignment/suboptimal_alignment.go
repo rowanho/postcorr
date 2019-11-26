@@ -2,6 +2,7 @@ package alignment
 
 import (
 	"postCorr/common"
+	
 )
 
 
@@ -61,6 +62,9 @@ func createAlignment(score float64, primID string, secID string, primAl []int, s
 
 		SecondaryAl:           secAl,
 		SecondaryDocumentID:   secID,
+		
+		SecondaryStartIndex: secAl[0],
+		SecondaryEndIndex: secAl[len(secAl)-1],
 	}
 	return a
 }
@@ -141,7 +145,6 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 			
 			alignments = append(alignments, al)
 		} 
-		
 		return alignments
 }
 

@@ -56,9 +56,11 @@ var testAlignments = []common.Alignment{
 		PrimaryAl:             []int{1, 2, 3, 4},
 		PrimaryDocumentID:     "doc1",
 		PrimaryStartIndex:     1,
-		PrimaryEndIndex:       3,
+		PrimaryEndIndex:       4,
 		SecondaryAl:           []int{5, 6, 7, 8, 10},
 		SecondaryDocumentID:   "doc2",
+		SecondaryStartIndex: 5,
+		SecondaryEndIndex: 10,
 	},
 
 	{
@@ -67,9 +69,12 @@ var testAlignments = []common.Alignment{
 		PrimaryAl:             []int{7, 8, 9, 11},
 		PrimaryDocumentID:     "doc9",
 		PrimaryStartIndex:     7,
-		PrimaryEndIndex:       3,
+		PrimaryEndIndex:       11,
 		SecondaryAl:           []int{5, 6, 9, 13},
 		SecondaryDocumentID:   "doc4",
+		SecondaryStartIndex: 5,
+		SecondaryEndIndex: 13,
+
 	},
 }
 

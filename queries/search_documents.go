@@ -142,8 +142,6 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
         idList := make([]string, 0)
         for _, hit := range res.Hits.Hits {
             idList = append(idList, hit.Id)
-            var t common.DocString
-            json.Unmarshal(hit.Source, &t)
         }
         return idList, nil
     } 
@@ -154,24 +152,25 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
 }      
 
 /**
-* Gets the alignments with similar looking priamry alignment texts 
+* Gets the alignments where the primary alignment region is similar to the secondary
+* alignment region of our query alignment
 **/
-func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int) ([]common.Alignment, error) {
+func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int) ([]string, error) {
     query := elastic.NewBoolQuery()
-    query = query.Must(elastic.NewTermQuery("primaryDocumentID", al.PrimaryDocumentID))
+    query = query.Must(elastic.NewTermQuery("primaryDocumentID", al.SecondaryDocumentID))
     query = query.MustNot(elastic.NewTermQuery("_id", al.ID))
     
     
-    simScriptStart := elastic.NewScript(`doc['primaryStartIndex'].value <=  params.primStartMax
-        || doc['primaryStartIndex'].value >= params.primStartMin`)
-    simScriptStart.Param("primStartMax", al.PrimaryStartIndex + tolerance)
-    simScriptStart.Param("primStartMin", al.PrimaryStartIndex - tolerance)
+    simScriptStart := elastic.NewScript(`doc['primaryStartIndex'].value <=  params.startMax
+        || doc['primaryStartIndex'].value >= params.startMin`)
+    simScriptStart.Param("startMax", al.SecondaryStartIndex + tolerance)
+    simScriptStart.Param("startMin", al.SecondaryStartIndex - tolerance)
     simScriptStartQuery := elastic.NewScriptQuery(simScriptStart)
         
-    simScriptEnd:= elastic.NewScript(`doc['primaryEndIndex'].value <=  params.primEndMax
-        || doc['primaryEndIndex'].value >= params.primEndMin`)
-    simScriptEnd.Param("primEndMax", al.PrimaryEndIndex + tolerance)
-    simScriptEnd.Param("primEndMin", al.PrimaryEndIndex - tolerance)
+    simScriptEnd:= elastic.NewScript(`doc['primaryEndIndex'].value <=  params.endMax
+        || doc['primaryEndIndex'].value >= params.endMin`)
+    simScriptEnd.Param("endMax", al.SecondaryEndIndex + tolerance)
+    simScriptEnd.Param("endMin", al.SecondaryEndIndex - tolerance)
     simScriptEndQuery := elastic.NewScriptQuery(simScriptEnd)
         
     query = query.Filter(simScriptStartQuery)
@@ -184,15 +183,17 @@ func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int)
         Do(ctx)
         
     if err != nil {
-        return []common.Alignment{}, err
+        return []string{}, err
     }
     
-    alignments := make([]common.Alignment, 0)
+    if res.Hits.TotalHits.Value > 0 {
+        idList := make([]string, 0)
+        for _, hit := range res.Hits.Hits {
+            idList = append(idList, hit.Id)
+        }
+        return idList, nil
+    } 
     
-    var alType common.Alignment
-    for _, item := range res.Each(reflect.TypeOf(alType)) {
-        al := item.(common.Alignment)
-        alignments = append(alignments, al)
-    }
-    return alignments, nil
+    return []string{}, nil
+    
 }

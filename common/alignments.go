@@ -23,6 +23,10 @@ type Alignment = struct {
 
 	SecondaryAl           []int  `json:"secondaryAl"`
 	SecondaryDocumentID   string   `json:"secondaryDocumentID"`
+	
+	SecondaryStartIndex     int      `json:"secondaryStartIndex"`
+	SecondaryEndIndex       int      `json:"secondaryEndIndex"`
+
 }
 
 

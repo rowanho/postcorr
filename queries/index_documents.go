@@ -76,7 +76,7 @@ func IndexFingerPrintsForLSH(indexName string, fps common.DocString) bool {
 *
 **/
 
-func IndexAlignments(indexName string, alignment common.Alignment) bool {
+func IndexAlignment(indexName string, alignment common.Alignment) bool {
 
     put, err := es.Index().
         Index(indexName).
