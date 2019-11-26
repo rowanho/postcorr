@@ -14,18 +14,19 @@ import (
 func main() {
 	dirName := flag.String("dir","test_dataset","path to dataset")
 	formatType := flag.String("format", common.Plaintext, "the dataset file format")
-	
+	alignmentTolerance := flag.Int("tolerance", 10, "Tolerance for distances between alignments to identify as similar" )
 	flag.Parse()
 	
-	execute(*dirName, *formatType)
+	execute(*dirName, *formatType, *alignmentTolerance)
 }
 
 
 /**
 * Executes the main program pipeline
 **/
-func execute(dirName string, formatType string) {
+func execute(dirName string, formatType string, alignmentTolerance int) {
 	
+	queries.CreateAlignmentIndex(common.AlignmentIndex)
 	queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 2, 3, 4)
 	time.Sleep(1 * time.Second)
 
@@ -39,10 +40,11 @@ func execute(dirName string, formatType string) {
 	
 	likelyMatchingDocs := getSimilarDocuments(docIDList)
 	
+	fmt.Println(likelyMatchingDocs)
 	alignAndIndex(likelyMatchingDocs)
 	time.Sleep(1 * time.Second)
 
-	alignmentAdjacencyList := getSimilarAlignments(docIDList)
+	alignmentAdjacencyList := getSimilarAlignments(docIDList, alignmentTolerance)
 	fmt.Println(alignmentAdjacencyList)
 }
 
@@ -69,13 +71,14 @@ func alignAndIndex(likelyMatchingDocs map[string][]string) {
 	}	
 }
 
-func getSimilarAlignments(docIDList []string) map[string][]string {
+func getSimilarAlignments(docIDList []string, tolerance int) map[string][]string {
 	
 	alignmentAdjacencyList := make(map[string][]string, 0)
-	tolerance := 3
 	// Loop through all alignments
 	for _, docID := range docIDList {
+		fmt.Println(docID)
 		alignments,_ := queries.GetAlignmentsByPrimID(common.AlignmentIndex, docID)
+		fmt.Println(len(alignments))
 		for _, al := range alignments {
 			matchingAlignmentIds, _ := queries.GetMatchingAlignments(common.AlignmentIndex, 
 																al, 

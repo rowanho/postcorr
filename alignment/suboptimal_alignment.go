@@ -2,7 +2,7 @@ package alignment
 
 import (
 	"postCorr/common"
-	
+	"github.com/google/uuid"
 )
 
 
@@ -53,6 +53,7 @@ func perComponentIndices(indices []int, componentLengths []int, startIndex int, 
 func createAlignment(score float64, primID string, secID string, primAl []int, secAl []int) common.Alignment {
 
 	a := common.Alignment{
+		ID: 				 uuid.New().String(), 				 
 		Score:               score,
 		PrimaryAl:           primAl,
 		PrimaryDocumentID:   primID,
@@ -103,7 +104,7 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 
 		alignments := make([]common.Alignment, 0)
 		
-		for count < stopAt {
+		for count < stopAt && len(primaryString) > 0 && len(secondaryString) > 0{
 			score, primIndices, secIndices := SmithWaterman(matchReward, gapCost, primaryString, secondaryString)
 			newPrimIndices := rescoreIndices(primIndices, primIncrements)
 			newSecIndices := rescoreIndices(secIndices, secIncrements)
@@ -144,6 +145,11 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 			al := createAlignment(score, primary.ID, secondary.ID, newPrimIndices, newSecIndices)
 			
 			alignments = append(alignments, al)
+			
+			primaryString = append(primaryString[:primIndices[0]], 
+								   primaryString[primIndices[len(primIndices) -1] + 1:]...)
+			secondaryString = append(secondaryString[:secIndices[0]],
+									 secondaryString[secIndices[len(secIndices) -1] + 1:]...)
 		} 
 		return alignments
 }

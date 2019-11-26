@@ -159,7 +159,7 @@ func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int)
     query := elastic.NewBoolQuery()
     query = query.Must(elastic.NewTermQuery("primaryDocumentID", al.SecondaryDocumentID))
     query = query.MustNot(elastic.NewTermQuery("_id", al.ID))
-    
+    query = query.MustNot(elastic.NewTermQuery("secondaryDocumentID", al.PrimaryDocumentID))
     
     simScriptStart := elastic.NewScript(`doc['primaryStartIndex'].value <=  params.startMax
         || doc['primaryStartIndex'].value >= params.startMin`)
@@ -183,6 +183,7 @@ func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int)
         Do(ctx)
         
     if err != nil {
+        log.Printf("Error getting similar alignments: %s", err)        
         return []string{}, err
     }
     
@@ -191,9 +192,10 @@ func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int)
         for _, hit := range res.Hits.Hits {
             idList = append(idList, hit.Id)
         }
+        log.Println(idList)
         return idList, nil
     } 
-    
+    log.Println("empty!")
     return []string{}, nil
     
 }
