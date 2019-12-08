@@ -11,9 +11,6 @@ func updateMax(i int, j int, d [][]float64, r [][]int) {
 
 	m := math.Max(d[i-1][j-1], math.Max(d[i][j-1], d[i-1][j]))
 	if d[i-1][j-1] == m {
-		if d[i][j] > d[i-1][j-1] {
-			r[i][j] = 4
-		} else {
 			r[i][j] = 3
 		}
 	} else if d[i][j-1] == m {
@@ -72,10 +69,8 @@ func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b []rune) (
 		} else if j > 0 && r[i][j] == 2 {
 			j -= 1
 		} else {
-			if r[i][j] == 4 {
-				indicesA = append([]int{i - 1}, indicesA...)
-				indicesB = append([]int{j - 1}, indicesB...)
-			}
+			indicesA = append([]int{i - 1}, indicesA...)
+			indicesB = append([]int{j - 1}, indicesB...)
 			i -= 1
 			j -= 1
 		}
