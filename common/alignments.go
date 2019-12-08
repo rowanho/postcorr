@@ -28,23 +28,3 @@ type Alignment = struct {
 	SecondaryEndIndex       int      `json:"secondaryEndIndex"`
 
 }
-
-
-type TotalAlignment = struct {
-	ID string `json:"id"`
-
-	Score float64 `json:"score"`
-
-	PrimaryAl             [][]int  `json:"primaryAl"`
-	PrimaryDocumentID     string   `json:"primaryDocumentID"`
-	PrimaryComponentIDs   []string `json:"primaryComponentIDs"`
-	PrimaryStartComponent string   `json:"primaryStartComponent"`
-	PrimaryEndComponent   string   `json:"primaryEndComponent"`
-	PrimaryStartIndex     int      `json:"primaryStartIndex"`
-	PrimaryEndIndex       int      `json:"primaryEndIndex"`
-
-	SecondaryAl           [][]int  `json:"secondaryAl"`
-	SecondaryDocumentID   string   `json:"secondaryDocumentID"`
-	SecondaryComponentIDs []string `json:"secondaryComponentIDs"`
-	
-}
