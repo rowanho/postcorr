@@ -152,25 +152,24 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
 }      
 
 /**
-* Gets the alignments where the primary alignment region is similar to the secondary
+* Gets the alignments where the primary alignment region is similar to the primary
 * alignment region of our query alignment
 **/
 func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int) ([]string, error) {
     query := elastic.NewBoolQuery()
-    query = query.Must(elastic.NewTermQuery("primaryDocumentID", al.SecondaryDocumentID))
+    query = query.Must(elastic.NewTermQuery("primaryDocumentID", al.PrimaryDocumentID))
     query = query.MustNot(elastic.NewTermQuery("_id", al.ID))
-    query = query.MustNot(elastic.NewTermQuery("secondaryDocumentID", al.PrimaryDocumentID))
     
     simScriptStart := elastic.NewScript(`doc['primaryStartIndex'].value <=  params.startMax
         || doc['primaryStartIndex'].value >= params.startMin`)
-    simScriptStart.Param("startMax", al.SecondaryStartIndex + tolerance)
-    simScriptStart.Param("startMin", al.SecondaryStartIndex - tolerance)
+    simScriptStart.Param("startMax", al.PrimaryStartIndex + tolerance)
+    simScriptStart.Param("startMin", al.PrimaryStartIndex - tolerance)
     simScriptStartQuery := elastic.NewScriptQuery(simScriptStart)
         
     simScriptEnd:= elastic.NewScript(`doc['primaryEndIndex'].value <=  params.endMax
         || doc['primaryEndIndex'].value >= params.endMin`)
-    simScriptEnd.Param("endMax", al.SecondaryEndIndex + tolerance)
-    simScriptEnd.Param("endMin", al.SecondaryEndIndex - tolerance)
+    simScriptEnd.Param("endMax", al.PrimaryEndIndex + tolerance)
+    simScriptEnd.Param("endMin", al.PrimaryEndIndex - tolerance)
     simScriptEndQuery := elastic.NewScriptQuery(simScriptEnd)
         
     query = query.Filter(simScriptStartQuery)
@@ -198,4 +197,53 @@ func GetMatchingAlignments(indexName string, al common.Alignment, tolerance int)
     log.Println("empty!")
     return []string{}, nil
     
+}
+
+/**
+* Gets the alignments where the primary alignment region is similar to the secondary
+* alignment region of our query alignment
+**/
+
+func GetConnectedAlignments(indexName string, al common.Alignment, tolerance int) ([]string, error) {
+    query := elastic.NewBoolQuery()
+    query = query.Must(elastic.NewTermQuery("primaryDocumentID", al.SecondaryDocumentID))
+    query = query.MustNot(elastic.NewTermQuery("_id", al.ID))
+    query = query.MustNot(elastic.NewTermQuery("secondaryDocumentID", al.PrimaryDocumentID))
+
+    simScriptStart := elastic.NewScript(`doc['primaryStartIndex'].value <=  params.startMax
+        || doc['primaryStartIndex'].value >= params.startMin`)
+    simScriptStart.Param("startMax", al.SecondaryStartIndex + tolerance)
+    simScriptStart.Param("startMin", al.SecondaryStartIndex - tolerance)
+    simScriptStartQuery := elastic.NewScriptQuery(simScriptStart)
+        
+    simScriptEnd:= elastic.NewScript(`doc['primaryEndIndex'].value <=  params.endMax
+        || doc['primaryEndIndex'].value >= params.endMin`)
+    simScriptEnd.Param("endMax", al.SecondaryEndIndex + tolerance)
+    simScriptEnd.Param("endMin", al.SecondaryEndIndex - tolerance)
+    simScriptEndQuery := elastic.NewScriptQuery(simScriptEnd)
+        
+    query = query.Filter(simScriptStartQuery)
+    query = query.Filter(simScriptEndQuery)
+
+    res, err := es.Search().
+        Index(indexName).
+        Query(query).
+        Pretty(true).
+        Do(ctx)
+        
+    if err != nil {
+        log.Printf("Error getting similar alignments: %s", err)        
+        return []string{}, err
+    }
+
+    if res.Hits.TotalHits.Value > 0 {
+        idList := make([]string, 0)
+        for _, hit := range res.Hits.Hits {
+            idList = append(idList, hit.Id)
+        }
+        log.Println(idList)
+        return idList, nil
+    } 
+    log.Println("empty!")
+    return []string{}, nil
 }
