@@ -56,7 +56,7 @@ func swScore(matchReward float64, gapCost float64, a []rune, b []rune) (int, int
 
 	max_i := 0
 	max_j := 0
-	max_val := 0.0
+	max_val := math.Inf(-1)
 	score := make([][]float64, 2)
 
 	lenA := len(a)
@@ -164,7 +164,6 @@ func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (fl
 	revStartA, revStartB := swScore(matchReward, gapCost, revA, revB)
 	startA := len(a) - 1 - revStartA
 	startB := len(b) - 1 - revStartB
-
 	if startA > endA {
 		temp := endA
 		endA = startA
