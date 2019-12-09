@@ -4,7 +4,6 @@ import (
     "postCorr/common"
     "postCorr/queries"
     
-    "fmt"
 )
 
 
@@ -34,11 +33,6 @@ func MajorityVote(cluster cluster) (common.Document, []rune){
         for id, mapping := range cluster.Mappings{
             mapping = invertMap(mapping)
             if val, exists := mapping[ind]; exists{
-                fmt.Println("Start")
-                fmt.Println(cluster.DocIDOfMapping)
-                fmt.Println(docs)
-                fmt.Println(id)
-                fmt.Println("End")
                 r := docs[cluster.DocIDOfMapping[id]][val]
                 _, ok := counts[r]
                 if ok == true{
