@@ -56,7 +56,7 @@ func TestSuboptimalAlign(t *testing.T) {
 	for _, tp := range testPrimaryDocs {
 		for _, ts := range testSecondaryDocs {
 			alignments := GetAlignments(1.0, 0.5, tp, ts, 3)
-			fmt.Println(alignments)
+			 fmt.Println(alignments)
 		}
 	}
 }

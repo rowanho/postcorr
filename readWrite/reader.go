@@ -1,4 +1,4 @@
-package reader
+package readWrite
 
 import (
 	"postCorr/common"

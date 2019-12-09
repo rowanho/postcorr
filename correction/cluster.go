@@ -2,6 +2,7 @@ package correction
 
 import (
     "postCorr/common"
+    "postCorr/readWrite"
     "postCorr/queries"
 )
 
@@ -20,7 +21,7 @@ type cluster struct {
 * High max distances can lead to worse time complexity
 **/
 
-func clusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, maxDistance int) {
+func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, maxDistance int) {
     
     var closeKeySet map[string]bool
     // Loop through the adjancency list
@@ -35,6 +36,13 @@ func clusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, ma
         var cl cluster
         cl.AlignmentSet[key] = true
         cl.recBuildCluster(alignmentAdjacencyList, maxDistance, maxDistance, closeKeySet, key, map[int]int{})
+        docToCorrect, correctedDocText := MajorityVote(cl)
+        correctedDoc := common.Document{
+            ID: docToCorrect.ID,
+            Text: correctedDocText,
+            ComponentLengths: docToCorrect.ComponentLengths,
+        }
+        readWrite.PlaintextWrite(correctedDoc.ID, correctedDoc)
     }
 }
 

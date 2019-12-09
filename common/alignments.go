@@ -4,11 +4,6 @@ package common
 /**
 * An alignment lines up a primary string a secondary string
 * Type Alignment has indexes for the full string of the document
-* Type total alignment has the indices rescored per component, so we
-* can reconstruct this in the original documents.
-*
-* For now, we are looking at alignments contained within single documents,
-* but spanning multiple components
 **/
 
 type Alignment = struct {

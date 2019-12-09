@@ -52,8 +52,8 @@ func rescoreIndices(indices []int, increments []Inc) []int {
 func GetAlignments(matchReward float64, gapCost float64, primary common.Document, 
 				  		 secondary common.Document, stopAt int) []common.Alignment {
 							 
-		primaryString := primary.AllStrings()
-		secondaryString := secondary.AllStrings()
+		primaryString := primary.Text
+		secondaryString := secondary.Text
 		
 		count := 0 
 		primIncrements := []Inc{Inc{Point:0, Amount: 0,}}

@@ -1,10 +1,11 @@
 package main
 
 import (
-	"postCorr/reader"
+	"postCorr/readWrite"
 	"postCorr/common"
 	"postCorr/alignment"
 	"postCorr/queries"
+	"postCorr/correction"
 	
 	"fmt"
 	"flag"
@@ -27,10 +28,10 @@ func main() {
 func execute(dirName string, formatType string, alignmentTolerance int) {
 	
 	queries.CreateAlignmentIndex(common.AlignmentIndex)
-	queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 2, 3, 4)
+	queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 5, 7, 512)
 	time.Sleep(1 * time.Second)
 
-	docIDList, docsErr := reader.TraverseAndIndexDocs(dirName, formatType)
+	docIDList, docsErr := readWrite.TraverseAndIndexDocs(dirName, formatType)
 
 	if docsErr != nil {
 		fmt.Println("Error indexing documents %s", docsErr)
@@ -46,6 +47,7 @@ func execute(dirName string, formatType string, alignmentTolerance int) {
 
 	alignmentAdjacencyList := getSimilarAlignments(docIDList, alignmentTolerance)
 	fmt.Println(alignmentAdjacencyList)
+	correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 2)
 }
 
 func getSimilarDocuments(docIDList []string) map[string][]string{

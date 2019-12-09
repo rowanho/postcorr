@@ -14,15 +14,15 @@ import (
 *   the primary alignment region is very similar in both
 **/
 
-func MajorityVote(cluster cluster) []rune{
+func MajorityVote(cluster cluster) (common.Document, []rune){
     primAlign, _ := queries.GetAlignmentByID(common.AlignmentIndex, cluster.PrimaryAlignment)
     docToCorrect, _ := queries.GetDocByID(common.DocumentIndex, primAlign.PrimaryDocumentID)
     
-    correctedDocText := make([]rune, len(docToCorrect.AllStrings()))
+    correctedDocText := make([]rune, len(docToCorrect.Text))
     var docs map[string][]rune
     for docID,_ := range cluster.DocumentIDSet {
         doc,_ := queries.GetDocByID(common.DocumentIndex, docID)
-        docs[docID] = doc.AllStrings()
+        docs[docID] = doc.Text
     }
     
     for i, ind := range primAlign.PrimaryAl{
@@ -47,7 +47,7 @@ func MajorityVote(cluster cluster) []rune{
         }
         correctedDocText[i] = maxRune
     }
-    return correctedDocText
+    return docToCorrect, correctedDocText
 }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

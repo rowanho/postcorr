@@ -48,13 +48,13 @@ func GetAlignmentByID(indexName string, alID string) (common.Alignment, error) {
         Do(ctx)
     if err != nil {
         log.Printf("Error getting document: %s", err)
-        return common.Document{}, err
+        return common.Alignment{}, err
     }
     
     if get.Found{
-        var doc common.Alignment
-        json.Unmarshal(get.Source, &doc)
-        return doc, nil
+        var al common.Alignment
+        json.Unmarshal(get.Source, &al)
+        return al, nil
     } else {
         return common.Alignment{}, errors.New("Alignment not found")
     }

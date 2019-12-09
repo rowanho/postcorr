@@ -1,4 +1,4 @@
-package reader
+package readWrite
 
 import (
     "postCorr/common"
@@ -16,15 +16,10 @@ func plaintextRead(filepath string) (common.Document, error) {
         return common.Document{}, err
     }
     
-    compName := "comp0"
     newDoc := common.Document{
         ID: filepath,
-        TextComponents: map[string][]rune{
-            compName: ConvToStandardUnicode(text),
-        },
-        ComponentOrder: []string{
-            compName,
-        },
+        Text: ConvToStandardUnicode(text),
+        ComponentLengths: []int{},
     }
     return newDoc, nil
 }
