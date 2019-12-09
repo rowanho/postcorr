@@ -33,8 +33,31 @@ func GetDocByID(indexName string, docID string) (common.Document, error) {
     } else {
         return common.Document{}, errors.New("Document not found")
     }
+}
+
+
+/**
+* Gets a document by its document id
+* This is also its id in elasticsearch
+**/
+func GetAlignmentByID(indexName string, alID string) (common.Alignment, error) {
     
+    get, err := es.Get().
+        Index(indexName).
+        Id(alID).
+        Do(ctx)
+    if err != nil {
+        log.Printf("Error getting document: %s", err)
+        return common.Document{}, err
+    }
     
+    if get.Found{
+        var doc common.Alignment
+        json.Unmarshal(get.Source, &doc)
+        return doc, nil
+    } else {
+        return common.Alignment{}, errors.New("Alignment not found")
+    }
 }
 
 /**
