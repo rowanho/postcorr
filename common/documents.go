@@ -39,9 +39,9 @@ func (doc Document) ToDocString() DocString {
 }
 
 // Takes modified doc string and 'inserts' it back
-func (doc Document) InsertDocString(text string) {
+func (doc Document) InsertDocString(text []rune) {
 	c := 0
-	for _, component := range ComponentOrder {
+	for _, component := range doc.ComponentOrder {
 		l := len(doc.TextComponents[component])
 		doc.TextComponents[component] = text[c: c + l]
 		c += l
