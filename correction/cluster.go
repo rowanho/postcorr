@@ -60,7 +60,6 @@ func (cl cluster) recBuildCluster(alignmentAdjacencyList map[string][]string, og
         cl.DocumentIDSet[connectedAlignment.PrimaryDocumentID] = true
         cl.DocumentIDSet[connectedAlignment.SecondaryDocumentID] = true
         if keyAlignment.PrimaryDocumentID == connectedAlignment.PrimaryDocumentID {
-            cl.Mappings[id] = mappings
             cl.recBuildCluster(alignmentAdjacencyList, maxDistance, maxDistance - 1, closeKeySet, id, mappings)
             // To avoid correcting the same area twice
             if maxDistance == ogMaxDistance{
@@ -73,7 +72,7 @@ func (cl cluster) recBuildCluster(alignmentAdjacencyList map[string][]string, og
                     newMappings[connectedAlignment.SecondaryAl[i]] = mappings[ind]
                 }
             }
-            cl.Mappings[id] = newMappings
+            cl.Mappings[connectedAlignment.SecondaryDocumentID] = newMappings
             cl.recBuildCluster(alignmentAdjacencyList, maxDistance, maxDistance - 1, closeKeySet, id, mappings)
         }
     } 
