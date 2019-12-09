@@ -35,7 +35,7 @@ Makes use of Olivere's excellent client https://github.com/olivere/elastic
  Contains code for making representation of documents/strings into hashed numerical values. Plans to include more advanced
  techniques like locality sensitive hashing later into the project
  
-### Reader
+### Readwrite
 
 Functions that help convert from OCR format to our common document format and back again. Plans to support some commonly used formats like 
 ALTO and PAGE.
