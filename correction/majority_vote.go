@@ -4,6 +4,7 @@ import (
     "postCorr/common"
     "postCorr/queries"
     
+    "fmt"
 )
 
 
@@ -19,19 +20,26 @@ func MajorityVote(cluster cluster) (common.Document, []rune){
     docToCorrect, _ := queries.GetDocByID(common.DocumentIndex, primAlign.PrimaryDocumentID)
     
     correctedDocText := make([]rune, len(docToCorrect.Text))
-    var docs map[string][]rune
+    copy(correctedDocText, docToCorrect.Text)
+    docs := map[string][]rune{}
     for docID,_ := range cluster.DocumentIDSet {
         doc,_ := queries.GetDocByID(common.DocumentIndex, docID)
         docs[docID] = doc.Text
     }
     
-    for i, ind := range primAlign.PrimaryAl{
-        var counts map[rune]int
+    for _, ind := range primAlign.PrimaryAl{
+        counts := map[rune]int{} 
         max := 0
-        var maxRune rune
+        maxRune := docToCorrect.Text[ind]
         for id, mapping := range cluster.Mappings{
+            mapping = invertMap(mapping)
             if val, exists := mapping[ind]; exists{
-                r := docs[id][val]
+                fmt.Println("Start")
+                fmt.Println(cluster.DocIDOfMapping)
+                fmt.Println(docs)
+                fmt.Println(id)
+                fmt.Println("End")
+                r := docs[cluster.DocIDOfMapping[id]][val]
                 _, ok := counts[r]
                 if ok == true{
                     counts[r] += 1
@@ -45,9 +53,16 @@ func MajorityVote(cluster cluster) (common.Document, []rune){
                 }
             }
         }
-        correctedDocText[i] = maxRune
+        correctedDocText[ind] = maxRune
     }
     return docToCorrect, correctedDocText
-}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+}
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+func invertMap(m map[int]int) map[int]int{
+    invertedMap := map[int]int{}
+    
+    for k, v := range m {
+        invertedMap[v] = k
+    }
+    return invertedMap
+}
