@@ -124,7 +124,7 @@ func GetAlignmentsBetween(indexName string, primaryID string, secondaryID string
 * Should return a list of document IDs of the fingerprints in the same bucket 
 **/
 
-func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
+func GetSimilarFpsLSH(indexName string, documentID string) (map[string]bool, error)  {
     get, err := es.Get().
         Index(indexName).
         Id(documentID).
@@ -132,11 +132,11 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
         
     if err != nil {
         log.Println("Couldn't find doc string")
-        return []string{}, err
+        return map[string]bool{}, err
     }
     
     if !get.Found{
-        return []string{}, errors.New("Document not found")
+        return map[string]bool{}, errors.New("Document not found")
     } 
     
     var doc common.DocString
@@ -159,18 +159,18 @@ func GetSimilarFpsLSH(indexName string, documentID string) ([]string, error)  {
         Do(ctx)
         
     if err != nil {
-        return []string{}, err
+        return map[string]bool{}, err
     }
     if res.Hits.TotalHits.Value > 0 {
-        idList := make([]string, 0)
+        idSet := map[string]bool{}
         for _, hit := range res.Hits.Hits {
-            idList = append(idList, hit.Id)
+            idSet[hit.Id] = true
         }
-        return idList, nil
+        return idSet, nil
     } 
     
     // No hits
-    return []string{}, nil
+    return map[string]bool{}, nil
     
 }      
 

@@ -4,6 +4,7 @@ import (
     "postCorr/common"
     "postCorr/queries"
     
+    "fmt"
 )
 
 
@@ -26,6 +27,10 @@ func MajorityVote(cluster cluster) (common.Document, []rune){
         docs[docID] = doc.Text
     }
     
+    fmt.Println("Primary")
+    fmt.Println(primAlign.PrimaryDocumentID)
+    fmt.Println("Comparing")
+    fmt.Println(docs)
     for _, ind := range primAlign.PrimaryAl{
         counts := map[rune]int{} 
         max := 0

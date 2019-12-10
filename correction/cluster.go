@@ -4,8 +4,6 @@ import (
     "postCorr/common"
     "postCorr/readWrite"
     "postCorr/queries"
-    
-    "fmt"
 )
 
 type cluster struct {
@@ -64,8 +62,6 @@ func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, ma
             Text: correctedDocText,
             ComponentLengths: docToCorrect.ComponentLengths,
         }
-        fmt.Println(correctedDoc)
-        fmt.Println("Plaintext write")
         readWrite.PlaintextWrite(correctedDoc.ID, correctedDoc)
     }
 }
@@ -97,7 +93,7 @@ func (cl cluster) recBuildCluster(alignmentAdjacencyList map[string][]string, ma
             cl.DocIDOfMapping[connectedAlignment.ID] = connectedAlignment.SecondaryDocumentID
             cl.recBuildCluster(alignmentAdjacencyList, maxDistance, closeKeySet, id, newMappings)
         } else {
-            var newMappings map[int]int
+            newMappings := map[int]int{}
             for i, ind := range connectedAlignment.PrimaryAl {
                 if _, exist := mappings[ind]; exist {
                     newMappings[connectedAlignment.SecondaryAl[i]] = mappings[ind]

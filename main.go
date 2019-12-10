@@ -28,7 +28,7 @@ func main() {
 func execute(dirName string, formatType string, alignmentTolerance int) {
 	
 	queries.CreateAlignmentIndex(common.AlignmentIndex)
-	queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 5, 7, 512)
+	//queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 5, 7, 512)
 	time.Sleep(1 * time.Second)
 
 	docIDList, docsErr := readWrite.TraverseAndIndexDocs(dirName, formatType)
@@ -43,6 +43,8 @@ func execute(dirName string, formatType string, alignmentTolerance int) {
 	
 	fmt.Println(likelyMatchingDocs)
 	alignAndIndex(likelyMatchingDocs)
+	fmt.Println(likelyMatchingDocs)
+
 	time.Sleep(1 * time.Second)
 
 	alignmentAdjacencyList := getSimilarAlignments(docIDList, alignmentTolerance)
@@ -50,8 +52,8 @@ func execute(dirName string, formatType string, alignmentTolerance int) {
 	correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 2)
 }
 
-func getSimilarDocuments(docIDList []string) map[string][]string{
-	likelyMatchingDocs := make(map[string][]string, 0)
+func getSimilarDocuments(docIDList []string) map[string]map[string]bool{
+	likelyMatchingDocs := make(map[string]map[string]bool, 0)
 	
 	for _, docID := range docIDList {
 		similarDocIDs, _ := queries.GetSimilarFpsLSH(common.FpLSHIndex, docID)
@@ -60,15 +62,19 @@ func getSimilarDocuments(docIDList []string) map[string][]string{
 	return likelyMatchingDocs	
 }
 
-func alignAndIndex(likelyMatchingDocs map[string][]string) {
+func alignAndIndex(likelyMatchingDocs map[string]map[string]bool) {
 	for primID, secIDs := range likelyMatchingDocs {
 		primDoc, _ := queries.GetDocByID(common.DocumentIndex, primID)
-		for _, secID := range secIDs {
+		for secID, _:= range secIDs {
+			if _, exists := likelyMatchingDocs[secID][primID]; exists {
+				delete(likelyMatchingDocs[secID],primID)
+			}
 			secDoc, _ := queries.GetDocByID(common.DocumentIndex, secID)
 			alignments := alignment.GetAlignments(1.0, 1.0, primDoc, secDoc, 3)
 			for _, al := range alignments {
 				queries.IndexAlignment(common.AlignmentIndex, al)
 			}
+			
 		}
 	}	
 }
@@ -85,7 +91,10 @@ func getSimilarAlignments(docIDList []string, tolerance int) map[string][]string
 			matchingAlignmentIds, _ := queries.GetMatchingAlignments(common.AlignmentIndex, 
 																al, 
 																tolerance)
-			alignmentAdjacencyList[al.ID] = matchingAlignmentIds
+			connectedAlignmentIds, _ := queries.GetConnectedAlignments(common.AlignmentIndex,
+																	   al,
+																  	   tolerance)
+			alignmentAdjacencyList[al.ID] = append(matchingAlignmentIds, connectedAlignmentIds...)
 		}
 	}
 	return alignmentAdjacencyList
