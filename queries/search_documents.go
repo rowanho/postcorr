@@ -2,6 +2,7 @@ package queries
 
 import (
     "postCorr/common"
+    "postCorr/fingerprinting"
     
     "encoding/json"
     "errors"
@@ -118,6 +119,42 @@ func GetAlignmentsBetween(indexName string, primaryID string, secondaryID string
     return alignments, nil
 }
 
+
+// If the jaccard score is over the threshold, add it to the map as a similar document
+func GetSimilarFps(indexName string, targetDocumentID string, docIDList [] string, jaccardThreshold float64) (map[string]bool, error) {
+    
+    similarDocIDs := map[string]bool{}
+    var targetFp map[uint64]int
+    
+    get, err := es.Get().
+    Index(indexName).
+    Id(targetDocumentID).
+    Do(ctx)
+    if err != nil {
+        return similarDocIDs, err;
+    } else{
+        json.Unmarshal(get.Source, &targetFp)    
+    }
+
+    for _, docID := range docIDList {
+        if docID == targetDocumentID {
+            continue;
+        }
+        get, err := es.Get().
+        Index(indexName).
+        Id(docID).
+        Do(ctx)
+        if err != nil {
+            continue;
+        }
+        var fp map[uint64]int
+        json.Unmarshal(get.Source, &fp)
+        if fingerprinting.FpJaccardScore(targetFp, fp) > jaccardThreshold {
+            similarDocIDs[docID] = true
+        }
+    }
+    return similarDocIDs, nil
+}
 
 /**
 * Gets the similar fingerprints where we've used elastic's inbuild minhash locality sensitive hashing
