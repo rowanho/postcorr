@@ -37,12 +37,12 @@ func IndexDocument(indexName string, doc common.Document) bool {
 * Mappings have a corresponding documentID, and represent a whole document
 **/
 
-func IndexFingerPrints(indexName string, fps common.Fingerprints) bool {
+func IndexFingerPrints(indexName string, docID string, fp map[uint64]int) bool {
 
     put, err := es.Index().
         Index(indexName).
-        Id(fps.DocumentID).
-        BodyJson(fps).
+        Id(docID).
+        BodyJson(fp).
         Do(ctx)
     
     if err != nil {
@@ -53,21 +53,6 @@ func IndexFingerPrints(indexName string, fps common.Fingerprints) bool {
     return true
 }
 
-func IndexFingerPrintsForLSH(indexName string, fps common.DocString) bool {
-	put, err := es.Index().
-        Index(indexName).
-        Id(fps.ID).
-        BodyJson(fps).
-        Do(ctx)
-    
-    if err != nil {
-        log.Printf("Error indexing alignment: %s", err)  
-        return false      
-    }
-    fmt.Printf("Indexed alignment %s to index %s\n", put.Id, put.Index)
-    return true
-	
-}
 
 /**
 * Puts an alignment into elasticsearch

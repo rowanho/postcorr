@@ -7,17 +7,3 @@ type Document struct {
 	ComponentLengths []int `json:"componentLengths"`
 }
 
-// For LSH
-type DocString struct {
-	ID string `json:"id"`
-	Text string `json:"text"`
-}
-
-
-func (doc Document) ToDocString() DocString {
-	return DocString{
-		ID: doc.ID,
-		Text: string(doc.Text),
-	}
-}
-

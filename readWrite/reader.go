@@ -3,6 +3,7 @@ package readWrite
 import (
 	"postCorr/common"
 	"postCorr/queries"
+	"postCorr/fingerprinting"
 	
 	"path/filepath"
 	"os"
@@ -38,9 +39,9 @@ func readAndIndex(filepath string, formatType string)  error {
 		return errors.New("Couldn't index document")
 	}
 	
-	docString := doc.ToDocString()
 	
-	querySuccess = queries.IndexFingerPrintsForLSH(common.FpLSHIndex, docString)
+	fp := fingerprinting.ModP(string(doc.Text), 7 , 1)
+	querySuccess = queries.IndexFingerPrints(common.FpLSHIndex, doc.ID, fp)
 	
 	if querySuccess == false {
 		return errors.New("Couldn't index docstring")

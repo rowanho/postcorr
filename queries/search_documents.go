@@ -156,60 +156,6 @@ func GetSimilarFps(indexName string, targetDocumentID string, docIDList [] strin
     return similarDocIDs, nil
 }
 
-/**
-* Gets the similar fingerprints where we've used elastic's inbuild minhash locality sensitive hashing
-* Should return a list of document IDs of the fingerprints in the same bucket 
-**/
-
-func GetSimilarFpsLSH(indexName string, documentID string) (map[string]bool, error)  {
-    get, err := es.Get().
-        Index(indexName).
-        Id(documentID).
-        Do(ctx)
-        
-    if err != nil {
-        log.Println("Couldn't find doc string")
-        return map[string]bool{}, err
-    }
-    
-    if !get.Found{
-        return map[string]bool{}, errors.New("Document not found")
-    } 
-    
-    var doc common.DocString
-    json.Unmarshal(get.Source, &doc)
-    query := elastic.NewMoreLikeThisQuery()
-    query.Field("text")
-    query.MinTermFreq(1)
-    query.MinDocFreq(1)
-    
-    it := elastic.NewMoreLikeThisQueryItem()
-    it.Index(indexName)
-    it.Id(doc.ID)
-    
-    query.LikeItems(it)
-    
-    res, err := es.Search().
-        Index(indexName).
-        Query(query).
-        Pretty(true).
-        Do(ctx)
-        
-    if err != nil {
-        return map[string]bool{}, err
-    }
-    if res.Hits.TotalHits.Value > 0 {
-        idSet := map[string]bool{}
-        for _, hit := range res.Hits.Hits {
-            idSet[hit.Id] = true
-        }
-        return idSet, nil
-    } 
-    
-    // No hits
-    return map[string]bool{}, nil
-    
-}      
 
 /**
 * Gets the alignments where the primary alignment region is similar to the primary

@@ -56,7 +56,7 @@ func getSimilarDocuments(docIDList []string) map[string]map[string]bool{
 	likelyMatchingDocs := make(map[string]map[string]bool, 0)
 	
 	for _, docID := range docIDList {
-		similarDocIDs, _ := queries.GetSimilarFpsLSH(common.FpLSHIndex, docID)
+		similarDocIDs, _ := queries.GetSimilarFps(common.FpLSHIndex, docID, docIDList, 0.2)
 		likelyMatchingDocs[docID] = similarDocIDs
 	}
 	return likelyMatchingDocs	
