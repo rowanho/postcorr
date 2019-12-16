@@ -41,7 +41,7 @@ func readAndIndex(filepath string, formatType string)  error {
 	
 	
 	fp := fingerprinting.ModP(string(doc.Text), 7 , 1)
-	querySuccess = queries.IndexFingerPrints(common.FpLSHIndex, doc.ID, fp)
+	querySuccess = queries.IndexFingerPrints(common.FpIndex, doc.ID, fp)
 	
 	if querySuccess == false {
 		return errors.New("Couldn't index docstring")

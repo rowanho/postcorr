@@ -6,6 +6,7 @@ package common
 **/
 
 const FpLSHIndex = "test_lsh_fingerprints"
+const FpIndex = "test_fingerprints"
 const DocumentIndex = "test_documents"
 const AlignmentIndex = "test_alignments"
 /**

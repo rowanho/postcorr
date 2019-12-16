@@ -28,6 +28,7 @@ func main() {
 func execute(dirName string, formatType string, alignmentTolerance int) {
 	
 	queries.CreateAlignmentIndex(common.AlignmentIndex)
+	queries.CreateFingerprintIndex(common.FpIndex)
 	//queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 5, 7, 512)
 	time.Sleep(1 * time.Second)
 
@@ -49,14 +50,14 @@ func execute(dirName string, formatType string, alignmentTolerance int) {
 
 	alignmentAdjacencyList := getSimilarAlignments(docIDList, alignmentTolerance)
 	fmt.Println(alignmentAdjacencyList)
-	correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 2)
+	correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 1)
 }
 
 func getSimilarDocuments(docIDList []string) map[string]map[string]bool{
 	likelyMatchingDocs := make(map[string]map[string]bool, 0)
 	
 	for _, docID := range docIDList {
-		similarDocIDs, _ := queries.GetSimilarFps(common.FpLSHIndex, docID, docIDList, 0.2)
+		similarDocIDs, _ := queries.GetSimilarFps(common.FpIndex, docID, docIDList, 0.05)
 		likelyMatchingDocs[docID] = similarDocIDs
 	}
 	return likelyMatchingDocs	
@@ -66,11 +67,11 @@ func alignAndIndex(likelyMatchingDocs map[string]map[string]bool) {
 	for primID, secIDs := range likelyMatchingDocs {
 		primDoc, _ := queries.GetDocByID(common.DocumentIndex, primID)
 		for secID, _:= range secIDs {
-			if _, exists := likelyMatchingDocs[secID][primID]; exists {
-				delete(likelyMatchingDocs[secID],primID)
-			}
+		//	if _, exists := likelyMatchingDocs[secID][primID]; exists {
+		//		delete(likelyMatchingDocs[secID],primID)
+		//	}
 			secDoc, _ := queries.GetDocByID(common.DocumentIndex, secID)
-			alignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 3)
+			alignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1)
 			for _, al := range alignments {
 				queries.IndexAlignment(common.AlignmentIndex, al)
 			}
