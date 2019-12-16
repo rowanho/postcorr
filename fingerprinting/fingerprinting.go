@@ -12,10 +12,14 @@ func ModP(text string, windowSize int, p uint64) map[uint64]int {
 
 	fpCounts := make(map[uint64]int)
 	for i := 0; i+windowSize < len(text); i++ {
-		fp := ComputeFNV64(text[i : i+windowSize])
 		// Apply mod, check if 0
+		fp := ComputeFNV64(text[i : i+windowSize])
 		if fp%p == 0 {
-			fpCounts[fp] += 1
+			if _, exists := fpCounts[fp]; exists{
+				fpCounts[fp] += 1
+			} else {
+				fpCounts[fp] = 1
+			}
 		}
 	}
 	return fpCounts
