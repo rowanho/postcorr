@@ -46,15 +46,15 @@ func IndexFingerPrints(indexName string, docID string, fp map[uint64]int) bool {
         Do(ctx)
     
     if err != nil {
-        log.Printf("Error indexing alignment: %s", err)  
+        log.Printf("Error indexing fingerprint: %s", err)  
         return false      
     }
-    fmt.Printf("Indexed alignment %s to index %s\n", put.Id, put.Index)
+    fmt.Printf("Indexed fingerprint %s to index %s\n", put.Id, put.Index)
     return true
 }
 
 
-/**
+/**docstring
 * Puts an alignment into elasticsearch
 * The id field is made up of the priamry document ID, component ID, and start/end indices
 *
