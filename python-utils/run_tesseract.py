@@ -15,8 +15,7 @@ def tesseract_plaintext(filename):
 def perform_traversal(rootDir, outdir):
     for dir_name, subdir_list, file_list in os.walk(rootDir):
         for fname in file_list:
-            #image_text = tesseract_plaintext(os.path.join(dir_name, fname))
-            image_text = 'j'
+            image_text = tesseract_plaintext(os.path.join(dir_name, fname))
             directory = ''.join(dir_name.split('/')[1:]) 
             if not os.path.exists(outdir + '/' + directory):
                 print(outdir + directory)
