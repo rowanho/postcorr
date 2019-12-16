@@ -91,7 +91,7 @@ func (cl cluster) recBuildCluster(alignmentAdjacencyList map[string][]string, ma
             newMappings := alignmentMap(connectedAlignment.PrimaryAl, connectedAlignment.SecondaryAl)
             cl.Mappings[connectedAlignment.ID] = newMappings
             cl.DocIDOfMapping[connectedAlignment.ID] = connectedAlignment.SecondaryDocumentID
-            cl.recBuildCluster(alignmentAdjacencyList, maxDistance, closeKeySet, id, newMappings)
+            cl.recBuildCluster(alignmentAdjacencyList, maxDistance - 1, closeKeySet, id, newMappings)
         } else {
             newMappings := map[int]int{}
             for i, ind := range connectedAlignment.PrimaryAl {

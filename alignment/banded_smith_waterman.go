@@ -175,6 +175,6 @@ func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (fl
 		endB = startB
 		startB = temp
 	}
-
+	
 	return hirschberg(matchReward, gapCost, a[startA:endA+1], b[startB:endB+1], startA, startB)
 }

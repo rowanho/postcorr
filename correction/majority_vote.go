@@ -3,8 +3,6 @@ package correction
 import (
     "postCorr/common"
     "postCorr/queries"
-    
-    "fmt"
 )
 
 
@@ -26,18 +24,18 @@ func MajorityVote(cluster cluster) (common.Document, []rune){
         doc,_ := queries.GetDocByID(common.DocumentIndex, docID)
         docs[docID] = doc.Text
     }
-    
-    fmt.Println("Primary")
-    fmt.Println(primAlign.PrimaryDocumentID)
-    fmt.Println("Comparing")
-    fmt.Println(docs)
+    for id, mapping := range cluster.Mappings{
+        cluster.Mappings[id] = invertMap(mapping)
+    }
     for _, ind := range primAlign.PrimaryAl{
         counts := map[rune]int{} 
-        max := 0
+        counts[docToCorrect.Text[ind]] = 1
+        max := 1
         maxRune := docToCorrect.Text[ind]
+        comparisons := 1
         for id, mapping := range cluster.Mappings{
-            mapping = invertMap(mapping)
             if val, exists := mapping[ind]; exists{
+                comparisons += 1
                 r := docs[cluster.DocIDOfMapping[id]][val]
                 _, ok := counts[r]
                 if ok == true{

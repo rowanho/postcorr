@@ -10,7 +10,7 @@ import (
 func createAlignment(score float64, primID string, secID string, primAl []int, secAl []int) common.Alignment {
 
 	a := common.Alignment{
-		ID: 				 uuid.New().String(), 				 
+		ID: 				 primID + "_" + secID + "_" + uuid.New().String(), 				 
 		Score:               score,
 		PrimaryAl:           primAl,
 		PrimaryDocumentID:   primID,
@@ -52,8 +52,11 @@ func rescoreIndices(indices []int, increments []Inc) []int {
 func GetAlignments(matchReward float64, gapCost float64, primary common.Document, 
 				  		 secondary common.Document, stopAt int) []common.Alignment {
 							 
-		primaryString := primary.Text
-		secondaryString := secondary.Text
+		primaryString := make([]rune, len(primary.Text))
+		secondaryString := make([]rune, len(secondary.Text))
+		
+		copy(primaryString, primary.Text)
+		copy(secondaryString, secondary.Text)
 		
 		count := 0 
 		primIncrements := []Inc{Inc{Point:0, Amount: 0,}}
@@ -98,7 +101,7 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 				Point: newSecIndices[0],
 				Amount: len(newSecIndices),
 			}
-			count += 1			
+			count += 1		
 			al := createAlignment(score, primary.ID, secondary.ID, newPrimIndices, newSecIndices)
 			
 			alignments = append(alignments, al)
