@@ -42,8 +42,9 @@ func NewCluster(key string) cluster {
 * High max distances can lead to worse time complexity
 **/
 
-func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, maxDistance int) {
+func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, maxDistance int) int {
     
+    totalCorrections := 0
     closeKeySet := map[string]bool{}
     // Loop through the adjancency list
     for key := range alignmentAdjacencyList{
@@ -56,14 +57,16 @@ func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, ma
         closeKeySet[key] = true
         cl := NewCluster(key)
         cl.recBuildCluster(alignmentAdjacencyList, maxDistance, closeKeySet, key, cl.Mappings[key])
-        docToCorrect, correctedDocText := MajorityVote(cl)
+        docToCorrect, correctedDocText, noCorrections := MajorityVote(cl)
         correctedDoc := common.Document{
             ID: docToCorrect.ID,
             Text: correctedDocText,
             ComponentLengths: docToCorrect.ComponentLengths,
         }
+        totalCorrections += noCorrections
         readWrite.PlaintextWrite(correctedDoc.ID, correctedDoc)
     }
+    return totalCorrections
 }
 
 

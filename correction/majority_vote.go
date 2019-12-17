@@ -11,9 +11,11 @@ import (
 *   If indices were counted as aligning, they are used in the vote
 *   The relationship between alignments in a cluster is such that
 *   the primary alignment region is very similar in both
+*   Also eturns an integer representing the number of corrections made
 **/
 
-func MajorityVote(cluster cluster) (common.Document, []rune){
+func MajorityVote(cluster cluster) (common.Document, []rune, int){
+    noCorrections := 0;
     primAlign, _ := queries.GetAlignmentByID(common.AlignmentIndex, cluster.PrimaryAlignment)
     docToCorrect, _ := queries.GetDocByID(common.DocumentIndex, primAlign.PrimaryDocumentID)
     
@@ -50,9 +52,13 @@ func MajorityVote(cluster cluster) (common.Document, []rune){
                 }
             }
         }
+        if (maxRune != docToCorrect.Text[ind]){
+            noCorrections += 1
+        }
+        
         correctedDocText[ind] = maxRune
     }
-    return docToCorrect, correctedDocText
+    return docToCorrect, correctedDocText, noCorrections
 }
 
 func invertMap(m map[int]int) map[int]int{

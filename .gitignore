@@ -1,4 +1,6 @@
 *.txt
 postCorr
 test_dataset
-corrected
+corrected*
+image_dataset
+eval

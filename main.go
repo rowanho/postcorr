@@ -26,7 +26,7 @@ func main() {
 * Executes the main program pipeline
 **/
 func execute(dirName string, formatType string, alignmentTolerance int) {
-	
+	totalCorrections := 0
 	queries.CreateAlignmentIndex(common.AlignmentIndex)
 	queries.CreateFingerprintIndex(common.FpIndex)
 	//queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 5, 7, 512)
@@ -50,7 +50,9 @@ func execute(dirName string, formatType string, alignmentTolerance int) {
 
 	alignmentAdjacencyList := getSimilarAlignments(docIDList, alignmentTolerance)
 	fmt.Println(alignmentAdjacencyList)
-	correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 1)
+	totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 1)
+	fmt.Println("Number of corrections made: ", totalCorrections)
+	queries.DeleteIndexes([]string{common.AlignmentIndex, common.FpIndex, common.DocumentIndex})
 }
 
 func getSimilarDocuments(docIDList []string) map[string]map[string]bool{

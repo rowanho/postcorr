@@ -10,7 +10,7 @@ import (
 func createAlignment(score float64, primID string, secID string, primAl []int, secAl []int) common.Alignment {
 
 	a := common.Alignment{
-		ID: 				 primID + "_" + secID + "_" + uuid.New().String(), 				 
+		ID: 				 uuid.New().String(), 				 
 		Score:               score,
 		PrimaryAl:           primAl,
 		PrimaryDocumentID:   primID,
