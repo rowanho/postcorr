@@ -16,23 +16,24 @@ func main() {
 	dirName := flag.String("dir","test_dataset","path to dataset")
 	formatType := flag.String("format", common.Plaintext, "the dataset file format")
 	alignmentTolerance := flag.Int("tolerance", 10, "Tolerance for distances between alignments to identify as similar" )
+	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	flag.Parse()
 	
-	execute(*dirName, *formatType, *alignmentTolerance)
+	execute(*dirName, *formatType, *fpType, *alignmentTolerance)
 }
 
 
 /**
 * Executes the main program pipeline
 **/
-func execute(dirName string, formatType string, alignmentTolerance int) {
+func execute(dirName string, formatType string, fpType string, alignmentTolerance int) {
 	totalCorrections := 0
 	queries.CreateAlignmentIndex(common.AlignmentIndex)
 	queries.CreateFingerprintIndex(common.FpIndex)
 	//queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 5, 7, 512)
 	time.Sleep(1 * time.Second)
 
-	docIDList, docsErr := readWrite.TraverseAndIndexDocs(dirName, formatType)
+	docIDList, docsErr := readWrite.TraverseAndIndexDocs(dirName, formatType, fpType)
 
 	if docsErr != nil {
 		fmt.Println("Error indexing documents %s", docsErr)
@@ -40,7 +41,7 @@ func execute(dirName string, formatType string, alignmentTolerance int) {
 	}
 	time.Sleep(1 * time.Second)
 	
-	likelyMatchingDocs := getSimilarDocuments(docIDList)
+	likelyMatchingDocs := getSimilarDocuments(docIDList, fpType)
 	
 	fmt.Println(likelyMatchingDocs)
 	alignAndIndex(likelyMatchingDocs)
@@ -52,15 +53,19 @@ func execute(dirName string, formatType string, alignmentTolerance int) {
 	fmt.Println(alignmentAdjacencyList)
 	totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 1)
 	fmt.Println("Number of corrections made: ", totalCorrections)
-	queries.DeleteIndexes([]string{common.AlignmentIndex, common.FpIndex, common.DocumentIndex})
+	queries.DeleteIndexes([]string{common.AlignmentIndex, common.FpIndex, common.DocumentIndex, common.MinHashIndex})
 }
 
-func getSimilarDocuments(docIDList []string) map[string]map[string]bool{
+func getSimilarDocuments(docIDList []string, fpType string) map[string]map[string]bool{
 	likelyMatchingDocs := make(map[string]map[string]bool, 0)
-	
 	for _, docID := range docIDList {
-		similarDocIDs, _ := queries.GetSimilarFps(common.FpIndex, docID, docIDList, 0.05)
-		likelyMatchingDocs[docID] = similarDocIDs
+		if (fpType == common.ModFP) {
+			similarDocIDs, _ := queries.GetSimilarFps(common.FpIndex, docID, docIDList, 0.05)
+			likelyMatchingDocs[docID] = similarDocIDs			
+		} else if (fpType == common.MinhashFP) {
+			similarDocIDs, _ := queries.GetSimilarMinHashes(common.MinHashIndex, docID, docIDList, 0.05)
+			likelyMatchingDocs[docID] = similarDocIDs			
+		}
 	}
 	return likelyMatchingDocs	
 }

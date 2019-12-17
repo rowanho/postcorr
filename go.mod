@@ -1,6 +1,7 @@
 require github.com/olivere/elastic/v7 v7.0.9
 
 require (
+	github.com/DearMadMan/minhash v0.1.0
 	github.com/google/uuid v1.1.1
 	golang.org/x/text v0.3.2
 )

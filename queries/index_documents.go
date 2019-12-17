@@ -8,6 +8,7 @@ import (
 	"log"
     
 	"github.com/olivere/elastic/v7" 
+	"github.com/DearMadMan/minhash"
 )
 
 var es, _ = elastic.NewClient()
@@ -53,8 +54,25 @@ func IndexFingerPrints(indexName string, docID string, fp map[uint64]int) bool {
     return true
 }
 
+/**
+* Puts a minhash into elasticsearch
+**/
+func IndexMinhash(indexName string, docID string, fp minhash.Set) bool {
+	put, err := es.Index().
+        Index(indexName).
+        Id(docID).
+        BodyJson(fp).
+        Do(ctx)
+    
+    if err != nil {
+        log.Printf("Error indexing fingerprint: %s", err)  
+        return false      
+    }
+    fmt.Printf("Indexed fingerprint %s to index %s\n", put.Id, put.Index)
+    return true
+}
 
-/**docstring
+/**
 * Puts an alignment into elasticsearch
 * The id field is made up of the priamry document ID, component ID, and start/end indices
 *

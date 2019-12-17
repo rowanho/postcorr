@@ -21,7 +21,7 @@ func ConvToStandardUnicode(b []byte) []rune {
 	return []rune(string(norm.NFC.Bytes(b)))
 }
 
-func readAndIndex(filepath string, formatType string)  error {
+func readAndIndex(filepath string, formatType string, fpType string)  error {
 	
 	var doc common.Document
 	var err error
@@ -39,15 +39,22 @@ func readAndIndex(filepath string, formatType string)  error {
 		return errors.New("Couldn't index document")
 	}
 	
+	err = nil
+	if ( fpType == common.ModFP ) {
+		fp := fingerprinting.ModP(string(doc.Text), 7 , 10)
+		querySuccess = queries.IndexFingerPrints(common.FpIndex, doc.ID, fp)
+		if querySuccess == false {
+			err =  errors.New("Couldn't index fingerprints")
+		}	
+	} else if (fpType == common.MinhashFP) { 
+		fp := fingerprinting.MinHash(string(doc.Text))
+		querySuccess = queries.IndexMinhash(common.MinHashIndex, doc.ID, fp)
+		if querySuccess == false {
+			err =  errors.New("Couldn't index fingerprints")
+		}	
+	}
 	
-	fp := fingerprinting.ModP(string(doc.Text), 7 , 10)
-	querySuccess = queries.IndexFingerPrints(common.FpIndex, doc.ID, fp)
-	
-	if querySuccess == false {
-		return errors.New("Couldn't index fingerprints")
-	}	
-	
-	return nil
+	return err
 }
 
 
@@ -56,7 +63,7 @@ func readAndIndex(filepath string, formatType string)  error {
 * Traverses the dataset folder and indexes the document
 * Returns a list of the document names, and an error
 **/
-func TraverseAndIndexDocs(dirName string, formatType string) ([]string, error) {
+func TraverseAndIndexDocs(dirName string, formatType string, fpType string) ([]string, error) {
 	docIDs := make([]string, 0)
 	err := filepath.Walk(dirName,
 		func(path string, info os.FileInfo, err error) error {
@@ -64,7 +71,7 @@ func TraverseAndIndexDocs(dirName string, formatType string) ([]string, error) {
 				return err
 			}
 			if info.IsDir() == false {
-				readErr := readAndIndex(path, formatType)
+				readErr := readAndIndex(path, formatType, fpType)
 				if readErr != nil {
 					return readErr
 				}
