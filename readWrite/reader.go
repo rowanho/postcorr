@@ -40,14 +40,16 @@ func readAndIndex(filepath string, formatType string, fpType string)  error {
 	}
 	
 	err = nil
+	shingleLength := 7
+	sampleRate := 10
 	if ( fpType == common.ModFP ) {
-		fp := fingerprinting.ModP(string(doc.Text), 7 , 10)
+		fp := fingerprinting.ModP(string(doc.Text), shingleLength, sampleRate)
 		querySuccess = queries.IndexFingerPrints(common.FpIndex, doc.ID, fp)
 		if querySuccess == false {
 			err =  errors.New("Couldn't index fingerprints")
 		}	
 	} else if (fpType == common.MinhashFP) { 
-		fp := fingerprinting.MinHash(string(doc.Text))
+		fp := fingerprinting.MinHash(string(doc.Text), shingleLength, sampleRate)
 		querySuccess = queries.IndexMinhash(common.MinHashIndex, doc.ID, fp)
 		if querySuccess == false {
 			err =  errors.New("Couldn't index fingerprints")

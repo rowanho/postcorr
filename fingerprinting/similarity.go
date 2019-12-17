@@ -7,23 +7,18 @@ func FpJaccardScore(fp1 map[uint64]int,  fp2 map[uint64]int) float64 {
     union := 0
     
     // Iterate over the hashes
-    for hash, count := range fp1 {
-        if count2, ok := fp2[hash]; ok {
-            if count > count2 {
-                union += count - count2
-                intersection += count2
-            } else {
-                union += count2 - count
-                intersection += count
-            }
+    for hash, _ := range fp1 {
+        if _, ok := fp2[hash]; ok {
+            union += 1
+            intersection += 1
         } else {
-            union += count;
+            union += 1
         }
     }
     
-    for hash2, count2 := range fp2 {
+    for hash2, _ := range fp2 {
         if _, ok := fp1[hash2]; !ok {
-            union += count2;
+            union += 1;
         }
     }
     

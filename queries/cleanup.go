@@ -10,6 +10,7 @@ func DeleteIndexes(indexNames []string) {
         if err != nil {
             // Handle error
             fmt.Errorf("Error deleting index %s", err)
+            return
         }
         if !deleteIndex.Acknowledged {
             // Not acknowledged

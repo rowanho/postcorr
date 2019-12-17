@@ -8,16 +8,14 @@ package fingerprinting
 * returns array of byte arrays - the array of fingerprints
  */
 
-func ModP(text string, windowSize int, p uint64) map[uint64]int {
-
+func ModP(text string, windowSize int, p int) map[uint64]int {
+	pU := uint64(p)
 	fpCounts := make(map[uint64]int)
 	for i := 0; i+windowSize < len(text); i++ {
 		// Apply mod, check if 0
 		fp := ComputeFNV64(text[i : i+windowSize])
-		if fp%p == 0 {
-			if _, exists := fpCounts[fp]; exists{
-				fpCounts[fp] += 1
-			} else {
+		if fp%pU == 0 {
+			if _, exists := fpCounts[fp]; !exists{
 				fpCounts[fp] = 1
 			}
 		}
