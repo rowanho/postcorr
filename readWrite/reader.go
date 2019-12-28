@@ -81,7 +81,7 @@ func TraverseAndIndexDocs(dirName string, formatType string, fpType string) ([]s
 		if err != nil {
 			return docIDs, err
 		}
-		fingerprinting.GetLSHObject(100, 0.15, count)
+		fingerprinting.GetLSHObject(100, common.JaccardThreshold, count)
 	}
 	err := filepath.Walk(dirName,
 		func(path string, info os.FileInfo, err error) error {

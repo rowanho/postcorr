@@ -14,6 +14,16 @@ import (
  
 ) 
 
+
+/**
+* Counts the documents in the index
+**/
+
+func CountDocs(indexName string) (int, error) {
+	count, err := es.Count(indexName).Do(ctx)    
+    return int(count), err
+}
+
 /**
 * Gets a document by its document id
 * This is also its id in elasticsearch
@@ -160,7 +170,7 @@ func GetSimilarFps(indexName string, targetDocumentID string, docIDList [] strin
 }
 
 
-func GetSimilarMinHashes(indexName string, targetDocumentID string, docIDList []string, jaccardThreshold float64) (map[string]bool, error) {
+func GetSimilarMinHashes(indexName string, targetDocumentID string, docIDList []string) (map[string]bool, error) {
     similarDocIDs := map[string]bool{}
     var targetFp common.LSH_fp
     
