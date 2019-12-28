@@ -11,7 +11,6 @@ import (
     "fmt"
     
     "github.com/olivere/elastic/v7"    
-    "github.com/DearMadMan/minhash"
  
 ) 
 
@@ -163,7 +162,7 @@ func GetSimilarFps(indexName string, targetDocumentID string, docIDList [] strin
 
 func GetSimilarMinHashes(indexName string, targetDocumentID string, docIDList []string, jaccardThreshold float64) (map[string]bool, error) {
     similarDocIDs := map[string]bool{}
-    var targetFp minhash.Set
+    var targetFp common.LSH_fp
     
     get, err := es.Get().
     Index(indexName).
@@ -174,23 +173,10 @@ func GetSimilarMinHashes(indexName string, targetDocumentID string, docIDList []
     } else{
         json.Unmarshal(get.Source, &targetFp)    
     }
-
-    for _, docID := range docIDList {
-        if docID == targetDocumentID {
-            continue;
-        }
-        get, err := es.Get().
-        Index(indexName).
-        Id(docID).
-        Do(ctx)
-        if err != nil {
-            continue;
-        }
-        var fp minhash.Set
-        json.Unmarshal(get.Source, &fp)
-        fmt.Println(targetFp.Jaccard(fp))
-        if targetFp.Jaccard(fp) > jaccardThreshold {
-            similarDocIDs[docID] = true
+    sameBucketIds := fingerprinting.SameBucketIds(targetFp.Signature)
+    for _, id := range sameBucketIds {
+        if id != targetDocumentID {
+            similarDocIDs[id] = true
         }
     }
     return similarDocIDs, nil    

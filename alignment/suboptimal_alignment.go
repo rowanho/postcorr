@@ -50,7 +50,7 @@ func rescoreIndices(indices []int, increments []Inc) []int {
 
 
 func GetAlignments(matchReward float64, gapCost float64, primary common.Document, 
-				  		 secondary common.Document, stopAt int) []common.Alignment {
+				  		 secondary common.Document, stopAt int, minScorePerLength float64) []common.Alignment {
 							 
 		primaryString := make([]rune, len(primary.Text))
 		secondaryString := make([]rune, len(secondary.Text))
@@ -66,6 +66,10 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 		
 		for count < stopAt && len(primaryString) > 0 && len(secondaryString) > 0{
 			score, primIndices, secIndices := SmithWaterman(matchReward, gapCost, primaryString, secondaryString)
+			
+			if score / float64(len(primIndices)) < minScorePerLength {
+				break;
+			}
 			newPrimIndices := rescoreIndices(primIndices, primIncrements)
 			newSecIndices := rescoreIndices(secIndices, secIncrements)
 			

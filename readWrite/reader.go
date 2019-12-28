@@ -41,7 +41,7 @@ func readAndIndex(filepath string, formatType string, fpType string)  error {
 	
 	err = nil
 	shingleLength := 7
-	sampleRate := 10
+	sampleRate := 5
 	if ( fpType == common.ModFP ) {
 		fp := fingerprinting.ModP(string(doc.Text), shingleLength, sampleRate)
 		querySuccess = queries.IndexFingerPrints(common.FpIndex, doc.ID, fp)
@@ -49,7 +49,7 @@ func readAndIndex(filepath string, formatType string, fpType string)  error {
 			err =  errors.New("Couldn't index fingerprints")
 		}	
 	} else if (fpType == common.MinhashFP) { 
-		fp := fingerprinting.MinHash(string(doc.Text), shingleLength, sampleRate)
+		fp := fingerprinting.MinHash(filepath, string(doc.Text), shingleLength)
 		querySuccess = queries.IndexMinhash(common.MinHashIndex, doc.ID, fp)
 		if querySuccess == false {
 			err =  errors.New("Couldn't index fingerprints")
@@ -67,6 +67,22 @@ func readAndIndex(filepath string, formatType string, fpType string)  error {
 **/
 func TraverseAndIndexDocs(dirName string, formatType string, fpType string) ([]string, error) {
 	docIDs := make([]string, 0)
+	if (fpType == common.MinhashFP) { 
+		count := 0
+		err := filepath.Walk(dirName,
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				count += 1
+				return nil
+			},
+		)
+		if err != nil {
+			return docIDs, err
+		}
+		fingerprinting.GetLSHObject(100, 0.15, count)
+	}
 	err := filepath.Walk(dirName,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -80,7 +96,10 @@ func TraverseAndIndexDocs(dirName string, formatType string, fpType string) ([]s
 				docIDs = append(docIDs, path)
 			}
 			return nil
-		})
-	
+		},
+	)
+	if (fpType == common.MinhashFP) { 
+		fingerprinting.IndexMinHashObject()
+	}
 	return  docIDs, err
 }

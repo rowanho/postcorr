@@ -57,14 +57,16 @@ func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, ma
         closeKeySet[key] = true
         cl := NewCluster(key)
         cl.recBuildCluster(alignmentAdjacencyList, maxDistance, closeKeySet, key, cl.Mappings[key])
-        docToCorrect, correctedDocText, noCorrections := MajorityVote(cl)
-        correctedDoc := common.Document{
-            ID: docToCorrect.ID,
-            Text: correctedDocText,
-            ComponentLengths: docToCorrect.ComponentLengths,
+        if len(cl.AlignmentSet) > 2 {
+            docToCorrect, correctedDocText, noCorrections := MajorityVote(cl)
+            correctedDoc := common.Document{
+                ID: docToCorrect.ID,
+                Text: correctedDocText,
+                ComponentLengths: docToCorrect.ComponentLengths,
+            }
+            totalCorrections += noCorrections
+            readWrite.PlaintextWrite(correctedDoc.ID, correctedDoc)
         }
-        totalCorrections += noCorrections
-        readWrite.PlaintextWrite(correctedDoc.ID, correctedDoc)
     }
     return totalCorrections
 }

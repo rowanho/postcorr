@@ -8,7 +8,6 @@ import (
 	"log"
     
 	"github.com/olivere/elastic/v7" 
-	"github.com/DearMadMan/minhash"
 )
 
 var es, _ = elastic.NewClient()
@@ -57,7 +56,7 @@ func IndexFingerPrints(indexName string, docID string, fp map[uint64]int) bool {
 /**
 * Puts a minhash into elasticsearch
 **/
-func IndexMinhash(indexName string, docID string, fp minhash.Set) bool {
+func IndexMinhash(indexName string, docID string, fp common.LSH_fp) bool {
 	put, err := es.Index().
         Index(indexName).
         Id(docID).

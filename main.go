@@ -78,7 +78,7 @@ func alignAndIndex(likelyMatchingDocs map[string]map[string]bool) {
 		//		delete(likelyMatchingDocs[secID],primID)
 		//	}
 			secDoc, _ := queries.GetDocByID(common.DocumentIndex, secID)
-			alignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1)
+			alignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
 			for _, al := range alignments {
 				queries.IndexAlignment(common.AlignmentIndex, al)
 			}
