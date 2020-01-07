@@ -27,6 +27,25 @@ func createAlignment(score float64, primID string, secID string, primAl []int, s
 	return a
 }
 
+func inverseAlignment(a common.Alignment) common.Alignment {
+	return common.Alignment{
+		ID: 				 uuid.New().String(), 				 
+		Score:               a.Score,
+		PrimaryAl:           a.SecondaryAl,
+		PrimaryDocumentID:   a.SecondaryDocumentID,
+
+		PrimaryStartIndex:     a.SecondaryStartIndex,
+		PrimaryEndIndex:       a.SecondaryEndIndex,
+
+		SecondaryAl:           a.PrimaryAl,
+		SecondaryDocumentID:   a.PrimaryDocumentID,
+		
+		SecondaryStartIndex: a.PrimaryStartIndex,
+		SecondaryEndIndex: a.PrimaryEndIndex,
+		
+	}
+}
+
 type Inc = struct{
 	Point int
 	Amount int
@@ -50,7 +69,7 @@ func rescoreIndices(indices []int, increments []Inc) []int {
 
 
 func GetAlignments(matchReward float64, gapCost float64, primary common.Document, 
-				  		 secondary common.Document, stopAt int, minScorePerLength float64) []common.Alignment {
+				  		 secondary common.Document, stopAt int, minScorePerLength float64) ([]common.Alignment, []common.Alignment) {
 							 
 		primaryString := make([]rune, len(primary.Text))
 		secondaryString := make([]rune, len(secondary.Text))
@@ -63,6 +82,7 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 		secIncrements  :=  []Inc{Inc{Point:0, Amount: 0,}}
 
 		alignments := make([]common.Alignment, 0)
+		inverseAlignments := make([]common.Alignment, 0)
 		
 		for count < stopAt && len(primaryString) > 0 && len(secondaryString) > 0{
 			score, primIndices, secIndices := SmithWaterman(matchReward, gapCost, primaryString, secondaryString)
@@ -109,12 +129,12 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 			al := createAlignment(score, primary.ID, secondary.ID, newPrimIndices, newSecIndices)
 			
 			alignments = append(alignments, al)
-			
+			inverseAlignments = append(inverseAlignments, inverseAlignment(al))
 			primaryString = append(primaryString[:primIndices[0]], 
 								   primaryString[primIndices[len(primIndices) -1] + 1:]...)
 			secondaryString = append(secondaryString[:secIndices[0]],
 									 secondaryString[secIndices[len(secIndices) -1] + 1:]...)
 		} 
-		return alignments
+		return alignments, inverseAlignments
 }
 

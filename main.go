@@ -124,13 +124,14 @@ func alignAndIndexParallel(likelyMatchingDocs map[string]map[string]bool) int {
 			for secID, _:= range secIDs {
 				secDoc, _ := queries.GetDocByID(common.DocumentIndex, secID)
 				  go func(channel chan []common.Alignment, primDoc common.Document, secDoc common.Document, secID string){
-					alignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
+					alignments, inverseAlignments  := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
 					channel <- alignments
+					channel <- inverseAlignments
 				}(alignmentChannel, primDoc, secDoc, secID)
 				
 			}
 			
-			for _,_ = range secIDs {
+			for i := 0; i < len(secIDs) * 2; i++ {
 				alignments := <- alignmentChannel
 				for _, al := range alignments {
 					queries.IndexAlignment(common.AlignmentIndex, al)
@@ -145,23 +146,16 @@ func alignAndIndexParallel(likelyMatchingDocs map[string]map[string]bool) int {
 func alignAndIndexSerial(likelyMatchingDocs map[string]map[string]bool) int {
 	alignmentCount := 0
 	for primID, secIDs := range likelyMatchingDocs {
-			primDoc, err := queries.GetDocByID(common.DocumentIndex, primID)
-			for err != nil {
-				time.Sleep(1 * time.Millisecond)
-				primDoc, err = queries.GetDocByID(common.DocumentIndex, primID)				
-			}
+			primDoc, _ := queries.GetDocByID(common.DocumentIndex, primID)
 			for secID, _:= range secIDs {
 				if _, exists := likelyMatchingDocs[secID][primID]; exists {
 						delete(likelyMatchingDocs[secID],primID)
 				}
 				secDoc, _ := queries.GetDocByID(common.DocumentIndex, secID)
-				alignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
-				for _, al := range alignments {
-					indexed := queries.IndexAlignment(common.AlignmentIndex, al)
-					for !indexed {
-						time.Sleep(1 * time.Millisecond)
-						indexed = queries.IndexAlignment(common.AlignmentIndex, al)
-					}
+				alignments, inverseAlignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
+				for i, al := range alignments {
+					queries.IndexAlignment(common.AlignmentIndex, al)
+					queries.IndexAlignment(common.AlignmentIndex, inverseAlignments[i])				
 				}
 				alignmentCount += 1
 			}
