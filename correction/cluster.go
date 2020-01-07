@@ -61,7 +61,7 @@ func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, ma
           cl := NewCluster(key)
           fmt.Println(cl.PrimaryDocId)
           for _, alignmentId := range alignmentAdjacencyList[key] {
-            alreadyCorrected[alignmentId] = true
+            alreadyCorrected[alignmentId + "Inverse"] = true
             alignment,_ := queries.GetAlignmentByID(common.AlignmentIndex, alignmentId)
             cl.DocumentIDSet[alignment.SecondaryDocumentID] = true
             cl.Mappings[alignmentId] = alignmentMap(alignment.PrimaryAl, alignment.SecondaryAl)
@@ -75,7 +75,8 @@ func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, ma
           totalCorrections += noCorrections
         }
         
-        alreadyCorrected[key] = true        
+        alreadyCorrected[key] = true     
+        alreadyCorrected[key + "Inverse"] = true
     }
     for docId := range correctedDocs {
       readWrite.PlaintextWrite(docId)

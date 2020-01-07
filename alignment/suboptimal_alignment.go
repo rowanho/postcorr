@@ -29,7 +29,7 @@ func createAlignment(score float64, primID string, secID string, primAl []int, s
 
 func inverseAlignment(a common.Alignment) common.Alignment {
 	return common.Alignment{
-		ID: 				 uuid.New().String(), 				 
+		ID: 				  	a.ID + "inverse", 				 
 		Score:               a.Score,
 		PrimaryAl:           a.SecondaryAl,
 		PrimaryDocumentID:   a.SecondaryDocumentID,

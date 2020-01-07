@@ -17,6 +17,7 @@ import (
 **/
 
 func MajorityVote(cluster cluster) (map[string][]rune, int){
+    fmt.Println(cluster.DocumentIDSet)
     noCorrections := 0;
     primAlign, _ := queries.GetAlignmentByID(common.AlignmentIndex, cluster.PrimaryAlignment)
     
