@@ -41,8 +41,8 @@ func readAndIndex(filepath string)  error {
 	}
 	
 	err = nil
-	shingleLength := 7
-	sampleRate := 5
+	shingleLength := 2
+	sampleRate := 1
 	if ( flags.FpType == common.ModFP ) {
 		fp := fingerprinting.ModP(string(doc.Text), shingleLength, sampleRate)
 		querySuccess = queries.IndexFingerPrints(common.FpIndex, doc.ID, fp)

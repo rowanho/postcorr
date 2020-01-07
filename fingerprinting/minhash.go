@@ -1,6 +1,7 @@
 package fingerprinting
 
 import (
+  
     "postCorr/common"
     
     minhashlsh "github.com/ekzhu/minhash-lsh"
@@ -36,6 +37,10 @@ func MinHash(key string, text string, windowSize int) common.LSH_fp {
         mh.Push([]byte(text[i:i+windowSize]))
     }
     sigs := mh.Signature()
+    
+    for i,_ := range sigs {
+      sigs[i] /= 10
+    }
     lsh.Add(key, sigs)
     return common.LSH_fp{Signature: sigs}
 }

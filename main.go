@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"flag"
 	"time"
-	"sync"
 	"context"
 )
 
@@ -21,6 +20,8 @@ func main() {
 	alignmentTolerance := flag.Int("tolerance", 10, "Tolerance for distances between alignments to identify as similar" )
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	jaccardThreshold := flag.Float64("jaccard", 0.05, "Jaccard index threshold for similarity")
+	parallel := flag.Bool("parallel",false, "Whether or not to run alignments in parallel with goroutines")
+	
 	flag.Parse()
 	
 	flags.DirName = *dirName
@@ -28,6 +29,7 @@ func main() {
 	flags.AlignmentTolerance = *alignmentTolerance
 	flags.FpType = *fpType
 	flags.JaccardThreshold = *jaccardThreshold
+	flags.Parallel = *parallel
 	execute()
 }
 
@@ -49,6 +51,7 @@ func execute() {
 		return
 	}
 	
+	fmt.Println("Waiting for documents to index")
 	numDocs := len(docIDList)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -62,8 +65,15 @@ func execute() {
 	likelyMatchingDocs := getSimilarDocuments(docIDList)
 	
 	fmt.Println(likelyMatchingDocs)
-	alignmentCount := alignAndIndex(likelyMatchingDocs)
-	fmt.Println(likelyMatchingDocs)
+	fmt.Println("Aligning")
+	var alignmentCount int
+	
+	if flags.Parallel {
+		alignmentCount = alignAndIndexParallel(likelyMatchingDocs)
+	} else {
+		alignmentCount = alignAndIndexSerial(likelyMatchingDocs) 
+	}
+	
 
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -73,7 +83,7 @@ func execute() {
 	        break
 	    }
 	}
-
+	
 	alignmentAdjacencyList := getSimilarAlignments(docIDList)
 	fmt.Println(alignmentAdjacencyList)
 	totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 1)
@@ -82,28 +92,64 @@ func execute() {
 }
 
 func getSimilarDocuments(docIDList []string) map[string]map[string]bool{
+	similarityScore := 0
 	likelyMatchingDocs := make(map[string]map[string]bool, 0)
 	for _, docID := range docIDList {
 		if (flags.FpType == common.ModFP) {
 			similarDocIDs, _ := queries.GetSimilarFps(common.FpIndex, docID, docIDList, flags.JaccardThreshold)
-			likelyMatchingDocs[docID] = similarDocIDs			
+			likelyMatchingDocs[docID] = similarDocIDs	
+			similarityScore += len(similarDocIDs)		
 		} else if (flags.FpType == common.MinhashFP) {
 			similarDocIDs, _ := queries.GetSimilarMinHashes(common.MinHashIndex, docID, docIDList)
-			likelyMatchingDocs[docID] = similarDocIDs			
+			likelyMatchingDocs[docID] = similarDocIDs		
+			similarityScore += len(similarDocIDs)	
 		}
 	}
-	return likelyMatchingDocs	
+	fmt.Println("Found ", similarityScore/2, " high similarity pairs")
+	return likelyMatchingDocs
 }
 
-func alignAndIndex(likelyMatchingDocs map[string]map[string]bool) int {
+func alignAndIndexParallel(likelyMatchingDocs map[string]map[string]bool) int {
 	alignmentCount := 0
-	var wg sync.WaitGroup
-	
-	wg.Add(len(likelyMatchingDocs))
 	for primID, secIDs := range likelyMatchingDocs {
-		go func(primID string, secIDs map[string]bool){
-			defer wg.Done()
 			primDoc, _ := queries.GetDocByID(common.DocumentIndex, primID)
+			for secID, _:= range secIDs {
+				if _, exists := likelyMatchingDocs[secID][primID]; exists {
+						delete(likelyMatchingDocs[secID],primID)
+				}
+			}
+			
+			alignmentChannel := make(chan []common.Alignment)
+			
+			for secID, _:= range secIDs {
+				secDoc, _ := queries.GetDocByID(common.DocumentIndex, secID)
+				  go func(channel chan []common.Alignment, primDoc common.Document, secDoc common.Document, secID string){
+					alignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
+					channel <- alignments
+				}(alignmentChannel, primDoc, secDoc, secID)
+				
+			}
+			
+			for _,_ = range secIDs {
+				alignments := <- alignmentChannel
+				for _, al := range alignments {
+					queries.IndexAlignment(common.AlignmentIndex, al)
+				}
+				alignmentCount += len(alignments)
+			}
+			
+	}
+	return alignmentCount
+}
+
+func alignAndIndexSerial(likelyMatchingDocs map[string]map[string]bool) int {
+	alignmentCount := 0
+	for primID, secIDs := range likelyMatchingDocs {
+			primDoc, err := queries.GetDocByID(common.DocumentIndex, primID)
+			for err != nil {
+				time.Sleep(1 * time.Millisecond)
+				primDoc, err = queries.GetDocByID(common.DocumentIndex, primID)				
+			}
 			for secID, _:= range secIDs {
 				if _, exists := likelyMatchingDocs[secID][primID]; exists {
 						delete(likelyMatchingDocs[secID],primID)
@@ -111,18 +157,20 @@ func alignAndIndex(likelyMatchingDocs map[string]map[string]bool) int {
 				secDoc, _ := queries.GetDocByID(common.DocumentIndex, secID)
 				alignments := alignment.GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
 				for _, al := range alignments {
-					queries.IndexAlignment(common.AlignmentIndex, al)
+					indexed := queries.IndexAlignment(common.AlignmentIndex, al)
+					for !indexed {
+						time.Sleep(1 * time.Millisecond)
+						indexed = queries.IndexAlignment(common.AlignmentIndex, al)
+					}
 				}
 				alignmentCount += 1
 			}
-		}(primID, secIDs)
 	}
-	wg.Wait()	
 	return alignmentCount
+	
 }
 
 func getSimilarAlignments(docIDList []string) map[string][]string {
-	
 	alignmentAdjacencyList := make(map[string][]string, 0)
 	// Loop through all alignments
 	for _, docID := range docIDList {
@@ -133,10 +181,7 @@ func getSimilarAlignments(docIDList []string) map[string][]string {
 			matchingAlignmentIds, _ := queries.GetMatchingAlignments(common.AlignmentIndex, 
 																al, 
 																flags.AlignmentTolerance)
-			connectedAlignmentIds, _ := queries.GetConnectedAlignments(common.AlignmentIndex,
-																	   al,
-																  	   flags.AlignmentTolerance)
-			alignmentAdjacencyList[al.ID] = append(matchingAlignmentIds, connectedAlignmentIds...)
+			alignmentAdjacencyList[al.ID] = matchingAlignmentIds
 		}
 	}
 	return alignmentAdjacencyList

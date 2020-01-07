@@ -35,7 +35,7 @@ func GetDocByID(indexName string, docID string) (common.Document, error) {
         Id(docID).
         Do(ctx)
     if err != nil {
-        log.Printf("Error getting document: %s", err)
+        log.Printf("Error getting document: %s %s", docID, err)
         return common.Document{}, err
     }
     

@@ -9,32 +9,33 @@ import (
 type cluster struct {
     // The set of alignments we include
     PrimaryAlignment string
-    AlignmentSet map[string]bool
     DocumentIDSet map[string]bool
     Mappings map[string]map[int]int
     // Map alignment id to doc id
     DocIDOfMapping map[string]string
+    PrimaryDocId string
 } 
 
 
 func NewCluster(key string) cluster {
     cl := cluster{ 
         PrimaryAlignment: key,
-        AlignmentSet: map[string]bool{},
         DocumentIDSet: map[string]bool{},
         Mappings: map[string]map[int]int{},
         DocIDOfMapping: map[string]string{},
+        PrimaryDocId: "",
     }
     
     keyAlignment,_ := queries.GetAlignmentByID(common.AlignmentIndex,key)
 
     cl.Mappings[key] = alignmentMap(keyAlignment.PrimaryAl, keyAlignment.SecondaryAl)
     cl.DocIDOfMapping[key] = keyAlignment.SecondaryDocumentID
-    cl.AlignmentSet[key] = true
     cl.DocumentIDSet[keyAlignment.PrimaryDocumentID] = true
     cl.DocumentIDSet[keyAlignment.SecondaryDocumentID] = true
+    cl.PrimaryDocId = keyAlignment.PrimaryDocumentID
     return cl
 }
+
 /**
 * There needs to be a function here that takes in the alignment graph and produces clusters
 * We can ideally produce 1 cluster per alignment, if it's too small, we can stop
@@ -45,76 +46,45 @@ func NewCluster(key string) cluster {
 func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, maxDistance int) int {
     
     totalCorrections := 0
-    closeKeySet := map[string]bool{}
+    alreadyCorrected := map[string]bool{}
+    correctedDocs := map[string]bool{}
     // Loop through the adjancency list
     for key := range alignmentAdjacencyList{
-        // Our key alignment is the 'master' alignment, we produce a cluster centred around it
-        // Attempt to correct the primary alignment in the master
-        if closeKeySet[key]{
+        if  _, exists := alreadyCorrected[key]; exists{
             continue;
         }
-        
-        closeKeySet[key] = true
-        cl := NewCluster(key)
-        cl.recBuildCluster(alignmentAdjacencyList, maxDistance, closeKeySet, key, cl.Mappings[key])
-        if len(cl.AlignmentSet) > 2 {
-            docToCorrect, correctedDocText, noCorrections := MajorityVote(cl)
-            correctedDoc := common.Document{
-                ID: docToCorrect.ID,
-                Text: correctedDocText,
-                ComponentLengths: docToCorrect.ComponentLengths,
-            }
-            totalCorrections += noCorrections
-            readWrite.PlaintextWrite(correctedDoc.ID, correctedDoc)
+        // Our key alignment is the 'master' alignment, we produce a cluster centred around it
+        // Attempt to correct the primary alignment in the master
+        if  _,exists := alreadyCorrected[key]; !exists && len(alignmentAdjacencyList[key]) > 2 {
+          cl := NewCluster(key)
+          for _, alignmentId := range alignmentAdjacencyList[key] {
+            alreadyCorrected[alignmentId] = true
+            alignment,_ := queries.GetAlignmentByID(common.AlignmentIndex, alignmentId)
+            cl.DocumentIDSet[alignment.SecondaryDocumentID] = true
+            cl.Mappings[alignmentId] = alignmentMap(alignment.PrimaryAl, alignment.SecondaryAl)
+            cl.DocIDOfMapping[alignmentId] = alignment.SecondaryDocumentID
+          }
+          docs, noCorrections := MajorityVote(cl)
+          for docId := range cl.DocumentIDSet { 
+            correctedDocs[docId] = true
+          }
+          queries.BulkUpdateDocuments(common.DocumentIndex, docs)
+          totalCorrections += noCorrections
         }
+        
+        alreadyCorrected[key] = true        
+    }
+    for docId := range correctedDocs {
+      readWrite.PlaintextWrite(docId)
     }
     return totalCorrections
 }
 
 
-/**
-* Recursively builds up our cluster
-**/
-func (cl cluster) recBuildCluster(alignmentAdjacencyList map[string][]string, maxDistance int, 
-                                  closeKeySet map[string]bool, key string, mappings map[int]int){
-    if maxDistance == 0 {
-        return
-    }
-    
-    keyAlignment,_ := queries.GetAlignmentByID(common.AlignmentIndex,key)
-    cl.DocumentIDSet[keyAlignment.PrimaryDocumentID] = true
-    for _, id := range alignmentAdjacencyList[key] {
-        // Add something to the cluster here
-        if cl.AlignmentSet[id] {
-            continue;
-        }
-        cl.AlignmentSet[id] = true
-        connectedAlignment, _ := queries.GetAlignmentByID(common.AlignmentIndex,id)
-        cl.DocumentIDSet[connectedAlignment.PrimaryDocumentID] = true
-        cl.DocumentIDSet[connectedAlignment.SecondaryDocumentID] = true
-        if keyAlignment.PrimaryDocumentID == connectedAlignment.PrimaryDocumentID {
-            newMappings := alignmentMap(connectedAlignment.PrimaryAl, connectedAlignment.SecondaryAl)
-            cl.Mappings[connectedAlignment.ID] = newMappings
-            cl.DocIDOfMapping[connectedAlignment.ID] = connectedAlignment.SecondaryDocumentID
-            cl.recBuildCluster(alignmentAdjacencyList, maxDistance - 1, closeKeySet, id, newMappings)
-        } else {
-            newMappings := map[int]int{}
-            for i, ind := range connectedAlignment.PrimaryAl {
-                if _, exist := mappings[ind]; exist {
-                    newMappings[connectedAlignment.SecondaryAl[i]] = mappings[ind]
-                }
-            }
-            cl.Mappings[connectedAlignment.ID] = newMappings
-            cl.DocIDOfMapping[connectedAlignment.ID] = connectedAlignment.SecondaryDocumentID
-            cl.recBuildCluster(alignmentAdjacencyList, maxDistance - 1, closeKeySet, id, newMappings)
-        }
-    } 
-}
-
 func alignmentMap(al1 []int, al2 []int) map[int]int {
     m := map[int]int{}
-    for i, ind := range(al2) {
-        m[ind] = al1[i]
+    for i, ind := range(al1) {
+        m[ind] = al2[i]
     }
     return m
 }

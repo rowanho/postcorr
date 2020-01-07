@@ -6,11 +6,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-    
+  "time"
+	
 	"github.com/olivere/elastic/v7" 
 )
 
-var es, _ = elastic.NewClient()
+var es, _ = elastic.NewClient(elastic.SetSnifferTimeout(10 * time.Second),elastic.SetHealthcheckInterval(10 * time.Second))
 var ctx = context.Background()
 
 
@@ -31,6 +32,34 @@ func IndexDocument(indexName string, doc common.Document) bool {
     return true
 }
 
+/**
+*  Bulk indexes documents
+*  Includes a refresh parameter, which waits for indexing
+**/
+
+func BulkUpdateDocuments(indexName string, docs map[string][]rune) bool {
+		bulkRequest := es.Bulk()
+		for id, text := range docs {
+				req := elastic.NewBulkUpdateRequest().
+				Index(indexName).
+				Id(id).                
+				Doc(struct {
+				  Text []rune `json:"text"`
+				}{
+				  Text: text,
+				})
+
+				bulkRequest = bulkRequest.Add(req)
+		}
+		_, err := bulkRequest.Refresh("wait_for").Do(ctx)
+		
+		if err != nil {
+			log.Printf("Error updating documents: %s", err)  
+			return false
+		} else {
+			return true
+		}
+}
 /**
 * Puts a map with counts of occuring fingerprints into the elasticsearch index
 * Mappings are converted to json to be es friendly
