@@ -3,6 +3,8 @@ package correction
 import (
     "postCorr/common"
     "postCorr/queries"
+    
+    "fmt"
 )
 
 
@@ -54,7 +56,14 @@ func MajorityVote(cluster cluster) (map[string][]rune, int){
                   docs[cluster.DocIDOfMapping[id]][val] = maxRune
                 }
             }
-        }  
+        }
+        
+        if docs[cluster.PrimaryDocId][ind] != maxRune {
+          fmt.Println("changed")
+          docs[cluster.PrimaryDocId][ind] = maxRune
+          noCorrections += 1
+        }
+        fmt.Println(counts)
     }
     return docs, noCorrections
 }

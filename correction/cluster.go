@@ -4,6 +4,8 @@ import (
     "postCorr/common"
     "postCorr/readWrite"
     "postCorr/queries"
+    
+    "fmt"
 )
 
 type cluster struct {
@@ -55,8 +57,9 @@ func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, ma
         }
         // Our key alignment is the 'master' alignment, we produce a cluster centred around it
         // Attempt to correct the primary alignment in the master
-        if  _,exists := alreadyCorrected[key]; !exists && len(alignmentAdjacencyList[key]) > 2 {
+        if  len(alignmentAdjacencyList[key]) >= 1 {
           cl := NewCluster(key)
+          fmt.Println(cl.PrimaryDocId)
           for _, alignmentId := range alignmentAdjacencyList[key] {
             alreadyCorrected[alignmentId] = true
             alignment,_ := queries.GetAlignmentByID(common.AlignmentIndex, alignmentId)
