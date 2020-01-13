@@ -2,12 +2,19 @@ package alignment
 
 import (
 	"postCorr/common"
+	
+	"fmt"
 )
 
 func AlignParallel(documentAdjacencyList map[string]map[string]bool, docs []common.Document, docMap map[string]int) (map[string]common.Alignment, map[string][]string)  {
 
 	alignments := make(map[string]common.Alignment, 0)
 	alignmentDocIdMap := make(map[string][]string)
+	
+	for  primID,_ := range documentAdjacencyList{
+		alignmentDocIdMap[primID] = make([]string, 0)
+	}
+	
 	for primID, secIDs := range documentAdjacencyList {
 		primDoc := docs[docMap[primID]]
 		for secID, _ := range secIDs {
@@ -17,24 +24,31 @@ func AlignParallel(documentAdjacencyList map[string]map[string]bool, docs []comm
 		}
 
 		alignmentChannel := make(chan []common.Alignment)
+		inverseAlignmentChannel := make(chan []common.Alignment)
 		for secID, _ := range secIDs {
 			secDoc := docs[docMap[secID]]
-			go func(channel chan []common.Alignment, primDoc common.Document, secDoc common.Document, secID string) {
+			go func(channel1 chan []common.Alignment, channel2 chan []common.Alignment, primDoc common.Document, secDoc common.Document, secID string) {
 				alignments, inverseAlignments := GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
-				channel <- alignments
-				channel <- inverseAlignments
-			}(alignmentChannel, primDoc, secDoc, secID)
+				channel1 <- alignments
+				channel2 <- inverseAlignments
+			}(alignmentChannel, inverseAlignmentChannel, primDoc, secDoc, secID)
 
 		}
-    idList := make([]string, 0)
-	for i := 0; i < len(secIDs)*2; i++ {
+	for i := 0; i < len(secIDs); i++ {
 		als := <-alignmentChannel
 	  	for _, al := range als {
 	        alignments[al.ID] = al
-	        idList = append(idList, al.ID)
+			alignmentDocIdMap[primID] = append(alignmentDocIdMap[primID], al.ID)
 		}
 	}
-    alignmentDocIdMap[primID] = idList
+	for i := 0; i < len(secIDs); i++ {
+		als := <-inverseAlignmentChannel
+		for _, al := range als {
+	        alignments[al.ID] = al
+			p := al.PrimaryDocumentID
+			alignmentDocIdMap[p] = append(alignmentDocIdMap[p], al.ID)
+		}
+	}
 	}
   return alignments, alignmentDocIdMap
 }
@@ -43,6 +57,10 @@ func AlignSerial(documentAdjacencyList map[string]map[string]bool, docs []common
 
 	alignments := make(map[string]common.Alignment, 0)
   	alignmentDocIdMap := make(map[string][]string)
+	for  primID,_ := range documentAdjacencyList{
+		alignmentDocIdMap[primID] = make([]string, 0)
+	}
+	
 	for primID, secIDs := range documentAdjacencyList {
 		primDoc := docs[docMap[primID]]
 		for secID, _ := range secIDs {
@@ -51,18 +69,17 @@ func AlignSerial(documentAdjacencyList map[string]map[string]bool, docs []common
 			}
 		}
     
-    idList := make([]string, 0)
-	for secID, _ := range secIDs {
-		secDoc := docs[docMap[secID]]
-		als, inverseAls := GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
-		for i, al := range als {
-			alignments[al.ID] = al
-			alignments[inverseAls[i].ID] = inverseAls[i]
-			idList = append(idList, al.ID)
-			idList = append(idList, inverseAls[i].ID)
-	     }
-	}
-    alignmentDocIdMap[primID] = idList
+		for secID, _ := range secIDs {
+			secDoc := docs[docMap[secID]]
+			als, inverseAls := GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
+			for i, al := range als {
+				alignments[al.ID] = al
+				alignments[inverseAls[i].ID] = inverseAls[i]
+				alignmentDocIdMap[primID] = append(alignmentDocIdMap[primID], al.ID)
+				alignmentDocIdMap[secID] = append(alignmentDocIdMap[secID], inverseAls[i].ID)
+				 
+		     }
+		}
 	}
 
 	return alignments, alignmentDocIdMap
@@ -123,11 +140,9 @@ func merge(overlapping []int, clusters [][]string) [][]string {
 
 // Clusters alignments into groups that overlap
 func getClusters(alignments map[string]common.Alignment, alsToCluster []string) [][]string{
-	currentClusters := make([][]string, len(alignments))
-	i := 0
-	for alId := range alignments {
+	currentClusters := make([][]string, len(alsToCluster))
+	for i, alId := range alsToCluster {
 		currentClusters[i] = []string{alId}
-		i += 1 
 	}
 	
 	overlaps := true
@@ -157,6 +172,13 @@ func GetSimilarAlignments(alignments map[string]common.Alignment, alignmentDocId
     clusterList := make([][]string, 0)
     for _, alignmentIds := range alignmentDocIdMap {
         clusters := getClusters(alignments, alignmentIds)
+		
+		for _,c := range clusters {
+			fmt.Println("cluster2")
+			for _,alId := range c {
+				fmt.Println(alignments[alId].PrimaryDocumentID)
+			}
+		}
         clusterList = append(clusterList, clusters...)
     }    
     

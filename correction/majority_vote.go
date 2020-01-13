@@ -2,6 +2,8 @@ package correction
 
 import (
 	"postCorr/common"
+	
+	//"fmt"
 )
 
 /**
@@ -32,7 +34,9 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		max := 1
 		maxRune := primText[ind]
 		counts[primText[ind]] = 1
+	//	fmt.Println(len(alignmentMaps))
 		for _, alMap := range alignmentMaps {
+		//	fmt.Println(alMap.PrimaryDocumentID)
 			if val, exists := alMap.Mapping[ind]; exists {
 				r := documents[docMap[alMap.SecondaryDocumentID]].Text[val]
 				_, ok := counts[r]
