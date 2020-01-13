@@ -91,6 +91,36 @@ func anyOverlap(alignments map[string]common.Alignment, cluster1 []string, clust
 	return false
 }
 
+// Merges overlapping cluster
+func merge(overlapping []int, clusters [][]string) [][]string {
+	
+	overlaps := 0
+	for _, o := range overlapping {
+		if o != -1 {
+			overlaps += 1
+		}
+	}
+	
+	skip := make(map[int]bool)
+	newClusters := make([][]string, len(clusters) - (overlaps/2))
+	j := 0
+	for i, o := range overlapping {
+		if skip[i] {
+			continue;
+		}
+		if o != -1 {
+			newClusters[j]  = append(clusters[i], clusters[o]...)
+			skip[o] = true
+		} else {
+			newClusters[j] = clusters[i]
+		}
+		j += 1
+	}
+	
+	return newClusters
+}
+
+
 // Clusters alignments into groups that overlap
 func getClusters(alignments map[string]common.Alignment, alsToCluster []string) [][]string{
 	currentClusters := make([][]string, len(alignments))
@@ -100,6 +130,26 @@ func getClusters(alignments map[string]common.Alignment, alsToCluster []string) 
 		i += 1 
 	}
 	
+	overlaps := true
+	// Loop until no more overlaps occur
+	for overlaps == true {
+		overlaps = false
+		overlapping := make([]int, len(currentClusters))
+		for i := range overlapping {
+			overlapping[i] = -1
+		}
+		for i, c1 := range currentClusters {
+			for j := i +1; j < len(currentClusters); j++ {
+				if overlapping[j] == -1 && anyOverlap(alignments, c1, currentClusters[j]) {
+					overlaps = true
+					overlapping[i] = j
+					overlapping[j] = i
+					break
+				}
+			}
+		}
+		currentClusters = merge(overlapping, currentClusters)
+	}
 	return currentClusters
 }
 

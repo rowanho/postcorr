@@ -31,7 +31,7 @@ func fpJaccardScore(fp1 map[uint64]int, fp2 map[uint64]int) float64 {
 }
 
 func getSimilarLsh(docs []common.Document) map[string]map[string]bool {
-
+	GetLSHObject(100, flags.JaccardThreshold, len(docs))
 	fps := make([]common.LSH_fp, len(docs))
 	for i, doc := range docs {
 		fp := MinHash(doc.ID, string(doc.Text), 7)
@@ -41,6 +41,7 @@ func getSimilarLsh(docs []common.Document) map[string]map[string]bool {
 
 	documentAdjacencyList := make(map[string]map[string]bool)
 	for i, fp := range fps {
+		documentAdjacencyList[docs[i].ID] = make(map[string]bool)
 		sameBucketIds := SameBucketIds(fp.Signature)
 		for _, id := range sameBucketIds {
 			if id != docs[i].ID {
@@ -60,6 +61,7 @@ func getSimilarModP(docs []common.Document) map[string]map[string]bool {
 	}
 	documentAdjacencyList := make(map[string]map[string]bool)
 	for i, fp1 := range fps {
+		documentAdjacencyList[docs[i].ID] = make(map[string]bool)
 		for j, fp2 := range fps {
 			if i == j {
 				continue
