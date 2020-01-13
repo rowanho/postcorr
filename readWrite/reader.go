@@ -2,11 +2,8 @@ package readWrite
 
 import (
 	"postCorr/common"
-	"postCorr/fingerprinting"
 	"postCorr/flags"
-	"postCorr/queries"
 
-	"errors"
 	"os"
 	"path/filepath"
 
@@ -26,7 +23,7 @@ func ConvToStandardUnicode(b []byte) []rune {
 * Traverses the dataset folder and indexes the document
 * Returns a list of the document names, and an error
 **/
-func TraverseDocs() ([]string, error) {
+func TraverseDocs() ([]common.Document, error) {
 	docs := make([]common.Document, 0)
 	if flags.FpType == common.MinhashFP {
 		count := 0
@@ -40,7 +37,7 @@ func TraverseDocs() ([]string, error) {
 			},
 		)
 		if err != nil {
-			return docIDs, err
+			return []common.Document{}, err
 		}
 	}
 
@@ -50,14 +47,15 @@ func TraverseDocs() ([]string, error) {
 				return err
 			}
 			if info.IsDir() == false {
-				var readErr error
+				var readErr error = nil
+				var doc common.Document
 				if flags.FormatType == common.Plaintext {
-					doc, readErr = plaintextRead(filepath)
+					doc, readErr = plaintextRead(path)
+					docs = append(docs, doc)
 				}
 				if readErr != nil {
 					return readErr
 				}
-				docs = append(docs, doc)
 			}
 			return nil
 		},

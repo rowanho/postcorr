@@ -2,9 +2,6 @@ package correction
 
 import (
 	"postCorr/common"
-	"postCorr/queries"
-
-	"fmt"
 )
 
 /**
@@ -15,25 +12,29 @@ import (
 *   Also eturns an integer representing the number of corrections made
 **/
 
-func MajorityVote(cluster cluster) (map[string][]rune, int) {
-	fmt.Println(cluster.DocumentIDSet)
+func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) (string, int) {
 	noCorrections := 0
-	primAlign, _ := queries.GetAlignmentByID(common.AlignmentIndex, cluster.PrimaryAlignment)
+	maxEnd := 0
+	minStart := 100000000
 
-	docs := map[string][]rune{}
-	for docID, _ := range cluster.DocumentIDSet {
-		doc, _ := queries.GetDocByID(common.DocumentIndex, docID)
-		docs[docID] = doc.Text
+	for _, alMap := range alignmentMaps {
+		if alMap.Start < minStart {
+			minStart = alMap.Start
+		}
+		if alMap.End > maxEnd {
+			maxEnd = alMap.End
+		}
 	}
 
-	for _, ind := range primAlign.PrimaryAl {
+	primText := documents[docMap[primaryDocumentID]].Text
+	for ind := minStart; ind < maxEnd; ind++ {
 		counts := map[rune]int{}
-		counts[docs[cluster.PrimaryDocId][ind]] = 1
 		max := 1
-		maxRune := docs[cluster.PrimaryDocId][ind]
-		for id, mapping := range cluster.Mappings {
-			if val, exists := mapping[ind]; exists {
-				r := docs[cluster.DocIDOfMapping[id]][val]
+		maxRune := primText[ind]
+		counts[primText[ind]] = 1
+		for _, alMap := range alignmentMaps {
+			if val, exists := alMap.Mapping[ind]; exists {
+				r := documents[docMap[alMap.SecondaryDocumentID]].Text[val]
 				_, ok := counts[r]
 				if ok == true {
 					counts[r] += 1
@@ -48,22 +49,14 @@ func MajorityVote(cluster cluster) (map[string][]rune, int) {
 			}
 		}
 
-		for id, mapping := range cluster.Mappings {
-			if val, exists := mapping[ind]; exists {
-				r := docs[cluster.DocIDOfMapping[id]][val]
-				if maxRune != r {
-					noCorrections += 1
-					docs[cluster.DocIDOfMapping[id]][val] = maxRune
-				}
-			}
-		}
-
-		if docs[cluster.PrimaryDocId][ind] != maxRune {
-			fmt.Println("changed")
-			docs[cluster.PrimaryDocId][ind] = maxRune
+		if primText[ind] != maxRune {
 			noCorrections += 1
 		}
-		fmt.Println(counts)
+
+		if primText[ind] != maxRune {
+			primText[ind] = maxRune
+			noCorrections += 1
+		}
 	}
-	return docs, noCorrections
+	return string(primText), noCorrections
 }

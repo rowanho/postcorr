@@ -53,7 +53,7 @@ func rescoreIndices(indices []int, increments []Inc) []int {
 	copy(newIndices, indices)
 
 	for _, increment := range increments {
-		for i, _ := range newIndices {
+		for i := range newIndices {
 			if newIndices[i] >= increment.Point {
 				newIndices[i] += increment.Amount
 			}
@@ -73,8 +73,8 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 	copy(secondaryString, secondary.Text)
 
 	count := 0
-	primIncrements := []Inc{Inc{Point: 0, Amount: 0}}
-	secIncrements := []Inc{Inc{Point: 0, Amount: 0}}
+	primIncrements := []Inc{{Point: 0, Amount: 0}}
+	secIncrements := []Inc{{Point: 0, Amount: 0}}
 
 	alignments := make([]common.Alignment, 0)
 	inverseAlignments := make([]common.Alignment, 0)

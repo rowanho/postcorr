@@ -1,15 +1,12 @@
 package readWrite
 
 import (
-	"postCorr/common"
-	"postCorr/queries"
-
 	"fmt"
 	"os"
 	"strings"
 )
 
-func PlaintextWrite(docId string) error {
+func PlaintextWrite(docId string, text string) error {
 	split := strings.Split(docId, "/")
 	fn := split[len(split)-1]
 	dirName := "corrected/" + docId[:len(docId)-len(fn)]
@@ -21,8 +18,7 @@ func PlaintextWrite(docId string) error {
 		return err
 	}
 
-	doc, _ := queries.GetDocByID(common.DocumentIndex, docId)
-	_, err = f.WriteString(string(doc.Text))
+	_, err = f.WriteString(text)
 	if err != nil {
 		fmt.Errorf("Error, couldn't write to file: %s", err)
 		return err

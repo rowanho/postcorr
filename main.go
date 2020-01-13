@@ -5,13 +5,11 @@ import (
 	"postCorr/common"
 	"postCorr/correction"
 	"postCorr/flags"
-	"postCorr/queries"
+	"postCorr/fingerprinting"
 	"postCorr/readWrite"
 
-	"context"
 	"flag"
 	"fmt"
-	"time"
 )
 
 func main() {
@@ -38,10 +36,6 @@ func main() {
 **/
 func execute() {
 	totalCorrections := 0
-	queries.CreateAlignmentIndex(common.AlignmentIndex)
-	queries.CreateFingerprintIndex(common.FpIndex)
-	//queries.CreateLSHFingerprintIndex(common.FpLSHIndex, 5, 7, 512)
-	time.Sleep(1 * time.Second)
 
 	docList, docsErr := readWrite.TraverseDocs()
 
@@ -54,37 +48,21 @@ func execute() {
 	for i, doc := range docList {
 		docMap[doc.ID] = i
 	}
-	likelyMatchingDocs := fingerprinting.GetSimilarDocuments(docsList, docsList, docMap)
+	documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
 
-	fmt.Println(likelyMatchingDocs)
+	fmt.Println(documentAdjacencyList)
 	fmt.Println("Aligning")
-	var alignments []common.Alignment
-
+	var alignments map[string]common.Alignment
+	var alignmentsPerDocument  map[string][]string
 	if flags.Parallel {
-		alignments = alignment.AlignParallel(likelyMatchingDocs, docList)
+		alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList, docMap)
 	} else {
-		alignments = alignment.AlignSerial(likelyMatchingDocs, docList)
+		alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList, docMap)
 	}
 
-	alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments)
+	alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
 	fmt.Println(alignmentAdjacencyList)
-	totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, 1)
+	totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
 	fmt.Println("Number of corrections made: ", totalCorrections)
 }
 
-func getSimilarAlignments(docIDList []string) map[string][]string {
-	alignmentAdjacencyList := make(map[string][]string, 0)
-	// Loop through all alignments
-	for _, docID := range docIDList {
-		fmt.Println(docID)
-		alignments, _ := queries.GetAlignmentsByPrimID(common.AlignmentIndex, docID)
-		fmt.Println(len(alignments))
-		for _, al := range alignments {
-			matchingAlignmentIds, _ := queries.GetMatchingAlignments(common.AlignmentIndex,
-				al,
-				flags.AlignmentTolerance)
-			alignmentAdjacencyList[al.ID] = matchingAlignmentIds
-		}
-	}
-	return alignmentAdjacencyList
-}
