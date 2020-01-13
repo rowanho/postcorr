@@ -15,7 +15,7 @@ func ModP(text string, windowSize int, p int) map[uint64]int {
 		// Apply mod, check if 0
 		fp := ComputeFNV64(text[i : i+windowSize])
 		if fp%pU == 0 {
-			if _, exists := fpCounts[fp]; !exists{
+			if _, exists := fpCounts[fp]; !exists {
 				fpCounts[fp] = 1
 			}
 		}

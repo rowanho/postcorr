@@ -41,4 +41,3 @@ func PerComponentIndices(indices []int, componentLengths []int, startIndex int, 
 	newIndices = append(newIndices, currentIndices)
 	return newIndices, startCompIndex + firstAffected, startCompIndex + lastAffected // TODO: Fix broken login with first ans last affected
 }
-

@@ -1,10 +1,9 @@
 package fingerprinting
 
 import (
-  
-    "postCorr/common"
-    
-    minhashlsh "github.com/ekzhu/minhash-lsh"
+	"postCorr/common"
+
+	minhashlsh "github.com/ekzhu/minhash-lsh"
 )
 
 var lsh *minhashlsh.MinhashLSH
@@ -16,15 +15,15 @@ var minhashSize = 100
 **/
 
 func GetLSHObject(numHash int, threshold float64, count int) {
-    lsh = minhashlsh.NewMinhashLSH(numHash, threshold, count)
+	lsh = minhashlsh.NewMinhashLSH(numHash, threshold, count)
 }
 
 /**
 * Indexing the object makes it queriable
 **/
 
-func IndexMinHashObject(){
-    lsh.Index()
+func IndexMinHashObject() {
+	lsh.Index()
 }
 
 /**
@@ -33,16 +32,13 @@ func IndexMinHashObject(){
 
 func MinHash(key string, text string, windowSize int) common.LSH_fp {
 	mh := minhashlsh.NewMinhash(minhashSeed, minhashSize)
-    for i := 0; i+windowSize < len(text); i++ {
-        mh.Push([]byte(text[i:i+windowSize]))
-    }
-    sigs := mh.Signature()
-    
-    for i,_ := range sigs {
-      sigs[i] /= 10
-    }
-    lsh.Add(key, sigs)
-    return common.LSH_fp{Signature: sigs}
+	for i := 0; i+windowSize < len(text); i++ {
+		mh.Push([]byte(text[i : i+windowSize]))
+	}
+	sigs := mh.Signature()
+
+	lsh.Add(key, sigs)
+	return common.LSH_fp{Signature: sigs}
 }
 
 /**
@@ -50,10 +46,10 @@ func MinHash(key string, text string, windowSize int) common.LSH_fp {
 **/
 
 func SameBucketIds(sigs []uint64) []string {
-    similarIds :=  lsh.Query(sigs)
-    returnIds := make([]string, len(similarIds))
-    for i, id := range similarIds {
-        returnIds[i] = id.(string)
-    }
-    return returnIds
+	similarIds := lsh.Query(sigs)
+	returnIds := make([]string, len(similarIds))
+	for i, id := range similarIds {
+		returnIds[i] = id.(string)
+	}
+	return returnIds
 }

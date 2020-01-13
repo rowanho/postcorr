@@ -6,30 +6,29 @@ import (
 	"context"
 	"fmt"
 	"log"
-  "time"
-	
-	"github.com/olivere/elastic/v7" 
+	"time"
+
+	"github.com/olivere/elastic/v7"
 )
 
-var es, _ = elastic.NewClient(elastic.SetSnifferTimeout(10 * time.Second),elastic.SetHealthcheckInterval(10 * time.Second))
+var es, _ = elastic.NewClient(elastic.SetSnifferTimeout(10*time.Second), elastic.SetHealthcheckInterval(10*time.Second))
 var ctx = context.Background()
-
 
 // Index the documents, which are split into a list of component
 func IndexDocument(indexName string, doc common.Document) bool {
 
-    put, err := es.Index().
-        Index(indexName).
-        Id(doc.ID).
-        BodyJson(doc).
-        Do(ctx)
-    
-    if err != nil {
-        log.Printf("Error indexing document: %s", err)  
-        return false      
-    }
-    fmt.Printf("Indexed document %s to index %s\n", put.Id, put.Index)
-    return true
+	put, err := es.Index().
+		Index(indexName).
+		Id(doc.ID).
+		BodyJson(doc).
+		Do(ctx)
+
+	if err != nil {
+		log.Printf("Error indexing document: %s", err)
+		return false
+	}
+	fmt.Printf("Indexed document %s to index %s\n", put.Id, put.Index)
+	return true
 }
 
 /**
@@ -38,28 +37,29 @@ func IndexDocument(indexName string, doc common.Document) bool {
 **/
 
 func BulkUpdateDocuments(indexName string, docs map[string][]rune) bool {
-		bulkRequest := es.Bulk()
-		for id, text := range docs {
-				req := elastic.NewBulkUpdateRequest().
-				Index(indexName).
-				Id(id).                
-				Doc(struct {
-				  Text []rune `json:"text"`
-				}{
-				  Text: text,
-				})
+	bulkRequest := es.Bulk()
+	for id, text := range docs {
+		req := elastic.NewBulkUpdateRequest().
+			Index(indexName).
+			Id(id).
+			Doc(struct {
+				Text []rune `json:"text"`
+			}{
+				Text: text,
+			})
 
-				bulkRequest = bulkRequest.Add(req)
-		}
-		_, err := bulkRequest.Refresh("wait_for").Do(ctx)
-		
-		if err != nil {
-			log.Printf("Error updating documents: %s", err)  
-			return false
-		} else {
-			return true
-		}
+		bulkRequest = bulkRequest.Add(req)
+	}
+	_, err := bulkRequest.Refresh("wait_for").Do(ctx)
+
+	if err != nil {
+		log.Printf("Error updating documents: %s", err)
+		return false
+	} else {
+		return true
+	}
 }
+
 /**
 * Puts a map with counts of occuring fingerprints into the elasticsearch index
 * Mappings are converted to json to be es friendly
@@ -68,18 +68,18 @@ func BulkUpdateDocuments(indexName string, docs map[string][]rune) bool {
 
 func IndexFingerPrints(indexName string, docID string, fp map[uint64]int) bool {
 
-    put, err := es.Index().
-        Index(indexName).
-        Id(docID).
-        BodyJson(fp).
-        Do(ctx)
-    
-    if err != nil {
-        log.Printf("Error indexing fingerprint: %s", err)  
-        return false      
-    }
-    fmt.Printf("Indexed fingerprint %s to index %s\n", put.Id, put.Index)
-    return true
+	put, err := es.Index().
+		Index(indexName).
+		Id(docID).
+		BodyJson(fp).
+		Do(ctx)
+
+	if err != nil {
+		log.Printf("Error indexing fingerprint: %s", err)
+		return false
+	}
+	fmt.Printf("Indexed fingerprint %s to index %s\n", put.Id, put.Index)
+	return true
 }
 
 /**
@@ -87,17 +87,17 @@ func IndexFingerPrints(indexName string, docID string, fp map[uint64]int) bool {
 **/
 func IndexMinhash(indexName string, docID string, fp common.LSH_fp) bool {
 	put, err := es.Index().
-        Index(indexName).
-        Id(docID).
-        BodyJson(fp).
-        Do(ctx)
-    
-    if err != nil {
-        log.Printf("Error indexing fingerprint: %s", err)  
-        return false      
-    }
-    fmt.Printf("Indexed fingerprint %s to index %s\n", put.Id, put.Index)
-    return true
+		Index(indexName).
+		Id(docID).
+		BodyJson(fp).
+		Do(ctx)
+
+	if err != nil {
+		log.Printf("Error indexing fingerprint: %s", err)
+		return false
+	}
+	fmt.Printf("Indexed fingerprint %s to index %s\n", put.Id, put.Index)
+	return true
 }
 
 /**
@@ -109,16 +109,16 @@ func IndexMinhash(indexName string, docID string, fp common.LSH_fp) bool {
 
 func IndexAlignment(indexName string, alignment common.Alignment) bool {
 
-    put, err := es.Index().
-        Index(indexName).
-        Id(alignment.ID).
-        BodyJson(alignment).
-        Do(ctx)
-    
-    if err != nil {
-        log.Printf("Error indexing alignment: %s", err)  
-        return false      
-    }
-    fmt.Printf("Indexed alignment %s to index %s\n", put.Id, put.Index)
-    return true
+	put, err := es.Index().
+		Index(indexName).
+		Id(alignment.ID).
+		BodyJson(alignment).
+		Do(ctx)
+
+	if err != nil {
+		log.Printf("Error indexing alignment: %s", err)
+		return false
+	}
+	fmt.Printf("Indexed alignment %s to index %s\n", put.Id, put.Index)
+	return true
 }

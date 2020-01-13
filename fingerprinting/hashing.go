@@ -19,5 +19,5 @@ func ComputeMd5(text string) []byte {
 func ComputeFNV64(text string) uint64 {
 	h := fnv.New64()
 	h.Write([]byte(text))
-	return h.Sum64() / 10
+	return h.Sum64()
 }

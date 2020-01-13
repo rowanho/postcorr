@@ -1,13 +1,6 @@
 # OCR Post Correction
 Post OCR correction through local text reuse detection (work in progress!)
 
-## Requirements 
-
-### Standing up elasticsearch
-
-The program requires an instance of elasticseach 7.4 running on port 9200
-https://www.elastic.co/guide/en/elasticsearch/reference/7.4/install-elasticsearch.html
-
 
 ## Structure of the Project
 
@@ -25,11 +18,6 @@ Contains common objects (structs) used throughout the other parts of the codebas
 This includes efficient ways to represent documents once they are converted out of various
 OCR formats, and ways to represent clusters of alignments.
 
-### Queries
-
-Functions that connect to elasticsearch and performing indexing, aggregations and search.
-Makes use of Olivere's excellent client https://github.com/olivere/elastic
- 
 ### Fingerprinting
  
  Contains code for making representation of documents/strings into hashed numerical values. Plans to include more advanced

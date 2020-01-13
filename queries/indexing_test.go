@@ -51,30 +51,29 @@ var testDocs = []common.Document{
 
 var testAlignments = []common.Alignment{
 	{
-		ID: 				   uuid.New().String(),
-		Score:                 5.0,
-		PrimaryAl:             []int{1, 2, 3, 4},
-		PrimaryDocumentID:     "doc1",
-		PrimaryStartIndex:     1,
-		PrimaryEndIndex:       4,
-		SecondaryAl:           []int{5, 6, 7, 8, 10},
-		SecondaryDocumentID:   "doc2",
+		ID:                  uuid.New().String(),
+		Score:               5.0,
+		PrimaryAl:           []int{1, 2, 3, 4},
+		PrimaryDocumentID:   "doc1",
+		PrimaryStartIndex:   1,
+		PrimaryEndIndex:     4,
+		SecondaryAl:         []int{5, 6, 7, 8, 10},
+		SecondaryDocumentID: "doc2",
 		SecondaryStartIndex: 5,
-		SecondaryEndIndex: 10,
+		SecondaryEndIndex:   10,
 	},
 
 	{
-		ID: 				   uuid.New().String(),
-		Score:                 5.0,
-		PrimaryAl:             []int{7, 8, 9, 11},
-		PrimaryDocumentID:     "doc9",
-		PrimaryStartIndex:     7,
-		PrimaryEndIndex:       11,
-		SecondaryAl:           []int{5, 6, 9, 13},
-		SecondaryDocumentID:   "doc4",
+		ID:                  uuid.New().String(),
+		Score:               5.0,
+		PrimaryAl:           []int{7, 8, 9, 11},
+		PrimaryDocumentID:   "doc9",
+		PrimaryStartIndex:   7,
+		PrimaryEndIndex:     11,
+		SecondaryAl:         []int{5, 6, 9, 13},
+		SecondaryDocumentID: "doc4",
 		SecondaryStartIndex: 5,
-		SecondaryEndIndex: 13,
-
+		SecondaryEndIndex:   13,
 	},
 }
 
@@ -93,13 +92,12 @@ func TestDocumentIndexing(t *testing.T) {
 
 }
 
-
 func TestFpIndexing(t *testing.T) {
 
 	for _, doc := range testDocs {
 		s := doc.AllStrings()
 		fpCounts := fingerprinting.ModP(string(s), 2, 1)
-        fps := common.Fingerprints{DocumentID: doc.ID, FpCounts: fpCounts}
+		fps := common.Fingerprints{DocumentID: doc.ID, FpCounts: fpCounts}
 		b := IndexFingerPrints(fpIndexName, fps)
 		if b == false {
 			t.Errorf("Got error")
@@ -107,7 +105,6 @@ func TestFpIndexing(t *testing.T) {
 	}
 
 }
-
 
 func TestAlignmentIndexing(t *testing.T) {
 
@@ -120,30 +117,28 @@ func TestAlignmentIndexing(t *testing.T) {
 }
 
 func TestLSHFpIndexing(t *testing.T) {
-	
+
 	numBuckets := 10
 	shingleMin := 2
 	shingleMax := 3
-	
+
 	err := CreateLSHFingerprintIndex(fpLSHIndexName, shingleMin, shingleMax, numBuckets)
 	if err != nil {
 		t.Errorf("Error creating mappings")
 	}
-	
+
 	// Index DocStrings , which get hashed by elasticsearch
 	for _, doc := range testDocs {
 		docText := string(doc.AllStrings())
 		docString := common.DocString{
-			ID: doc.ID,
+			ID:   doc.ID,
 			Text: docText,
 		}
 		b := IndexFingerPrintsForLSH(fpLSHIndexName, docString)
 		if b == false {
 			t.Errorf("Error indexing fingerprint with LSH")
 		}
-		
+
 	}
-	
+
 }
-
-

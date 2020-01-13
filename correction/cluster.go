@@ -1,41 +1,40 @@
 package correction
 
 import (
-    "postCorr/common"
-    "postCorr/readWrite"
-    "postCorr/queries"
-    
-    "fmt"
+	"postCorr/common"
+	"postCorr/queries"
+	"postCorr/readWrite"
+
+	"fmt"
 )
 
 type cluster struct {
-    // The set of alignments we include
-    PrimaryAlignment string
-    DocumentIDSet map[string]bool
-    Mappings map[string]map[int]int
-    // Map alignment id to doc id
-    DocIDOfMapping map[string]string
-    PrimaryDocId string
-} 
-
+	// The set of alignments we include
+	PrimaryAlignment string
+	DocumentIDSet    map[string]bool
+	Mappings         map[string]map[int]int
+	// Map alignment id to doc id
+	DocIDOfMapping map[string]string
+	PrimaryDocId   string
+}
 
 func NewCluster(key string) cluster {
-    cl := cluster{ 
-        PrimaryAlignment: key,
-        DocumentIDSet: map[string]bool{},
-        Mappings: map[string]map[int]int{},
-        DocIDOfMapping: map[string]string{},
-        PrimaryDocId: "",
-    }
-    
-    keyAlignment,_ := queries.GetAlignmentByID(common.AlignmentIndex,key)
+	cl := cluster{
+		PrimaryAlignment: key,
+		DocumentIDSet:    map[string]bool{},
+		Mappings:         map[string]map[int]int{},
+		DocIDOfMapping:   map[string]string{},
+		PrimaryDocId:     "",
+	}
 
-    cl.Mappings[key] = alignmentMap(keyAlignment.PrimaryAl, keyAlignment.SecondaryAl)
-    cl.DocIDOfMapping[key] = keyAlignment.SecondaryDocumentID
-    cl.DocumentIDSet[keyAlignment.PrimaryDocumentID] = true
-    cl.DocumentIDSet[keyAlignment.SecondaryDocumentID] = true
-    cl.PrimaryDocId = keyAlignment.PrimaryDocumentID
-    return cl
+	keyAlignment, _ := queries.GetAlignmentByID(common.AlignmentIndex, key)
+
+	cl.Mappings[key] = alignmentMap(keyAlignment.PrimaryAl, keyAlignment.SecondaryAl)
+	cl.DocIDOfMapping[key] = keyAlignment.SecondaryDocumentID
+	cl.DocumentIDSet[keyAlignment.PrimaryDocumentID] = true
+	cl.DocumentIDSet[keyAlignment.SecondaryDocumentID] = true
+	cl.PrimaryDocId = keyAlignment.PrimaryDocumentID
+	return cl
 }
 
 /**
@@ -45,50 +44,49 @@ func NewCluster(key string) cluster {
 * High max distances can lead to worse time complexity
 **/
 
-func ClusterAndCorrectAlignments (alignmentAdjacencyList map[string][]string, maxDistance int) int {
-    
-    totalCorrections := 0
-    alreadyCorrected := map[string]bool{}
-    correctedDocs := map[string]bool{}
-    // Loop through the adjancency list
-    for key := range alignmentAdjacencyList{
-        if  _, exists := alreadyCorrected[key]; exists{
-            continue;
-        }
-        // Our key alignment is the 'master' alignment, we produce a cluster centred around it
-        // Attempt to correct the primary alignment in the master
-        if  len(alignmentAdjacencyList[key]) >= 1 {
-          cl := NewCluster(key)
-          fmt.Println(cl.PrimaryDocId)
-          for _, alignmentId := range alignmentAdjacencyList[key] {
-            alreadyCorrected[alignmentId + "Inverse"] = true
-            alignment,_ := queries.GetAlignmentByID(common.AlignmentIndex, alignmentId)
-            cl.DocumentIDSet[alignment.SecondaryDocumentID] = true
-            cl.Mappings[alignmentId] = alignmentMap(alignment.PrimaryAl, alignment.SecondaryAl)
-            cl.DocIDOfMapping[alignmentId] = alignment.SecondaryDocumentID
-          }
-          docs, noCorrections := MajorityVote(cl)
-          for docId := range cl.DocumentIDSet { 
-            correctedDocs[docId] = true
-          }
-          queries.BulkUpdateDocuments(common.DocumentIndex, docs)
-          totalCorrections += noCorrections
-        }
-        
-        alreadyCorrected[key] = true     
-        alreadyCorrected[key + "Inverse"] = true
-    }
-    for docId := range correctedDocs {
-      readWrite.PlaintextWrite(docId)
-    }
-    return totalCorrections
+func ClusterAndCorrectAlignments(alignmentAdjacencyList map[string][]string, maxDistance int) int {
+
+	totalCorrections := 0
+	alreadyCorrected := map[string]bool{}
+	correctedDocs := map[string]bool{}
+	// Loop through the adjancency list
+	for key := range alignmentAdjacencyList {
+		if _, exists := alreadyCorrected[key]; exists {
+			continue
+		}
+		// Our key alignment is the 'master' alignment, we produce a cluster centred around it
+		// Attempt to correct the primary alignment in the master
+		if len(alignmentAdjacencyList[key]) >= 1 {
+			cl := NewCluster(key)
+			fmt.Println(cl.PrimaryDocId)
+			for _, alignmentId := range alignmentAdjacencyList[key] {
+				alreadyCorrected[alignmentId+"Inverse"] = true
+				alignment, _ := queries.GetAlignmentByID(common.AlignmentIndex, alignmentId)
+				cl.DocumentIDSet[alignment.SecondaryDocumentID] = true
+				cl.Mappings[alignmentId] = alignmentMap(alignment.PrimaryAl, alignment.SecondaryAl)
+				cl.DocIDOfMapping[alignmentId] = alignment.SecondaryDocumentID
+			}
+			docs, noCorrections := MajorityVote(cl)
+			for docId := range cl.DocumentIDSet {
+				correctedDocs[docId] = true
+			}
+			queries.BulkUpdateDocuments(common.DocumentIndex, docs)
+			totalCorrections += noCorrections
+		}
+
+		alreadyCorrected[key] = true
+		alreadyCorrected[key+"Inverse"] = true
+	}
+	for docId := range correctedDocs {
+		readWrite.PlaintextWrite(docId)
+	}
+	return totalCorrections
 }
 
-
 func alignmentMap(al1 []int, al2 []int) map[int]int {
-    m := map[int]int{}
-    for i, ind := range(al1) {
-        m[ind] = al2[i]
-    }
-    return m
+	m := map[int]int{}
+	for i, ind := range al1 {
+		m[ind] = al2[i]
+	}
+	return m
 }

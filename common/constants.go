@@ -1,7 +1,6 @@
 package common
 
-
-/** 
+/**
 * Define the index names here
 **/
 
@@ -15,7 +14,6 @@ const AlignmentIndex = "test_alignments"
 **/
 
 const Plaintext = "plaintext"
-
 
 /**
 * Define different hashing/reuse detection algorithms here
