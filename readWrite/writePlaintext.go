@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func PlaintextWrite(docId string, text string) error {
+func PlaintextWrite(docId string, text []rune) error {
 	split := strings.Split(docId, "/")
 	fn := split[len(split)-1]
 	dirName := "corrected/" + docId[:len(docId)-len(fn)]
@@ -18,7 +18,7 @@ func PlaintextWrite(docId string, text string) error {
 		return err
 	}
 
-	_, err = f.WriteString(text)
+	_, err = f.WriteString(string(text))
 	if err != nil {
 		fmt.Errorf("Error, couldn't write to file: %s", err)
 		return err

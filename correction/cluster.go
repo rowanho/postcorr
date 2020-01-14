@@ -24,20 +24,25 @@ type alignMap = struct {
 func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]common.Alignment, documents []common.Document, docMap map[string]int) int {
 
 	totalCorrections := 0
-	// Loop through the adjancency list
-	for _, clusterList := range clustersList {
-		// Our key alignment is the 'master' alignment, we produce a cluster centred around it
-		// Attempt to correct the primary alignment in the master
-		if len(clusterList) >= 1 {
-			alignmentMaps := make([]alignMap, len(clusterList))
-			primaryDocumentID := alignments[clusterList[0]].PrimaryDocumentID
-			for i, alignmentId := range clusterList {
+	correctedDocs := make(map[string]bool)
+	// Loop through the cluster list
+	for _, cluster := range clustersList {
+		// Attempt to correct the primary document of the cluster
+		if len(cluster) > 1 {
+			alignmentMaps := make([]alignMap, len(cluster))
+			primaryDocumentID := alignments[cluster[0]].PrimaryDocumentID
+			for i, alignmentId := range cluster {
 				alignmentMaps[i] = getAlignmentMap(alignments[alignmentId])
 			}
 			correctedDocText, noCorrections := MajorityVote(primaryDocumentID, alignmentMaps, documents, docMap)
+			documents[docMap[primaryDocumentID]].Text = correctedDocText
 			totalCorrections += noCorrections
-			readWrite.PlaintextWrite(primaryDocumentID, correctedDocText)
+			correctedDocs[primaryDocumentID] = true
 		}
+	}
+	
+	for  docID := range correctedDocs {
+		readWrite.PlaintextWrite(docID, documents[docMap[docID]].Text)
 	}
 
 	return totalCorrections

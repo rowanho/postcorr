@@ -3,7 +3,7 @@ package correction
 import (
 	"postCorr/common"
 	
-	//"fmt"
+	"fmt"
 )
 
 /**
@@ -14,7 +14,7 @@ import (
 *   Also eturns an integer representing the number of corrections made
 **/
 
-func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) (string, int) {
+func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) ([]rune, int) {
 	noCorrections := 0
 	maxEnd := 0
 	minStart := 100000000
@@ -34,9 +34,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		max := 1
 		maxRune := primText[ind]
 		counts[primText[ind]] = 1
-	//	fmt.Println(len(alignmentMaps))
 		for _, alMap := range alignmentMaps {
-		//	fmt.Println(alMap.PrimaryDocumentID)
 			if val, exists := alMap.Mapping[ind]; exists {
 				r := documents[docMap[alMap.SecondaryDocumentID]].Text[val]
 				_, ok := counts[r]
@@ -52,6 +50,8 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				}
 			}
 		}
+		fmt.Println(counts)
+		fmt.Println(primText[ind])
 
 		if primText[ind] != maxRune {
 			noCorrections += 1
@@ -62,5 +62,6 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			noCorrections += 1
 		}
 	}
-	return string(primText), noCorrections
+	fmt.Println(string(primText))
+	return primText, noCorrections
 }
