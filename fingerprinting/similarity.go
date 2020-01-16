@@ -3,79 +3,76 @@ package fingerprinting
 import (
 	"postCorr/common"
 	"postCorr/flags"
+	inverted "github.com/rowanho/Inverted-Index-Generator/invertedindex"
 )
 
-// Computes the jaccardindex of the two sets of fingerprints
-func fpJaccardScore(fp1 map[uint64]int, fp2 map[uint64]int) float64 {
-
-	intersection := 0
-	union := 0
-
-	// Iterate over the hashes
-	for hash := range fp1 {
-		if _, ok := fp2[hash]; ok {
-			union += 1
-			intersection += 1
-		} else {
-			union += 1
+/**
+* Using the inverted index, outputs the documents that have higher matches than the threshold docs
+**/
+func invertedIndexHighScores(fpList []map[uint64]bool, targetDoc int, invertedIndex inverted.InvertedIndex, threshold float64) map[int]bool {
+	numMatches := make([]int, len(fpList))
+	
+	for fp := range fpList[targetDoc] {
+		contains := inverted.Find(invertedIndex, fp)
+		for _, c := range contains {
+			numMatches[c] += 1
 		}
 	}
-
-	for hash2 := range fp2 {
-		if _, ok := fp1[hash2]; !ok {
-			union += 1
+	
+	highScoring := make(map[int]bool)
+	for i, n := range numMatches {
+		if i == targetDoc {
+			continue;
 		}
+		// Jaccard Index
+		if (float64(n) / float64(len(fpList[i]) + len(fpList[targetDoc]) - n)) > threshold {
+			highScoring[i] = true
+		}  
 	}
-
-	return float64(intersection) / float64(union)
+	
+	return highScoring
 }
 
-func getSimilarLsh(docs []common.Document) map[string]map[string]bool {
+func getSimilarLsh(docs []common.Document) map[int]map[int]bool {
 	GetLSHObject(100, flags.JaccardThreshold, len(docs))
 	fps := make([]common.LSH_fp, len(docs))
 	for i, doc := range docs {
-		fp := MinHash(doc.ID, string(doc.Text), 7)
+		fp := MinHash(i, preProcess(string(doc.Text)), 7)
 		fps[i] = fp
 	}
+	
 	IndexMinHashObject()
 
-	documentAdjacencyList := make(map[string]map[string]bool)
+	documentAdjacencyList := make(map[int]map[int]bool)
 	for i, fp := range fps {
-		documentAdjacencyList[docs[i].ID] = make(map[string]bool)
+		documentAdjacencyList[i] = make(map[int]bool)
 		sameBucketIds := SameBucketIds(fp.Signature)
 		for _, id := range sameBucketIds {
-			if id != docs[i].ID {
-				documentAdjacencyList[docs[i].ID][id] = true
+			if id != i {
+				documentAdjacencyList[i][id] = true
 			}
-
 		}
 	}
 	return documentAdjacencyList
 }
 
-func getSimilarModP(docs []common.Document) map[string]map[string]bool {
-	fps := make([]map[uint64]int, len(docs))
+func getSimilarModP(docs []common.Document) map[int]map[int]bool {
+	fps := make([]map[uint64]bool, len(docs))
 	for i, doc := range docs {
-		fp := ModP(string(doc.Text), 7, 2)
+		fp := ModP(preProcess(string(doc.Text)), flags.ShingleSize, 2)
 		fps[i] = fp
 	}
-	documentAdjacencyList := make(map[string]map[string]bool)
-	for i, fp1 := range fps {
-		documentAdjacencyList[docs[i].ID] = make(map[string]bool)
-		for j, fp2 := range fps {
-			if i == j {
-				continue
-			}
-			if fpJaccardScore(fp1, fp2) > flags.JaccardThreshold {
-				documentAdjacencyList[docs[i].ID][docs[j].ID] = true
-			}
-		}
+	invertedIndex := inverted.GenerateInvertedIndex(fps)
+	documentAdjacencyList := make(map[int]map[int]bool)
+	for i := range fps {
+		documentAdjacencyList[i] = invertedIndexHighScores(fps, i, invertedIndex, flags.JaccardThreshold)
 	}
 	return documentAdjacencyList
 }
 
-func GetSimilarDocuments(docs []common.Document) map[string]map[string]bool {
-	var documentAdjacencyList map[string]map[string]bool
+
+func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
+	var documentAdjacencyList map[int]map[int]bool
 	if flags.FpType == common.MinhashFP {
 		documentAdjacencyList = getSimilarLsh(docs)
 	} else if flags.FpType == common.ModFP {

@@ -73,6 +73,10 @@ github.com/prometheus/common v0.2.0/go.mod h1:TNfzLD0ON7rHzMJeJkieUDPYmFC7Snx/y8
 github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d/go.mod h1:c3At6R/oaqEKCNdg8wHV1ftS6bRYblBhIjjI8uT2IGk=
 github.com/prometheus/procfs v0.0.0-20190117184657-bf6a532e95b1/go.mod h1:c3At6R/oaqEKCNdg8wHV1ftS6bRYblBhIjjI8uT2IGk=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
+github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116134146-7087eb18edf3 h1:xWxVnomM6Fppg9zb7JgA9b4kThbelQq7tyCnxJD656c=
+github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116134146-7087eb18edf3/go.mod h1:+0SaqpfDp2IvibcVqLJ/qT6SVH7HVs+reMxsSRaAYyw=
+github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116144658-9002df3996f3 h1:TR0mLVdNCAslb1NiDTmXLZH7hOoWzFpFF3Kyb8abkkI=
+github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116144658-9002df3996f3/go.mod h1:+0SaqpfDp2IvibcVqLJ/qT6SVH7HVs+reMxsSRaAYyw=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9/go.mod h1:SnhjPscd9TpLiy1LpzGSKh3bXCfxxXuqd9xmQJy3slM=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

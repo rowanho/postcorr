@@ -11,3 +11,4 @@ var AlignmentTolerance int
 var JaccardThreshold float64
 var Parallel bool
 var RunAlignment bool
+var ShingleSize int

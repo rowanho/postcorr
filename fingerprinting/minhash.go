@@ -30,7 +30,7 @@ func IndexMinHashObject() {
 * Creates a minhash fingerprint and adds it to our lsh object
 **/
 
-func MinHash(key string, text string, windowSize int) common.LSH_fp {
+func MinHash(key int, text string, windowSize int) common.LSH_fp {
 	mh := minhashlsh.NewMinhash(minhashSeed, minhashSize)
 	for i := 0; i+windowSize < len(text); i++ {
 		mh.Push([]byte(text[i : i+windowSize]))
@@ -45,11 +45,11 @@ func MinHash(key string, text string, windowSize int) common.LSH_fp {
 * Returns the documents ids of documents in the same bucket
 **/
 
-func SameBucketIds(sigs []uint64) []string {
+func SameBucketIds(sigs []uint64) []int {
 	similarIds := lsh.Query(sigs)
-	returnIds := make([]string, len(similarIds))
+	returnIds := make([]int, len(similarIds))
 	for i, id := range similarIds {
-		returnIds[i] = id.(string)
+		returnIds[i] = id.(int)
 	}
 	return returnIds
 }

@@ -6,17 +6,17 @@ import (
 	"fmt"
 )
 
-func AlignParallel(documentAdjacencyList map[string]map[string]bool, docs []common.Document, docMap map[string]int) (map[string]common.Alignment, map[string][]string)  {
+func AlignParallel(documentAdjacencyList map[int]map[int]bool, docs []common.Document) (map[string]common.Alignment, map[string][]string)  {
 
 	alignments := make(map[string]common.Alignment, 0)
 	alignmentDocIdMap := make(map[string][]string)
 	
-	for  primID,_ := range documentAdjacencyList{
-		alignmentDocIdMap[primID] = make([]string, 0)
+	for  _, doc := range docs{
+		alignmentDocIdMap[doc.ID] = make([]string, 0)
 	}
 	
 	for primID, secIDs := range documentAdjacencyList {
-		primDoc := docs[docMap[primID]]
+		primDoc := docs[primID]
 		for secID, _ := range secIDs {
 			if _, exists := documentAdjacencyList[secID][primID]; exists {
 				delete(documentAdjacencyList[secID], primID)
@@ -26,43 +26,44 @@ func AlignParallel(documentAdjacencyList map[string]map[string]bool, docs []comm
 		alignmentChannel := make(chan []common.Alignment)
 		inverseAlignmentChannel := make(chan []common.Alignment)
 		for secID, _ := range secIDs {
-			secDoc := docs[docMap[secID]]
-			go func(channel1 chan []common.Alignment, channel2 chan []common.Alignment, primDoc common.Document, secDoc common.Document, secID string) {
+			secDoc := docs[secID]
+			go func(channel1 chan []common.Alignment, channel2 chan []common.Alignment, primDoc common.Document, secDoc common.Document) {
 				alignments, inverseAlignments := GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
 				channel1 <- alignments
 				channel2 <- inverseAlignments
-			}(alignmentChannel, inverseAlignmentChannel, primDoc, secDoc, secID)
+			}(alignmentChannel, inverseAlignmentChannel, primDoc, secDoc)
 
 		}
+		
 	for i := 0; i < len(secIDs); i++ {
 		als := <-alignmentChannel
 	  	for _, al := range als {
 	        alignments[al.ID] = al
-			alignmentDocIdMap[primID] = append(alignmentDocIdMap[primID], al.ID)
+			alignmentDocIdMap[al.PrimaryDocumentID] = append(alignmentDocIdMap[al.PrimaryDocumentID], al.ID)
 		}
 	}
+	
 	for i := 0; i < len(secIDs); i++ {
 		als := <-inverseAlignmentChannel
 		for _, al := range als {
 	        alignments[al.ID] = al
-			p := al.PrimaryDocumentID
-			alignmentDocIdMap[p] = append(alignmentDocIdMap[p], al.ID)
+			alignmentDocIdMap[al.PrimaryDocumentID] = append(alignmentDocIdMap[al.PrimaryDocumentID], al.ID)
 		}
 	}
 	}
   return alignments, alignmentDocIdMap
 }
 
-func AlignSerial(documentAdjacencyList map[string]map[string]bool, docs []common.Document, docMap map[string]int) (map[string]common.Alignment,map[string][]string)  {
+func AlignSerial(documentAdjacencyList map[int]map[int]bool, docs []common.Document) (map[string]common.Alignment,map[string][]string)  {
 
 	alignments := make(map[string]common.Alignment, 0)
   	alignmentDocIdMap := make(map[string][]string)
-	for  primID,_ := range documentAdjacencyList{
-		alignmentDocIdMap[primID] = make([]string, 0)
+	for  _, doc := range docs{
+		alignmentDocIdMap[doc.ID] = make([]string, 0)
 	}
 	
 	for primID, secIDs := range documentAdjacencyList {
-		primDoc := docs[docMap[primID]]
+		primDoc := docs[primID]
 		for secID, _ := range secIDs {
 			if _, exists := documentAdjacencyList[secID][primID]; exists {
 				delete(documentAdjacencyList[secID], primID)
@@ -70,13 +71,13 @@ func AlignSerial(documentAdjacencyList map[string]map[string]bool, docs []common
 		}
     
 		for secID, _ := range secIDs {
-			secDoc := docs[docMap[secID]]
+			secDoc := docs[secID]
 			als, inverseAls := GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
 			for i, al := range als {
 				alignments[al.ID] = al
 				alignments[inverseAls[i].ID] = inverseAls[i]
-				alignmentDocIdMap[primID] = append(alignmentDocIdMap[primID], al.ID)
-				alignmentDocIdMap[secID] = append(alignmentDocIdMap[secID], inverseAls[i].ID)
+				alignmentDocIdMap[al.PrimaryDocumentID] = append(alignmentDocIdMap[al.PrimaryDocumentID], al.ID)
+				alignmentDocIdMap[al.SecondaryDocumentID] = append(alignmentDocIdMap[al.SecondaryDocumentID], inverseAls[i].ID)
 				 
 		     }
 		}

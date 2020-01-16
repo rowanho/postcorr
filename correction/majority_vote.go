@@ -3,7 +3,7 @@ package correction
 import (
 	"postCorr/common"
 	
-	"fmt"
+//	"fmt"
 )
 
 /**
@@ -50,8 +50,8 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				}
 			}
 		}
-		fmt.Println(counts)
-		fmt.Println(primText[ind])
+		//fmt.Println(counts)
+		//fmt.Println(primText[ind])
 
 		if primText[ind] != maxRune {
 			noCorrections += 1
@@ -62,6 +62,6 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			noCorrections += 1
 		}
 	}
-	fmt.Println(string(primText))
+	//fmt.Println(string(primText))
 	return primText, noCorrections
 }
