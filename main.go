@@ -19,7 +19,7 @@ func main() {
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	jaccardThreshold := flag.Float64("jaccard", 0.05, "Jaccard index threshold for similarity")
 	parallel := flag.Bool("parallel", false, "Whether or not to run alignments in parallel with goroutines")
-
+	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
 	flag.Parse()
 
 	flags.DirName = *dirName
@@ -28,6 +28,7 @@ func main() {
 	flags.FpType = *fpType
 	flags.JaccardThreshold = *jaccardThreshold
 	flags.Parallel = *parallel
+	flags.RunAlignment = * runAlignment
 	execute()
 }
 
@@ -49,20 +50,28 @@ func execute() {
 		docMap[doc.ID] = i
 	}
 	documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
-
-	fmt.Println(documentAdjacencyList)
-	fmt.Println("Aligning")
-	var alignments map[string]common.Alignment
-	var alignmentsPerDocument  map[string][]string
-	if flags.Parallel {
-		alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList, docMap)
-	} else {
-		alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList, docMap)
+	
+	numPairs := 0
+	
+	for _, similarDocs := range documentAdjacencyList {
+		numPairs += len(similarDocs)
 	}
+	fmt.Printf("Found %d high scoring pairs \n", numPairs)
+	
+	if flags.RunAlignment {
+		fmt.Println("Aligning")
+		var alignments map[string]common.Alignment
+		var alignmentsPerDocument  map[string][]string
+		if flags.Parallel {
+			alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList, docMap)
+		} else {
+			alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList, docMap)
+		}
 
-	alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
-	fmt.Println(alignmentAdjacencyList)
-	totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
-	fmt.Println("Number of corrections made: ", totalCorrections)
+		alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
+		fmt.Println(alignmentAdjacencyList)
+		totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
+		fmt.Println("Number of corrections made: ", totalCorrections)
+	}
 }
 
