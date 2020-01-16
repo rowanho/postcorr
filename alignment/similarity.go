@@ -3,7 +3,6 @@ package alignment
 import (
 	"postCorr/common"
 	
-	"fmt"
 )
 
 func AlignParallel(documentAdjacencyList map[int]map[int]bool, docs []common.Document) (map[string]common.Alignment, map[string][]string)  {
@@ -28,7 +27,7 @@ func AlignParallel(documentAdjacencyList map[int]map[int]bool, docs []common.Doc
 		for secID, _ := range secIDs {
 			secDoc := docs[secID]
 			go func(channel1 chan []common.Alignment, channel2 chan []common.Alignment, primDoc common.Document, secDoc common.Document) {
-				alignments, inverseAlignments := GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
+				alignments, inverseAlignments := GetAlignments(1.0, 3.0, primDoc, secDoc, 1, 0.0)
 				channel1 <- alignments
 				channel2 <- inverseAlignments
 			}(alignmentChannel, inverseAlignmentChannel, primDoc, secDoc)
@@ -174,12 +173,6 @@ func GetSimilarAlignments(alignments map[string]common.Alignment, alignmentDocId
     for _, alignmentIds := range alignmentDocIdMap {
         clusters := getClusters(alignments, alignmentIds)
 		
-		for _,c := range clusters {
-			fmt.Println("cluster2")
-			for _,alId := range c {
-				fmt.Println(alignments[alId].PrimaryDocumentID)
-			}
-		}
         clusterList = append(clusterList, clusters...)
     }    
     

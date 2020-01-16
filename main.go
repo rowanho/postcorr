@@ -22,6 +22,7 @@ func main() {
 	shingleSize := flag.Int("shingleSize", 7, "Length of shingle")
 	parallel := flag.Bool("parallel", false, "Whether or not to run alignments in parallel with goroutines")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
+	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
 	flag.Parse()
 
 	flags.DirName = *dirName
@@ -32,6 +33,7 @@ func main() {
 	flags.JaccardThreshold = *jaccardThreshold
 	flags.Parallel = *parallel
 	flags.RunAlignment = * runAlignment
+	flags.WinnowingWindow = *winnowingWindow
 	execute()
 }
 
@@ -70,9 +72,13 @@ func execute() {
 		} else {
 			alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)
 		}
+		scoreSum := 0.0
+		for _, al := range alignments {
+			scoreSum += al.Score 
+		}
 
+		fmt.Printf("Score sum: %5.1f \n", scoreSum)
 		alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
-		fmt.Println(alignmentAdjacencyList)
 		totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
 		fmt.Println("Number of corrections made: ", totalCorrections)
 	}

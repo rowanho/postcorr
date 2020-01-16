@@ -70,6 +70,20 @@ func getSimilarModP(docs []common.Document) map[int]map[int]bool {
 	return documentAdjacencyList
 }
 
+func getSimilarWinnowing(docs []common.Document) map[int]map[int]bool {
+	fps := make([]map[uint64]bool, len(docs))
+	for i, doc := range docs {
+		fp := Winnowing(preProcess(string(doc.Text)), flags.ShingleSize, flags.WinnowingWindow)	
+		fps[i] = fp
+	}
+	invertedIndex := inverted.GenerateInvertedIndex(fps)
+	documentAdjacencyList := make(map[int]map[int]bool)
+	for i := range fps {
+		documentAdjacencyList[i] = invertedIndexHighScores(fps, i, invertedIndex, flags.JaccardThreshold)
+	}
+	return documentAdjacencyList
+}
+
 
 func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	var documentAdjacencyList map[int]map[int]bool
@@ -77,6 +91,8 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 		documentAdjacencyList = getSimilarLsh(docs)
 	} else if flags.FpType == common.ModFP {
 		documentAdjacencyList = getSimilarModP(docs)
+	} else if flags.FpType == common.Winnowing {
+		documentAdjacencyList = getSimilarWinnowing(docs)
 	}
 
 	return documentAdjacencyList

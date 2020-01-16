@@ -21,7 +21,7 @@ const Plaintext = "plaintext"
 
 const MinhashFP = "minhash"
 const ModFP = "modp"
-
+const Winnowing = "winnowing"
 /**
 * Define different alignment algorithms here
 **/
