@@ -7,7 +7,7 @@ import (
 	"postCorr/flags"
 	"postCorr/fingerprinting"
 	"postCorr/readWrite"
-
+	"postCorr/evaluation"
 	"flag"
 	"fmt"
 )
@@ -24,6 +24,7 @@ func main() {
 	parallel := flag.Bool("parallel", false, "Whether or not to run alignments in parallel with goroutines")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
 	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
+	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	p := flag.Int("p", 5, "P to mod by when using modp")
 	flag.Parse()
 
@@ -38,6 +39,7 @@ func main() {
 	flags.RunAlignment = * runAlignment
 	flags.WinnowingWindow = *winnowingWindow
 	flags.P = *p
+	flags.Groundtruth = *groundTruth
 	execute()
 }
 
@@ -85,6 +87,13 @@ func execute() {
 		alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
 		totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
 		fmt.Println("Number of corrections made: ", totalCorrections)
+	}
+	
+	// Evaluation
+	if flags.RunAlignment &&  len(flags.Groundtruth) > 0 {
+		originalStats, correctedStats, _ := evaluation.GetEvaluationStats()
+		fmt.Println(originalStats)
+		fmt.Println(correctedStats)
 	}
 }
 

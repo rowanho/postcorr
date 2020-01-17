@@ -25,22 +25,6 @@ func ConvToStandardUnicode(b []byte) []rune {
 **/
 func TraverseDocs() ([]common.Document, error) {
 	docs := make([]common.Document, 0)
-	if flags.FpType == common.MinhashFP {
-		count := 0
-		err := filepath.Walk(flags.DirName,
-			func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				count += 1
-				return nil
-			},
-		)
-		if err != nil {
-			return []common.Document{}, err
-		}
-	}
-
 	err := filepath.Walk(flags.DirName,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -49,8 +33,9 @@ func TraverseDocs() ([]common.Document, error) {
 			if info.IsDir() == false {
 				var readErr error = nil
 				var doc common.Document
+				subpath := path[len(flags.DirName) + 1:]
 				if flags.FormatType == common.Plaintext {
-					doc, readErr = plaintextRead(path)
+					doc, readErr = plaintextRead(path, subpath)
 					docs = append(docs, doc)
 				}
 				if readErr != nil {

@@ -15,3 +15,4 @@ var RunAlignment bool
 var ShingleSize int
 var WinnowingWindow int
 var P int
+var Groundtruth string
