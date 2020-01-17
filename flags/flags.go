@@ -5,6 +5,7 @@ package flags
 **/
 
 var DirName string
+var OutDir string
 var FormatType string
 var FpType string
 var AlignmentTolerance int
@@ -13,3 +14,4 @@ var Parallel bool
 var RunAlignment bool
 var ShingleSize int
 var WinnowingWindow int
+var P int

@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-	dirName := flag.String("dir", "test_dataset", "path to dataset")
+	dirName := flag.String("input", "test_dataset", "path to dataset")
+	outDir := flag.String("output", "corrected_data", "Folder to write the output data to")
 	formatType := flag.String("format", common.Plaintext, "the dataset file format")
 	alignmentTolerance := flag.Int("tolerance", 10, "Tolerance for distances between alignments to identify as similar")
 	
@@ -23,9 +24,11 @@ func main() {
 	parallel := flag.Bool("parallel", false, "Whether or not to run alignments in parallel with goroutines")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
 	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
+	p := flag.Int("p", 5, "P to mod by when using modp")
 	flag.Parse()
 
 	flags.DirName = *dirName
+	flags.OutDir = *outDir
 	flags.FormatType = *formatType
 	flags.AlignmentTolerance = *alignmentTolerance
 	flags.FpType = *fpType
@@ -34,6 +37,7 @@ func main() {
 	flags.Parallel = *parallel
 	flags.RunAlignment = * runAlignment
 	flags.WinnowingWindow = *winnowingWindow
+	flags.P = *p
 	execute()
 }
 

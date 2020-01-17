@@ -59,7 +59,7 @@ func getSimilarLsh(docs []common.Document) map[int]map[int]bool {
 func getSimilarModP(docs []common.Document) map[int]map[int]bool {
 	fps := make([]map[uint64]bool, len(docs))
 	for i, doc := range docs {
-		fp := ModP(preProcess(string(doc.Text)), flags.ShingleSize, 2)
+		fp := ModP(preProcess(string(doc.Text)), flags.ShingleSize, flags.P)
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)

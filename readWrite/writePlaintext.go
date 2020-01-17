@@ -1,15 +1,33 @@
 package readWrite
 
 import (
+	"postCorr/flags"
+	
 	"fmt"
 	"os"
 	"strings"
+	"strconv"
 )
+var first = true
 
 func PlaintextWrite(docId string, text []rune) error {
+
+	if first {
+		i := 0
+		newDir := flags.OutDir
+		_, err := os.Stat(newDir)
+		for  !os.IsNotExist(err){
+			i +=  1
+			newDir =  flags.OutDir + strconv.Itoa(i)
+			_, err = os.Stat(newDir);
+		}
+		first = false
+		flags.OutDir = newDir
+	}
+	
 	split := strings.Split(docId, "/")
 	fn := split[len(split)-1]
-	dirName := "corrected/" + docId[:len(docId)-len(fn)]
+	dirName := flags.OutDir + "/" + docId[:len(docId)-len(fn)]
 	os.MkdirAll(dirName, os.ModePerm)
 	f, err := os.Create(dirName + fn)
 
