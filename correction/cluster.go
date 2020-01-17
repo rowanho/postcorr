@@ -2,7 +2,7 @@ package correction
 
 import (
 	"postCorr/common"
-
+	"postCorr/flags"
 	"postCorr/readWrite"
 )
 
@@ -21,7 +21,7 @@ type alignMap = struct {
 * High max distances can lead to worse time complexity
 **/
 
-func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]common.Alignment, documents []common.Document, docMap map[string]int) int {
+func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]common.Alignment, documents []common.Document, docMap map[string]int) (map[string]bool, int) {
 
 	totalCorrections := 0
 	correctedDocs := make(map[string]bool)
@@ -40,12 +40,13 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 			correctedDocs[primaryDocumentID] = true
 		}
 	}
-	
-	for  docID := range correctedDocs {
-		readWrite.PlaintextWrite(docID, documents[docMap[docID]].Text)
+	if flags.WriteOutput {
+		for  docID := range correctedDocs {
+			readWrite.PlaintextWrite(docID, documents[docMap[docID]].Text)
+		}
 	}
 
-	return totalCorrections
+	return correctedDocs, totalCorrections
 }
 
 func getAlignmentMap(al common.Alignment) alignMap {

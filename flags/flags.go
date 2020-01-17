@@ -7,8 +7,8 @@ package flags
 var DirName string
 var OutDir string
 var FormatType string
+var WriteOutput bool
 var FpType string
-var AlignmentTolerance int
 var JaccardThreshold float64
 var Parallel bool
 var RunAlignment bool

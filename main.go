@@ -15,8 +15,9 @@ import (
 func main() {
 	dirName := flag.String("input", "test_dataset", "path to dataset")
 	outDir := flag.String("output", "corrected_data", "Folder to write the output data to")
+	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
+	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
 	formatType := flag.String("format", common.Plaintext, "the dataset file format")
-	alignmentTolerance := flag.Int("tolerance", 10, "Tolerance for distances between alignments to identify as similar")
 	
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	jaccardThreshold := flag.Float64("jaccard", 0.05, "Jaccard index threshold for similarity")
@@ -24,14 +25,13 @@ func main() {
 	parallel := flag.Bool("parallel", false, "Whether or not to run alignments in parallel with goroutines")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
 	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
-	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	p := flag.Int("p", 5, "P to mod by when using modp")
 	flag.Parse()
-
+	
+	flags.WriteOutput = *writeOutput
 	flags.DirName = *dirName
 	flags.OutDir = *outDir
 	flags.FormatType = *formatType
-	flags.AlignmentTolerance = *alignmentTolerance
 	flags.FpType = *fpType
 	flags.ShingleSize = * shingleSize
 	flags.JaccardThreshold = *jaccardThreshold
@@ -47,8 +47,8 @@ func main() {
 * Executes the main program pipeline
 **/
 func execute() {
-	totalCorrections := 0
-
+	var totalCorrections int
+ 	var correctedDocs map[string] bool
 	docList, docsErr := readWrite.TraverseDocs()
 
 	if docsErr != nil {
@@ -60,6 +60,7 @@ func execute() {
 	for i, doc := range docList {
 		docMap[doc.ID] = i
 	}
+	
 	documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
 	
 	numPairs := 0
@@ -85,13 +86,22 @@ func execute() {
 
 		fmt.Printf("Score sum: %5.1f \n", scoreSum)
 		alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
-		totalCorrections += correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
+		correctedDocs, totalCorrections = correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
 		fmt.Println("Number of corrections made: ", totalCorrections)
 	}
 	
 	// Evaluation
 	if flags.RunAlignment &&  len(flags.Groundtruth) > 0 {
-		originalStats, correctedStats, _ := evaluation.GetEvaluationStats()
+		originalStats, correctedStats, _ := evaluation.GetEvaluationStats(docList, docMap, correctedDocs)
+		
+		fmt.Printf("Total edit distance before correction: %d\n", originalStats.Total)
+		fmt.Printf("Total edit distance after correction: %d \n", correctedStats.Total)
+		
+		fmt.Printf("Mean edit distance before correction: %5.2f \n", originalStats.Mean)
+		fmt.Printf("Mean edit distance after correction: %5.2f \n", correctedStats.Mean)
+		
+		fmt.Printf("Out of %d the corrected documents, mean edit distance improved from %5.2f to %5.2f \n", len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
+
 		fmt.Println(originalStats)
 		fmt.Println(correctedStats)
 	}

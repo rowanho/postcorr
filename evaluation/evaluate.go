@@ -17,9 +17,10 @@ import (
 * Traverses the input and output directories, and sums the edit distances of each file
 * Between the data and the ground truth data
 **/
-func editDistances() ([]int, []int, error) {
+func editDistances(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) ([]string, []int, []int, error) {
     originalDistances := make([]int, 0)
     correctedDistances := make([]int, 0)
+    docIds := make([]string, 0)
 	err := filepath.Walk(flags.DirName,
 		func(path string, info os.FileInfo, err error) error {
             right := path[len(flags.DirName):]
@@ -27,11 +28,7 @@ func editDistances() ([]int, []int, error) {
 				return err
 			}
 			if info.IsDir() == false {
-                correctable := true
-                _, err := os.Stat(flags.OutDir  + right)
-                if os.IsNotExist(err){
-                    correctable = false
-                }
+                _, correctable := correctedDocs[right]
 
                 var groundTruth string
                 var corrected string
@@ -41,8 +38,8 @@ func editDistances() ([]int, []int, error) {
 				if flags.FormatType == common.Plaintext {
 					original, readErr = readWrite.ReadString(path)
                     groundTruth, readErr = readWrite.ReadString(flags.Groundtruth  + right)
-                    if correctable{
-                        corrected, readErr = readWrite.ReadString(flags.OutDir  + right)
+                    if correctable {
+                        corrected = string(docs[docMap[right]].Text)
                     }
 				}
                 
@@ -58,48 +55,57 @@ func editDistances() ([]int, []int, error) {
                     correctedDist := levenshtein.ComputeDistance(corrected, groundTruth)
                     correctedDistances = append(correctedDistances, correctedDist)
                 } else {
-                    correctedDistances = append(correctedDistances, originalDistances)                    
+                    correctedDistances = append(correctedDistances, originalDist)                    
                 }
+                
+                docIds = append(docIds, right)
 			}
 			return nil
 		},
 	)
     
     if err != nil {
-        return []int{}, []int{}, err
+        return []string{}, []int{}, []int{}, err
     }
-	return originalDistances, correctedDistances, err
+	return  docIds, originalDistances, correctedDistances, err
 }
 
 type EvalStats = struct {
     Mean float64
     Total int
+    MeanInCorrected float64
 }
 
-func sum_mean(slice []int) (int, float64) {
+func sum_mean(slice []int, docIds []string, correctedDocs map[string]bool) (int, float64, float64) {
     total := 0
-    for _, i := range slice {
-        total += i
+    totalCorrected := 0
+    for i, ed := range slice {
+        total += ed
+        if _, exists := correctedDocs[docIds[i]]; exists {
+            totalCorrected += ed
+        }
     }  
-    return total, float64(total) / float64(len(slice))
+    return total, float64(total) / float64(len(slice)), float64(totalCorrected) / float64(len(correctedDocs))
 }
 
-func GetEvaluationStats() (EvalStats,  EvalStats, error) {
-    originalDistances, correctedDistances, err := editDistances()
+func GetEvaluationStats(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) (EvalStats,  EvalStats, error) {
+    docIds, originalDistances, correctedDistances, err := editDistances(docs, docMap, correctedDocs)
     if err != nil {
         return EvalStats{}, EvalStats{},  err
     }
     
-    sum, mean := sum_mean(originalDistances)
+    sum, mean, mean2:= sum_mean(originalDistances, docIds, correctedDocs)
     originalStats := EvalStats{
         Mean: mean,
         Total: sum,
+        MeanInCorrected: mean2,
     }
     
-    sum, mean = sum_mean(correctedDistances)
+    sum, mean, mean2 = sum_mean(correctedDistances, docIds, correctedDocs)
     correctedStats := EvalStats{
         Mean: mean,
         Total: sum,
+        MeanInCorrected: mean2,
     }
     
     return originalStats, correctedStats, nil
