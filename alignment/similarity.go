@@ -27,7 +27,7 @@ func AlignParallel(documentAdjacencyList map[int]map[int]bool, docs []common.Doc
 		for secID, _ := range secIDs {
 			secDoc := docs[secID]
 			go func(channel1 chan []common.Alignment, channel2 chan []common.Alignment, primDoc common.Document, secDoc common.Document) {
-				alignments, inverseAlignments := GetAlignments(1.0, 3.0, primDoc, secDoc, 1, 0.0)
+				alignments, inverseAlignments := GetAlignments(1, 3, primDoc, secDoc, 1, 0)
 				channel1 <- alignments
 				channel2 <- inverseAlignments
 			}(alignmentChannel, inverseAlignmentChannel, primDoc, secDoc)
@@ -71,7 +71,7 @@ func AlignSerial(documentAdjacencyList map[int]map[int]bool, docs []common.Docum
     
 		for secID, _ := range secIDs {
 			secDoc := docs[secID]
-			als, inverseAls := GetAlignments(1.0, 2.0, primDoc, secDoc, 1, 0.0)
+			als, inverseAls := GetAlignments(1, 2, primDoc, secDoc, 1, 0)
 			for i, al := range als {
 				alignments[al.ID] = al
 				alignments[inverseAls[i].ID] = inverseAls[i]

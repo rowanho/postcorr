@@ -25,6 +25,7 @@ func main() {
 	parallel := flag.Bool("parallel", false, "Whether or not to run alignments in parallel with goroutines")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
 	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
+	fastAlign := flag.Bool("fastAlign", false, "Whether or not to use heuristic alignment (faster but less accurate)")
 	p := flag.Int("p", 5, "P to mod by when using modp")
 	flag.Parse()
 	
@@ -40,6 +41,7 @@ func main() {
 	flags.WinnowingWindow = *winnowingWindow
 	flags.P = *p
 	flags.Groundtruth = *groundTruth
+	flags.FastAlign = *fastAlign
 	execute()
 }
 
@@ -79,12 +81,12 @@ func execute() {
 		} else {
 			alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)
 		}
-		scoreSum := 0.0
+		scoreSum := 0
 		for _, al := range alignments {
 			scoreSum += al.Score 
 		}
 
-		fmt.Printf("Score sum: %5.1f \n", scoreSum)
+		fmt.Printf("Score sum: %d \n", scoreSum)
 		alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
 		correctedDocs, totalCorrections = correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
 		fmt.Println("Number of corrections made: ", totalCorrections)

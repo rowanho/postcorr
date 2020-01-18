@@ -3,10 +3,10 @@ package alignment
 /**
 * The needleman wunsch local alignment algorithm,  simplified
 **/
-func NeedlemanWunsch(matchReward float64, gapCost float64, a []rune, b []rune) (float64, []int, []int) {
+func NeedlemanWunsch(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
 	l1 := len(a)
 	l2 := len(b)
-	cost := 0.0
+	cost := 0
 	max_i := 0
 	matched := false
 	if l1 == 1 {

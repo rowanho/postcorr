@@ -1,11 +1,13 @@
 package alignment
 
 import (
-	"github.com/google/uuid"
 	"postCorr/common"
+	"postCorr/flags"
+	
+	"github.com/google/uuid"
 )
 
-func createAlignment(score float64, primID string, secID string, primAl []int, secAl []int) common.Alignment {
+func createAlignment(score int, primID string, secID string, primAl []int, secAl []int) common.Alignment {
 
 	a := common.Alignment{
 		ID:                uuid.New().String(),
@@ -63,8 +65,8 @@ func rescoreIndices(indices []int, increments []Inc) []int {
 	return newIndices
 }
 
-func GetAlignments(matchReward float64, gapCost float64, primary common.Document,
-	secondary common.Document, stopAt int, minScorePerLength float64) ([]common.Alignment, []common.Alignment) {
+func GetAlignments(matchReward int, gapCost int, primary common.Document,
+	secondary common.Document, stopAt int, minScorePerLength int) ([]common.Alignment, []common.Alignment) {
 
 	primaryString := make([]rune, len(primary.Text))
 	secondaryString := make([]rune, len(secondary.Text))
@@ -80,10 +82,21 @@ func GetAlignments(matchReward float64, gapCost float64, primary common.Document
 	inverseAlignments := make([]common.Alignment, 0)
 
 	for count < stopAt && len(primaryString) > 0 && len(secondaryString) > 0 {
-		score, primIndices, secIndices := SmithWaterman(matchReward, gapCost, primaryString, secondaryString)
-
-		if score/float64(len(primIndices)) < minScorePerLength {
-			break
+		var score int
+		var primIndices []int
+		var secIndices []int
+		if flags.FastAlign {
+			score, primIndices, secIndices = HeuristicAlignment(matchReward, gapCost, primaryString, secondaryString)
+		} else {
+			score, primIndices, secIndices = SmithWaterman(matchReward, gapCost, primaryString, secondaryString)
+		}
+		
+		if len(primIndices) == 0 {
+			break;
+		}
+		
+		if score/int(len(primIndices)) < minScorePerLength {
+			break;
 		}
 		newPrimIndices := rescoreIndices(primIndices, primIncrements)
 		newSecIndices := rescoreIndices(secIndices, secIncrements)

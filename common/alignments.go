@@ -8,7 +8,7 @@ package common
 type Alignment = struct {
 	ID string `json:"id"`
 
-	Score float64 `json:"score"`
+	Score int `json:"score"`
 
 	PrimaryAl         []int  `json:"primaryAl"`
 	PrimaryDocumentID string `json:"primaryDocumentID"`

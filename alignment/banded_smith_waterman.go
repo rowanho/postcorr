@@ -12,20 +12,20 @@ func reverseRune(r []rune) []rune {
 	return f
 }
 
-func reverseFloat(r []float64) []float64 {
-	f := append([]float64{}, r...)
+func reverseInt(r []int) []int {
+	f := append([]int{}, r...)
 	for i, j := 0, len(f)-1; i < j; i, j = i+1, j-1 {
 		f[i], f[j] = f[j], f[i]
 	}
 	return f
 }
 
-func nwScore(matchReward float64, gapCost float64, a []rune, b []rune) []float64 {
+func nwScore(matchReward int, gapCost int, a []rune, b []rune) []int {
 
-	score := make([][]float64, 2)
+	score := make([][]int, 2)
 
 	for i := 0; i < 2; i++ {
-		score[i] = make([]float64, len(b)+1)
+		score[i] = make([]int, len(b)+1)
 	}
 
 	for j := 1; j < len(b)+1; j++ {
@@ -34,7 +34,7 @@ func nwScore(matchReward float64, gapCost float64, a []rune, b []rune) []float64
 	for i := 1; i < len(a)+1; i++ {
 		score[1][0] = score[0][0] - gapCost
 		for j := 1; j < len(b)+1; j++ {
-			var match float64
+			var match int
 			if a[i-1] == b[j-1] {
 				match = score[0][j-1] + matchReward
 			} else {
@@ -42,7 +42,7 @@ func nwScore(matchReward float64, gapCost float64, a []rune, b []rune) []float64
 			}
 			delete := score[0][j] - gapCost
 			insert := score[1][j-1] - gapCost
-			score[1][j] = math.Max(match, math.Max(delete, insert))
+			score[1][j] = Max(match, Max(delete, insert))
 		}
 		for j := 1; j < len(b); j++ {
 			score[0][j] = score[1][j]
@@ -52,22 +52,22 @@ func nwScore(matchReward float64, gapCost float64, a []rune, b []rune) []float64
 	return score[1]
 }
 
-func swScore(matchReward float64, gapCost float64, a []rune, b []rune) (int, int) {
+func swScore(matchReward int, gapCost int, a []rune, b []rune) (int, int) {
 
 	max_i := 0
 	max_j := 0
-	max_val := math.Inf(-1)
-	score := make([][]float64, 2)
+	max_val := math.MinInt32
+	score := make([][]int, 2)
 
 	lenA := len(a)
 	lenB := len(b)
 	for i := 0; i < 2; i++ {
-		score[i] = make([]float64, len(b)+1)
+		score[i] = make([]int, len(b)+1)
 	}
 
 	for i := 1; i < lenA+1; i++ {
 		for j := 1; j < lenB+1; j++ {
-			var match float64
+			var match int
 			if a[i-1] == b[j-1] {
 				match = score[0][j-1] + matchReward
 			} else {
@@ -75,7 +75,7 @@ func swScore(matchReward float64, gapCost float64, a []rune, b []rune) (int, int
 			}
 			delete := score[0][j] - gapCost
 			insert := score[1][j-1] - gapCost
-			score[1][j] = math.Max(match, math.Max(delete, math.Max(0.0, insert)))
+			score[1][j] = Max(match, Max(delete, Max(0, insert)))
 			if score[1][j] > max_val {
 				max_val = score[1][j]
 				max_i = i
@@ -92,18 +92,18 @@ func swScore(matchReward float64, gapCost float64, a []rune, b []rune) (int, int
 	return max_i - 1, max_j - 1
 }
 
-func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offsetA int, offsetB int) (float64, []int, []int) {
+func hirschberg(matchReward int, gapCost int, a []rune, b []rune, offsetA int, offsetB int) (int, []int, []int) {
 	lenA := len(a)
 	lenB := len(b)
 
 	if lenA == 0 {
-		score := 0.0
+		score := 0
 		for i := 0; i < lenB; i++ {
 			score -= gapCost
 		}
 		return score, []int{}, []int{}
 	} else if lenB == 0 {
-		score := 0.0
+		score := 0
 		for i := 0; i < lenA; i++ {
 			score -= gapCost
 		}
@@ -127,9 +127,9 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
 	revASlice := reverseRune(a[midA:])
 	revB := reverseRune(b)
 	lastlineRight := nwScore(matchReward, gapCost, revASlice, revB)
-	lastlineRight = reverseFloat(lastlineRight)
+	lastlineRight = reverseInt(lastlineRight)
 
-	max := math.Inf(-1)
+	max := math.MinInt32
 	maxIndice := 0
 	for i := 0; i < len(lastlineLeft); i++ {
 		if max <= lastlineLeft[i]+lastlineRight[i] {
@@ -154,7 +154,7 @@ func hirschberg(matchReward float64, gapCost float64, a []rune, b []rune, offset
 * Uses O(n) space, and O(mn) time
 **/
 
-func SmithWaterman(matchReward float64, gapCost float64, a []rune, b []rune) (float64, []int, []int) {
+func SmithWaterman(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
 	if len(a) == 0 || len(b) == 0 {
 		return 0.0, []int{}, []int{}
 	}

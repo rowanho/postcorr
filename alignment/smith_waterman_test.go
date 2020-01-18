@@ -8,7 +8,7 @@ import (
 var tests = []struct {
 	s1    string
 	s2    string
-	score float64
+	score int
 }{
 	// insertion
 	{"car", "carssss", 3.0},
