@@ -23,7 +23,10 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
     docIds := make([]string, 0)
 	err := filepath.Walk(flags.DirName,
 		func(path string, info os.FileInfo, err error) error {
-            right := path[len(flags.DirName):]
+            right := ""
+            if path != flags.DirName {
+                right = path[len(flags.DirName) + 1:]
+            }
 			if err != nil {
 				return err
 			}
@@ -37,7 +40,7 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
                 
 				if flags.FormatType == common.Plaintext {
 					original, readErr = readWrite.ReadString(path)
-                    groundTruth, readErr = readWrite.ReadString(flags.Groundtruth  + right)
+                    groundTruth, readErr = readWrite.ReadString(flags.Groundtruth + "/" + right)
                     if correctable {
                         corrected = string(docs[docMap[right]].Text)
                     }
@@ -100,7 +103,6 @@ func GetEvaluationStats(docs []common.Document, docMap map[string]int, corrected
         Total: sum,
         MeanInCorrected: mean2,
     }
-    
     sum, mean, mean2 = sum_mean(correctedDistances, docIds, correctedDocs)
     correctedStats := EvalStats{
         Mean: mean,

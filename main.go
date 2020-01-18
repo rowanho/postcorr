@@ -100,10 +100,11 @@ func execute() {
 		fmt.Printf("Mean edit distance before correction: %5.2f \n", originalStats.Mean)
 		fmt.Printf("Mean edit distance after correction: %5.2f \n", correctedStats.Mean)
 		
-		fmt.Printf("Out of %d the corrected documents, mean edit distance improved from %5.2f to %5.2f \n", len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
-
-		fmt.Println(originalStats)
-		fmt.Println(correctedStats)
+		if len(correctedDocs) > 0 {
+			fmt.Printf("Out of %d the corrected documents, mean edit distance improved from %5.2f to %5.2f \n", len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
+		} else {
+			fmt.Println("No documents corrected!")
+		}
 	}
 }
 
