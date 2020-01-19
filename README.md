@@ -9,19 +9,15 @@ Each folder is a package of the folder's name.
 
 ### Alignment 
 
-Contains functions to perform local alignment and suboptimal alignments between
-two regions of text. These are implemented from the ground up.
+Contains functions to perform local alignment(smith waterman algorithm + a faster heuristic algorithm) and suboptimal alignments between two regions of text. Also includes the code that 'clusters' alignments together to produce multiple witnesses to correct a passage.
 
 ### Common
 
-Contains common objects (structs) used throughout the other parts of the codebase.
-This includes efficient ways to represent documents once they are converted out of various
-OCR formats, and ways to represent clusters of alignments.
+Contains common objects used throughout the other parts of the codebase, and constants.
 
 ### Fingerprinting
  
- Contains code for making representation of documents/strings into hashed numerical values. Plans to include more advanced
- techniques like locality sensitive hashing later into the project
+ Contains code for making representation of documents/strings into fingerprints - sets of hashed numerical values. 
  
 ### Readwrite
 
@@ -30,4 +26,4 @@ ALTO and PAGE.
 
 ### Correction
 
-Plans to contain implementation of different consensus methods to produce a common output from an alignment cluster.
+Contains implementation of a consensus method to produce a common output from an alignment cluster.
