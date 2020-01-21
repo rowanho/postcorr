@@ -34,23 +34,23 @@ func AlignParallel(documentAdjacencyList map[int]map[int]bool, docs []common.Doc
 
 		}
 		
-	for i := 0; i < len(secIDs); i++ {
-		als := <-alignmentChannel
-	  	for _, al := range als {
-	        alignments[al.ID] = al
-			alignmentDocIdMap[al.PrimaryDocumentID] = append(alignmentDocIdMap[al.PrimaryDocumentID], al.ID)
+		for i := 0; i < len(secIDs); i++ {
+			als := <-alignmentChannel
+		  	for _, al := range als {
+		        alignments[al.ID] = al
+				alignmentDocIdMap[al.PrimaryDocumentID] = append(alignmentDocIdMap[al.PrimaryDocumentID], al.ID)
+			}
+		}
+		
+		for i := 0; i < len(secIDs); i++ {
+			als := <-inverseAlignmentChannel
+			for _, al := range als {
+		        alignments[al.ID] = al
+				alignmentDocIdMap[al.PrimaryDocumentID] = append(alignmentDocIdMap[al.PrimaryDocumentID], al.ID)
+			}
 		}
 	}
-	
-	for i := 0; i < len(secIDs); i++ {
-		als := <-inverseAlignmentChannel
-		for _, al := range als {
-	        alignments[al.ID] = al
-			alignmentDocIdMap[al.PrimaryDocumentID] = append(alignmentDocIdMap[al.PrimaryDocumentID], al.ID)
-		}
-	}
-	}
-  return alignments, alignmentDocIdMap
+  	return alignments, alignmentDocIdMap
 }
 
 func AlignSerial(documentAdjacencyList map[int]map[int]bool, docs []common.Document) (map[string]common.Alignment,map[string][]string)  {
@@ -117,7 +117,6 @@ func merge(overlapping []int, clusters [][]string) [][]string {
 			overlaps += 1
 		}
 	}
-	
 	skip := make(map[int]bool)
 	newClusters := make([][]string, len(clusters) - (overlaps/2))
 	j := 0
@@ -128,7 +127,7 @@ func merge(overlapping []int, clusters [][]string) [][]string {
 		if o != -1 {
 			newClusters[j]  = append(clusters[i], clusters[o]...)
 			skip[o] = true
-		} else {
+		} else { 
 			newClusters[j] = clusters[i]
 		}
 		j += 1
@@ -154,12 +153,14 @@ func getClusters(alignments map[string]common.Alignment, alsToCluster []string) 
 			overlapping[i] = -1
 		}
 		for i, c1 := range currentClusters {
-			for j := i +1; j < len(currentClusters); j++ {
-				if overlapping[j] == -1 && anyOverlap(alignments, c1, currentClusters[j]) {
-					overlaps = true
-					overlapping[i] = j
-					overlapping[j] = i
-					break
+			if overlapping[i] == -1 {
+				for j := i +1; j < len(currentClusters); j++ {
+					if overlapping[j] == -1 && anyOverlap(alignments, c1, currentClusters[j]) {
+						overlaps = true
+						overlapping[i] = j
+						overlapping[j] = i
+						break
+					}
 				}
 			}
 		}
