@@ -54,10 +54,6 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		//fmt.Println(primText[ind])
 
 		if primText[ind] != maxRune {
-			noCorrections += 1
-		}
-
-		if primText[ind] != maxRune {
 			primText[ind] = maxRune
 			noCorrections += 1
 		}
