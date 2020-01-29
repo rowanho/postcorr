@@ -56,7 +56,7 @@ func swScore(matchReward int, gapCost int, a []rune, b []rune) (int, int) {
 
 	max_i := 0
 	max_j := 0
-	max_val := 0.0
+	max_val := 0
 	score := make([][]int, 2)
 
 	lenA := len(a)
@@ -88,7 +88,6 @@ func swScore(matchReward int, gapCost int, a []rune, b []rune) (int, int) {
 		}
 
 	}
-
 	return max_i - 1, max_j - 1
 }
 
@@ -156,7 +155,7 @@ func hirschberg(matchReward int, gapCost int, a []rune, b []rune, offsetA int, o
 
 func SmithWaterman(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
 	if len(a) == 0 || len(b) == 0 {
-		return 0.0, []int{}, []int{}
+		return 0, []int{}, []int{}
 	}
 	endA, endB := swScore(matchReward, gapCost, a, b)
 	revA := reverseRune(a)
@@ -164,10 +163,13 @@ func SmithWaterman(matchReward int, gapCost int, a []rune, b []rune) (int, []int
 	revStartA, revStartB := swScore(matchReward, gapCost, revA, revB)
 	
 	if revStartA == 0 || revStartB == 0 {
-		return 0.0, []int{}, []int{}		
+		return 0, []int{}, []int{}		
 	}
 	startA := len(a) - 1 - revStartA
 	startB := len(b) - 1 - revStartB
+	if startA > endA || startB > endB {
+		return 0, []int{}, []int{}		
+	}
 
 	return hirschberg(matchReward, gapCost, a[startA:endA+1], b[startB:endB+1], startA, startB)
 }

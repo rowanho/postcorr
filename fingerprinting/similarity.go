@@ -3,8 +3,13 @@ package fingerprinting
 import (
 	"postCorr/common"
 	"postCorr/flags"
+	
+	"fmt"
+	
 	inverted "github.com/rowanho/Inverted-Index-Generator/invertedindex"
 )
+var total int
+var totalSim float64
 
 /**
 * Using the inverted index, outputs the documents that have higher matches than the threshold docs
@@ -25,9 +30,11 @@ func invertedIndexHighScores(fpList []map[uint64]bool, targetDoc int, invertedIn
 			continue;
 		}
 		// Jaccard Index
-		if (float64(n) / float64(len(fpList[i]) + len(fpList[targetDoc]) - n)) > threshold {
+		if (float64(n) / float64(len(fpList[i]) + len(fpList[targetDoc]) - n)) >= threshold {
 			highScoring[i] = true
 		}  
+		totalSim += (float64(n) / float64(len(fpList[i]) + len(fpList[targetDoc]) - n))
+		total += 1
 	}
 	
 	return highScoring
@@ -91,6 +98,7 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 		documentAdjacencyList = getSimilarLsh(docs)
 	} else if flags.FpType == common.ModFP {
 		documentAdjacencyList = getSimilarModP(docs)
+		fmt.Println("Average: ", totalSim/float64(total))
 	} else if flags.FpType == common.Winnowing {
 		documentAdjacencyList = getSimilarWinnowing(docs)
 	}

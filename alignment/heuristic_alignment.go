@@ -144,6 +144,46 @@ func bandedDp(matchReward int, gapCost int, a []rune , b []rune, maxBaDiff int, 
     return score, reverseInt(aIndices), reverseInt(bIndices)
 }
 
+
+func findPeakRegion(diagonalSums map[int]int, width int) (int, int) {
+    min := 0
+    max := 0
+    maxVal := 0
+    for width, value := range diagonalSums {
+        if width < min {
+            min = width
+        } 
+        if width > max {
+            max = width
+        } 
+        if value > maxVal {
+            maxVal = value
+        }
+    }
+        
+    if width <= max - min {
+        return maxVal, (max - min) / 2
+    }
+    
+    bestAbDiff := 0
+    maxMatchSum := 0
+    for i:= min; i < min + width; i++ {
+        maxMatchSum += diagonalSums[i] 
+    }
+    currentSum := maxMatchSum
+    bestAbDiff = min / 2
+    for current := min + width; current <= max; current++ {
+        currentSum += diagonalSums[current]
+        currentSum -= diagonalSums[current]
+        if currentSum > maxMatchSum {
+            maxMatchSum = currentSum
+            bestAbDiff = (current - width) / 2
+        }
+    }
+    return maxMatchSum, bestAbDiff
+}
+
+
 func HeuristicAlignment(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
     k := flags.ShingleSize
     bandSize := 20
@@ -152,16 +192,9 @@ func HeuristicAlignment(matchReward int, gapCost int, a []rune, b []rune) (int, 
     tableB := getKwords(b, k)
     diagonalSums := getDiagonalSums(k - len(b), len(a) - k, tableA, tableB)
     
-    maxMatches := 0
-    bestAbDiff := 0
-    for abDiff, matches := range diagonalSums {
-        if matches > maxMatches {
-            maxMatches = matches
-            bestAbDiff = abDiff
-        } 
-    }
+    maxMatchSum, bestAbDiff := findPeakRegion(diagonalSums, bandSize)
     
-    if maxMatches == 0 {
+    if maxMatchSum == 0 {
         return 0.0, []int{}, []int{}
     }
     
