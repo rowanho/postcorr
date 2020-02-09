@@ -8,7 +8,10 @@ def scrape_doc(url):
     try:
         data = urllib.request.urlopen(url)
         for line in data:
-            ret.append(line.decode('utf-8'))
+            try:
+                ret.append(line.decode('utf-8'))
+            except:
+                return ""
         return '\n'.join(ret)
     except urllib.error.HTTPError as e:
         return ""
@@ -30,7 +33,7 @@ def get_reuse_metric(k, text):
 def main():
     base = "http://www.gutenberg.org/files"
     metrics = []
-    for no in range(1, 10):
+    for no in range(1, 1000):
         print(no)
         url = f"{base}/{no}/{no}-0.txt"
         alt_url = f"{base}/{no}/{no}.txt"

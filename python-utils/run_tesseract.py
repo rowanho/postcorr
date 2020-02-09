@@ -10,19 +10,20 @@ def tesseract_plaintext(filename):
     return text
 
 # Traverses the dataset and runs ocr
-def perform_traversal(rootDir, outdir):
+def perform_traversal(rootDir, outdir, name):
     os.mkdir(outdir)
     for dir_name, subdir_list, file_list in os.walk(rootDir):
         for fname in file_list:
             image_text = tesseract_plaintext(os.path.join(dir_name, fname))
             froot = fname.split('.')[0]
-            with open(os.path.join(outdir, froot + '.txt'), 'w') as f:
+            with open(os.path.join(outdir, name + 'txt'), 'a') as f:
                 f.write(image_text.encode('utf-8'))
             
 def main():
     image_path = sys.argv[1]
     output_path = sys.argv[2]
-    perform_traversal(image_path, output_path)
+    name = sys.argv[3]
+    perform_traversal(image_path, output_path, name)
     
 if __name__ == '__main__':
     main()
