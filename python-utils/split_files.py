@@ -14,13 +14,8 @@ def main(in_fn, out_dir, split_length):
         with open(os.path.join(out_dir, str(i)), 'w') as outfile:
             outfile.write(text[start: start + split_length])
     
-    
-    
-    
-
 if __name__ == "__main__":
     in_file = sys.argv[1]
     output_dir = sys.argv[2]
     split_length = int(sys.argv[3])
     main(in_file, output_dir, split_length)
-    
