@@ -13,8 +13,11 @@ def main(base_path, out_dir):
     os.mkdir(out_dir)
     while True:
         try:
-             path = "{}{:03d}.png".format(base_path, n)
-             write_image(path, out_dir)
+            path = "{}{:03d}.png".format(base_path, n)
+            req = requests.get(path)
+            if req.status_code != 200:
+                break
+            write_image(path, out_dir)
         except:
             break
         n += 1

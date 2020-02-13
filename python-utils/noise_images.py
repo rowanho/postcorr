@@ -1,4 +1,4 @@
-import random, os, sys
+import random, os, sys, time
 import cv2
 import numpy as np
 
@@ -35,10 +35,10 @@ if __name__ == "__main__":
     os.mkdir(outdir)
     for filename in os.listdir(dir):
         print(filename)
-        img = cv2.imread(os.path.join(dir, filename))
+        img = cv2.imread(os.path.join(dir, filename),0)
         
         processed_img = erode(img, erosion_size)
-        processed_img = add_noise(img, prob)
+        processed_img = add_noise(processed_img, prob)
         cv2.imwrite(os.path.join(outdir, filename), processed_img)
 
     

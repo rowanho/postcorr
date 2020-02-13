@@ -1,4 +1,6 @@
 *.txt
+*.png
+*.jpg
 postCorr
 test_dataset
 corrected*
