@@ -7,6 +7,7 @@ package flags
 var DirName string
 var OutDir string
 var FormatType string
+var WriteData bool
 var WriteOutput bool
 var FpType string
 var JaccardThreshold float64

@@ -18,6 +18,7 @@ func main() {
 	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
 	formatType := flag.String("format", common.Plaintext, "the dataset file format")
+	writeData := flag.Bool("writeData", false, "Whether to write data to file for eg: distribution plot.")
 	
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	jaccardThreshold := flag.Float64("jaccard", 0.05, "Jaccard index threshold for similarity")
@@ -33,6 +34,7 @@ func main() {
 	flags.DirName = *dirName
 	flags.OutDir = *outDir
 	flags.FormatType = *formatType
+	flags.WriteData = * writeData
 	flags.FpType = *fpType
 	flags.ShingleSize = * shingleSize
 	flags.JaccardThreshold = *jaccardThreshold
