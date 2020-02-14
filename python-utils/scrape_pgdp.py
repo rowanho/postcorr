@@ -33,14 +33,14 @@ def get_reuse_metric(k, text):
 def main():
     base = "http://www.gutenberg.org/files"
     metrics = []
-    for no in range(42000, 42200):
+    for no in range(51000, 53000):
         print(no)
         url = f"{base}/{no}/{no}-0.txt"
         alt_url = f"{base}/{no}/{no}.txt"
         text = scrape_doc(url)
         text2 = scrape_doc(alt_url)
         text = text2 if len(text2) > len(text) else text
-        m = get_reuse_metric(5, text)
+        m = get_reuse_metric(40, text)
         print(len(text), m)
         metrics.append((m, no))
     
