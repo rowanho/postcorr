@@ -6,3 +6,4 @@ test_dataset
 corrected*
 image_dataset
 eval
+logs

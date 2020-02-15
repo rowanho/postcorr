@@ -3,9 +3,9 @@ package fingerprinting
 import (
 	"postCorr/common"
 	"postCorr/flags"
+	"postCorr/readWrite"
 	
 	"fmt"
-	"os"
 	
 	inverted "github.com/rowanho/Inverted-Index-Generator/invertedindex"
 )
@@ -47,16 +47,6 @@ func invertedIndexHighScores(fpList []map[uint64]bool, targetDoc int, invertedIn
 	}
 	
 	return highScoring
-}
-
-func writeScores() {
-	f, _ := os.Create(fmt.Sprintf("%s_jaccard_indexes%d.txt", flags.DirName, flags.ShingleSize))
-	defer f.Close()
-	
-	for _, j := range scores {
-		f.WriteString(fmt.Sprintf("%f", j) + "\n")
-	}
-
 }
 
 func getSimilarLsh(docs []common.Document) map[int]map[int]bool {
@@ -124,7 +114,7 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	fmt.Printf("Average jaccard index was %6.3f ", totalSum / float64(total))
 	
 	if flags.WriteData {
-		writeScores()
+		readWrite.SerialiseJaccards(scores)
 	}
 	
 	return documentAdjacencyList

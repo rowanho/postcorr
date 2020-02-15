@@ -6,6 +6,7 @@ package flags
 
 var DirName string
 var OutDir string
+var LogDir string
 var FormatType string
 var WriteData bool
 var WriteOutput bool
