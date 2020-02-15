@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"strconv"
+	"path"
 )
 var first = true
 
@@ -27,7 +28,7 @@ func PlaintextWrite(docId string, text []rune) error {
 	
 	split := strings.Split(docId, "/")
 	fn := split[len(split)-1]
-	dirName := flags.OutDir + "/" + docId[:len(docId)-len(fn)]
+	dirName := path.Join(flags.OutDir, docId[:len(docId)-len(fn)])
 	os.MkdirAll(dirName, os.ModePerm)
 	f, err := os.Create(dirName + fn)
 

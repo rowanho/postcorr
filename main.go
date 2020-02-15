@@ -15,6 +15,7 @@ import (
 func main() {
 	dirName := flag.String("input", "test_dataset", "path to dataset")
 	outDir := flag.String("output", "corrected_data", "Folder to write the output data to")
+	logDir := flag.String("logFolder", "logs", "Folder to write logs to")
 	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
 	formatType := flag.String("format", common.Plaintext, "the dataset file format")
@@ -33,6 +34,7 @@ func main() {
 	flags.WriteOutput = *writeOutput
 	flags.DirName = *dirName
 	flags.OutDir = *outDir
+	flags.LogDir = *logDir
 	flags.FormatType = *formatType
 	flags.WriteData = * writeData
 	flags.FpType = *fpType
@@ -83,6 +85,10 @@ func execute() {
 		} else {
 			alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)
 		}
+		
+		if flags.WriteData {
+			readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
+		}
 		scoreSum := 0
 		for _, al := range alignments {
 			scoreSum += al.Score 
@@ -105,7 +111,8 @@ func execute() {
 		fmt.Printf("Mean edit distance after correction: %5.2f \n", correctedStats.Mean)
 		
 		if len(correctedDocs) > 0 {
-			fmt.Printf("Out of %d the corrected documents, mean edit distance improved from %5.2f to %5.2f \n", len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
+			fmt.Printf("Out of %d the corrected documents, mean edit distance improved from %5.2f to %5.2f \n", 
+							len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
 		} else {
 			fmt.Println("No documents corrected!")
 		}

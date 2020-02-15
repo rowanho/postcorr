@@ -202,5 +202,8 @@ func HeuristicAlignment(matchReward int, gapCost int, a []rune, b []rune) (int, 
     maxBaDiff := Min(bestBaDiff + bandSize / 2, len(b) - 1)
     minBaDiff := Max(bestBaDiff - bandSize / 2, 1 - len(a))
     
+    if maxBaDiff - minBaDiff <= 0 {
+        return 0.0, []int{}, []int{}        
+    }
     return bandedDp(matchReward, gapCost, a, b, maxBaDiff, minBaDiff)
 }
