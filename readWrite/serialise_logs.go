@@ -12,8 +12,8 @@ import (
 )
 
 type Edge = struct {
-    DocumentID string
-    Score int
+    DocumentID string `json:"docId"`
+    Score int `json:"score"`
 }
 
 func SerialiseGraph(alignments map[string]common.Alignment, alignmentsPerDocument map[string][]string) {

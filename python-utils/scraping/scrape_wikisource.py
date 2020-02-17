@@ -94,9 +94,14 @@ def download_page_images(dir, ext):
     page_links = get_page_links(ext)
     os.mkdir(dir)
     for l in page_links:
-        text = get_page_text(l)    
-        with open(os.path.join(dir, f'{n}.txt')) as file:
-            file.write(text)
+        res = requests.get(base + l)
+        parser = BeautifulSoup(res.text, 'html.parser')
+        img_wrapper = parser.find('div', class_='prp-page-image')
+        img_src = img_wrapper.find('img')['src']
+        image_data = requests.get(base + img_src).content
+        extension = img_src.split('.')[-1]
+        with open(f'{n}.{extension}')) as file:
+            file.write(image_data)
         n += 1
     
 def hs():
