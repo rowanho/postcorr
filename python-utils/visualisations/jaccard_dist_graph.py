@@ -10,13 +10,15 @@ def jaccards_from_file(fn):
     
 def main():
     root_dir = sys.argv[1]
-    ks = [4, 6, 8]
+    ks = [3,5,7]
     labels = [f'k={k}' for k in ks]
     hist_arrays = []
     for k in ks:
         fn = f'{root_dir}_jaccard_indexes{k}.txt'
         hist_arrays.append(jaccards_from_file(fn))
     plt.hist(hist_arrays, bins=100, label=labels)
+    plt.xlabel('Jaccard Index Score')
+    plt.ylabel('Frequency')
     plt.legend()
     plt.show()
     

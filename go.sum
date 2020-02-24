@@ -81,6 +81,8 @@ github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116134146-7087eb18edf3 h
 github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116134146-7087eb18edf3/go.mod h1:+0SaqpfDp2IvibcVqLJ/qT6SVH7HVs+reMxsSRaAYyw=
 github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116144658-9002df3996f3 h1:TR0mLVdNCAslb1NiDTmXLZH7hOoWzFpFF3Kyb8abkkI=
 github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116144658-9002df3996f3/go.mod h1:+0SaqpfDp2IvibcVqLJ/qT6SVH7HVs+reMxsSRaAYyw=
+github.com/rowanho/Inverted-Index-Generator v0.0.0-20200224174131-79bdaa914849 h1:LCBbUlo5qg/L+o1ZyFRBFzxqoHpVPkRIT5BdDjiiZ28=
+github.com/rowanho/Inverted-Index-Generator v0.0.0-20200224174131-79bdaa914849/go.mod h1:+0SaqpfDp2IvibcVqLJ/qT6SVH7HVs+reMxsSRaAYyw=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9/go.mod h1:SnhjPscd9TpLiy1LpzGSKh3bXCfxxXuqd9xmQJy3slM=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

@@ -54,15 +54,17 @@ def get_page_links(ext):
     return links
 
 def get_high_scorers(links, n, k):
+    start = 500
+    end = 550
     link_scores = []
-    for l in links:
+    for l in links[start:end]:
         page_texts = []
         page_links = get_page_links(l)
         for pl in page_links:
             page_texts.append(get_page_text(pl))
         text = '\n'.join(page_texts)
         score = get_reuse_metric(k, text)
-        print(len(text), score)
+        print(l, len(text), score)
         link_scores.append((score, l))
         
     link_scores.sort(key=lambda x: x[0], reverse=True)
@@ -85,7 +87,7 @@ def download_page_texts(dir, ext):
     os.mkdir(dir)
     for l in page_links:
         text = get_page_text(l)    
-        with open(os.path.join(dir, f'{n}.txt')) as file:
+        with open(os.path.join(dir, f'{n}.txt'), 'w') as file:
             file.write(text)
         n += 1
 
@@ -98,9 +100,9 @@ def download_page_images(dir, ext):
         parser = BeautifulSoup(res.text, 'html.parser')
         img_wrapper = parser.find('div', class_='prp-page-image')
         img_src = img_wrapper.find('img')['src']
-        image_data = requests.get(base + img_src).content
+        image_data = requests.get('https:' + img_src).content
         extension = img_src.split('.')[-1]
-        with open(f'{n}.{extension}')) as file:
+        with open(os.path.join(dir, f'{n}.{extension}'), 'wb') as file:
             file.write(image_data)
         n += 1
     
@@ -114,8 +116,9 @@ def main():
     image_dir = sys.argv[2]
     text_dir = sys.argv[3]
     
-    download_page_images(ext, image_dir)
-    download_page_texts(ext, text_dir)
+    download_page_images(image_dir, ext)
+    download_page_texts(text_dir, ext)
     
 if __name__ == '__main__':
+    #hs()
     main()

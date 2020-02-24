@@ -30,7 +30,7 @@ func PlaintextWrite(docId string, text []rune) error {
 	fn := split[len(split)-1]
 	dirName := path.Join(flags.OutDir, docId[:len(docId)-len(fn)])
 	os.MkdirAll(dirName, os.ModePerm)
-	f, err := os.Create(dirName + fn)
+	f, err := os.Create(path.Join(dirName, fn))
 
 	if err != nil {
 		fmt.Errorf("Error, couldn't create file: %s", err)

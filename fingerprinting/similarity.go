@@ -6,47 +6,93 @@ import (
 	"postCorr/readWrite"
 	
 	"fmt"
+	"sort"
 	
 	inverted "github.com/rowanho/Inverted-Index-Generator/invertedindex"
 )
+
 var total int = 0 
 var totalSum float64 = 0.0
 var scores []float64 = []float64{}
+var score map[int]map[int]float64 = make(map[int]map[int]float64, 0)
+var bools map[int]map[int]bool = make(map[int]map[int]bool, 0)
+
+func max_int(x int, y int) int {
+	if x > y {
+		return x
+	} else {
+		return y
+	}
+}
+
+func min_int(x int, y int) int {
+	if x < y {
+		return x
+	} else {
+		return y
+	}	
+}
 
 /**
 * Using the inverted index, outputs the documents that have higher matches than the threshold docs
 **/
-func invertedIndexHighScores(fpList []map[uint64]bool, targetDoc int, invertedIndex inverted.InvertedIndex, threshold float64) map[int]bool {
+func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedIndex inverted.InvertedIndex, threshold float64) {
 	numMatches := make([]int, len(fpList))
 	
 	for fp := range fpList[targetDoc] {
 		contains := inverted.Find(invertedIndex, fp)
-		for _, c := range contains {
-			numMatches[c] += 1
+		if flags.JaccardType == common.WeightedJaccard {
+			for _, c := range contains {
+				// Add the minimum of the two counts
+					numMatches[c] += min_int(fpList[c][fp], fpList[targetDoc][fp])
+			} 
+		} else {
+			for _, c := range contains {
+				numMatches[c] += 1
+			}						
 		}
 	}
 	
-	highScoring := make(map[int]bool)
+	score[targetDoc] = make(map[int]float64)
+	bools[targetDoc] = make(map[int]bool)
 	for i, n := range numMatches {
 		if i == targetDoc {
 			continue;
 		}
-		// Jaccard Index
-		l := len(fpList[i]) + len(fpList[targetDoc]) - n
 		jaccard := 0.0
-		if l > 0 {
-			jaccard = (float64(n) / float64(len(fpList[i]) + len(fpList[targetDoc]) - n))
+		if flags.JaccardType == common.WeightedJaccard {
+			maxSum := 0
+			for fp, freq := range fpList[i] {
+				if _, exists := fpList[targetDoc][fp]; !exists {
+					maxSum += freq
+				} else {
+					maxSum += max_int(fpList[targetDoc][fp], freq)					
+				}
+			}
+			for fp, freq := range fpList[targetDoc] {
+				if _, exists := fpList[i][fp]; !exists {
+					maxSum +=  freq
+				}
+			}
+			if maxSum > 0 {
+				jaccard = float64(n) / float64(maxSum)
+			}
+			
+		} else {
+			// Jaccard Index
+			l := len(fpList[i]) + len(fpList[targetDoc]) - n
+			if l > 0 {
+				jaccard = (float64(n) / float64(len(fpList[i]) + len(fpList[targetDoc]) - n))
+			}
 		}
 		
-		if  jaccard >= threshold {
-			highScoring[i] = true
-		}  
 		totalSum += jaccard
 		total += 1
+		
 		scores = append(scores, jaccard)
+		score[targetDoc][i] = jaccard
+		bools[targetDoc][i] = true
 	}
-	
-	return highScoring
 }
 
 func getSimilarLsh(docs []common.Document) map[int]map[int]bool {
@@ -72,32 +118,28 @@ func getSimilarLsh(docs []common.Document) map[int]map[int]bool {
 	return documentAdjacencyList
 }
 
-func getSimilarModP(docs []common.Document) map[int]map[int]bool {
-	fps := make([]map[uint64]bool, len(docs))
+func getSimilarModP(docs []common.Document) {
+	fps := make([]map[uint64]int, len(docs))
 	for i, doc := range docs {
 		fp := ModP(preProcess(string(doc.Text)), flags.ShingleSize, flags.P)
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)
-	documentAdjacencyList := make(map[int]map[int]bool)
 	for i := range fps {
-		documentAdjacencyList[i] = invertedIndexHighScores(fps, i, invertedIndex, flags.JaccardThreshold)
+		invertedIndexHighScores(fps, i, invertedIndex, flags.JaccardThreshold)
 	}
-	return documentAdjacencyList
 }
 
-func getSimilarWinnowing(docs []common.Document) map[int]map[int]bool {
-	fps := make([]map[uint64]bool, len(docs))
+func getSimilarWinnowing(docs []common.Document) {
+	fps := make([]map[uint64]int, len(docs))
 	for i, doc := range docs {
 		fp := Winnowing(preProcess(string(doc.Text)), flags.ShingleSize, flags.WinnowingWindow)	
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)
-	documentAdjacencyList := make(map[int]map[int]bool)
 	for i := range fps {
-		documentAdjacencyList[i] = invertedIndexHighScores(fps, i, invertedIndex, flags.JaccardThreshold)
+		invertedIndexHighScores(fps, i, invertedIndex, flags.JaccardThreshold)
 	}
-	return documentAdjacencyList
 }
 
 
@@ -106,16 +148,41 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	if flags.FpType == common.MinhashFP {
 		documentAdjacencyList = getSimilarLsh(docs)
 	} else if flags.FpType == common.ModFP {
-		documentAdjacencyList = getSimilarModP(docs)
+		getSimilarModP(docs)
 	} else if flags.FpType == common.Winnowing {
-		documentAdjacencyList = getSimilarWinnowing(docs)
+		getSimilarWinnowing(docs)
 	}
 	fmt.Println(total)
-	fmt.Printf("Average jaccard index was %6.3f ", totalSum / float64(total))
+	fmt.Printf("Average jaccard index was %6.3f \n", totalSum / float64(total))
 	
-	if flags.WriteData {
-		readWrite.SerialiseJaccards(scores)
+	
+	pos := 0
+	if flags.FpType != common.MinhashFP {
+		proportion := flags.SimilarityProportion
+		sort.Float64s(scores)
+		l := len(docs)
+		numPairs := l*l - l
+		threshold := 0.0
+		numP := int(proportion * float64(numPairs))
+		if  numP < len(scores) {
+			threshold = scores[len(scores) - 1]
+		
+			threshold = scores[len(scores) - 1 - numP]
+		
+			for doc1 := range(score) {
+				for doc2, s := range(score[doc1]) {
+					if s < threshold {
+						delete(bools[doc1], doc2)					
+					} 
+				}
+			}
+		}
+		
+		documentAdjacencyList = bools
 	}
-	
-	return documentAdjacencyList
+	if flags.WriteData {
+		readWrite.SerialiseJaccards(scores[pos:])
+	}
+
+	return documentAdjacencyList		
 }

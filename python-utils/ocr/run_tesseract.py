@@ -16,7 +16,7 @@ def perform_traversal(rootDir, outdir):
         for fname in file_list:
             image_text = tesseract_plaintext(os.path.join(dir_name, fname))
             froot = fname.split('.')[0]
-            with open(os.path.join(outdir, froot + 'txt'), 'a') as f:
+            with open(os.path.join(outdir, froot + '.txt'), 'a') as f:
                 f.write(image_text)
             
 

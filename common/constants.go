@@ -22,9 +22,18 @@ const Plaintext = "plaintext"
 const MinhashFP = "minhash"
 const ModFP = "modp"
 const Winnowing = "winnowing"
+
 /**
 * Define different alignment algorithms here
 **/
 
 const HeuristicAlignment = "blast"
 const SwAlignment = "smith_waterman"
+
+/**
+* Define similarity algorithms here
+**/
+
+const Jaccard = "regular"
+const WeightedJaccard = "weighted"
+
