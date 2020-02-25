@@ -17,7 +17,7 @@ func main() {
 	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
 	writeData := flag.Bool("writeData", false, "Whether to write data to file for eg: distribution plot.")
-	
+	detailedEvaluation := flag.Bool("detailed_eval", false, "Whether to run detailed evaluation of edit distance.")
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	similarityProportion := flag.Float64("proportion", 0.05, "The proportion of document pairs to align")
 	jaccardType := flag.String("jaccard", common.WeightedJaccard, "The type of jaccard similarity, 'regular' or 'weighted'")
@@ -33,6 +33,7 @@ func main() {
 	flags.DirName = *dirName
 	flags.WriteData = * writeData
 	flags.FpType = *fpType
+	flags.DetailedEvaluation = *detailedEvaluation
 	flags.ShingleSize = * shingleSize
 	flags.SimilarityProportion = *similarityProportion
 	flags.JaccardType = * jaccardType

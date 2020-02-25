@@ -10,6 +10,14 @@ github.com/rowanho/go-minhash v0.0.0-20190315135803-ad340ca03076 h1:ef2LdJx+uSxU
 github.com/rowanho/go-minhash v0.0.0-20190315135803-ad340ca03076/go.mod h1:WvZvk6e64vN73oxYPnGcRF0Bd+jB8/UavTLGtmuMvUE=
 github.com/rowanho/levenshtein v1.0.4-0.20200225165721-b398f9d5afff h1:ieDCV3H3g+saYgsVq92uKXvvLAL+wKa0Hj1URRd5t8g=
 github.com/rowanho/levenshtein v1.0.4-0.20200225165721-b398f9d5afff/go.mod h1:KjKcPe17D4s4k62dGEGIHeB692Y56vERrZNa9fbBRMI=
+github.com/rowanho/levenshtein v1.0.4-0.20200225172154-5c6441150f7e h1:pMgLiZCQj4QrAIAlxe0LY6nE/6BTqJtTjgobg9enfqs=
+github.com/rowanho/levenshtein v1.0.4-0.20200225172154-5c6441150f7e/go.mod h1:G3FZewcd7ZUbXK5idjO0olPfeeLKiZIBGxmqC2TA8JY=
+github.com/rowanho/levenshtein v1.0.4-0.20200225174019-fdf745aba331 h1:jbJJO+nrE6yQQpp5fK8grgokTdYeQlPEdXOwEozp/8Y=
+github.com/rowanho/levenshtein v1.0.4-0.20200225174019-fdf745aba331/go.mod h1:G3FZewcd7ZUbXK5idjO0olPfeeLKiZIBGxmqC2TA8JY=
+github.com/rowanho/levenshtein v1.0.4-0.20200225200017-144a3cbc39e1 h1:Ji4whXPHjwdrODqwm7wMPn5jNt6p+hGu3pd9zFZRUf8=
+github.com/rowanho/levenshtein v1.0.4-0.20200225200017-144a3cbc39e1/go.mod h1:Xear9t2V+ypYATli+XeuC4NA+dr+9Sz+KzwX0coy1Yc=
+github.com/rowanho/levenshtein v1.0.4-0.20200225201351-6e2d6d4aaf9a h1:Jqn3BEWBZbkmWswFV9j/vJU4pH00ax4Kn+yuZzWuESM=
+github.com/rowanho/levenshtein v1.0.4-0.20200225201351-6e2d6d4aaf9a/go.mod h1:Xear9t2V+ypYATli+XeuC4NA+dr+9Sz+KzwX0coy1Yc=
 golang.org/x/text v0.3.2 h1:tW2bmiBqwgJj/UpqtC8EpXEZVYOwU0yG4iWbprSVAcs=
 golang.org/x/text v0.3.2/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
