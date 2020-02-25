@@ -24,7 +24,6 @@ func main() {
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	similarityProportion := flag.Float64("proportion", 0.05, "The proportion of document pairs to align")
 	jaccardType := flag.String("jaccard", common.WeightedJaccard, "The type of jaccard similarity, 'regular' or 'weighted'")
-	jaccardThreshold := flag.Float64("threshold",0.05, "Fixed threshold for jaccard similarity, for LSH")
 	shingleSize := flag.Int("shingleSize", 7, "Length of shingle")
 	parallel := flag.Bool("parallel", false, "Whether or not to run alignments in parallel with goroutines")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
@@ -41,7 +40,6 @@ func main() {
 	flags.WriteData = * writeData
 	flags.FpType = *fpType
 	flags.ShingleSize = * shingleSize
-	flags.JaccardThreshold = *jaccardThreshold
 	flags.SimilarityProportion = *similarityProportion
 	flags.JaccardType = * jaccardType
 	flags.Parallel = *parallel

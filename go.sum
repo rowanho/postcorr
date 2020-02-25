@@ -15,8 +15,12 @@ github.com/aws/aws-sdk-go v1.25.25/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpi
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/dgryski/go-metro v0.0.0-20180109044635-280f6062b5bc h1:8WFBn63wegobsYAX0YjD+8suexZDga5CctH4CCTx2+8=
+github.com/dgryski/go-metro v0.0.0-20180109044635-280f6062b5bc/go.mod h1:c9O8+fpSOX1DM8cPNSkX/qsBWdkD4yd2dpciOWQjpBw=
 github.com/dgryski/go-minhash v0.0.0-20190315135803-ad340ca03076 h1:EB7M2v8Svo3kvIDy+P1YDE22XskDQP+TEYGzeDwPAN4=
 github.com/dgryski/go-minhash v0.0.0-20190315135803-ad340ca03076/go.mod h1:VBi0XHpFy0xiMySf6YpVbRqrupW4RprJ5QTyN+XvGSM=
+github.com/dgryski/go-spooky v0.0.0-20170606183049-ed3d087f40e2 h1:lx1ZQgST/imDhmLpYDma1O3Cx9L+4Ie4E8S2RjFPQ30=
+github.com/dgryski/go-spooky v0.0.0-20170606183049-ed3d087f40e2/go.mod h1:hgHYKsoIw7S/hlWtP7wD1wZ7SX1jPTtKko5X9jrOgPQ=
 github.com/dgryski/trifles v0.0.0-20190318185328-a8d75aae118c/go.mod h1:if7Fbed8SFyPtHLHbg49SI7NAdJiC5WIA09pe59rfAA=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
@@ -83,6 +87,8 @@ github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116144658-9002df3996f3 h
 github.com/rowanho/Inverted-Index-Generator v0.0.0-20200116144658-9002df3996f3/go.mod h1:+0SaqpfDp2IvibcVqLJ/qT6SVH7HVs+reMxsSRaAYyw=
 github.com/rowanho/Inverted-Index-Generator v0.0.0-20200224174131-79bdaa914849 h1:LCBbUlo5qg/L+o1ZyFRBFzxqoHpVPkRIT5BdDjiiZ28=
 github.com/rowanho/Inverted-Index-Generator v0.0.0-20200224174131-79bdaa914849/go.mod h1:+0SaqpfDp2IvibcVqLJ/qT6SVH7HVs+reMxsSRaAYyw=
+github.com/rowanho/go-minhash v0.0.0-20190315135803-ad340ca03076 h1:ef2LdJx+uSxUYmUJPDuGjV3J+b+h/U0EqFir9KQ6ZVM=
+github.com/rowanho/go-minhash v0.0.0-20190315135803-ad340ca03076/go.mod h1:WvZvk6e64vN73oxYPnGcRF0Bd+jB8/UavTLGtmuMvUE=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9/go.mod h1:SnhjPscd9TpLiy1LpzGSKh3bXCfxxXuqd9xmQJy3slM=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

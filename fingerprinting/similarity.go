@@ -8,6 +8,10 @@ import (
 	"fmt"
 	"sort"
 	
+	minhash "github.com/rowanho/go-minhash"
+	spooky "github.com/dgryski/go-spooky"
+	metro "github.com/dgryski/go-metro"
+	
 	inverted "github.com/rowanho/Inverted-Index-Generator/invertedindex"
 )
 
@@ -95,27 +99,31 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 	}
 }
 
-func getSimilarLsh(docs []common.Document) map[int]map[int]bool {
-	GetLSHObject(100, flags.JaccardThreshold, len(docs))
-	fps := make([]common.LSH_fp, len(docs))
-	for i, doc := range docs {
-		fp := MinHash(i, preProcess(string(doc.Text)), 7)
-		fps[i] = fp
-	}
-	
-	IndexMinHashObject()
-
-	documentAdjacencyList := make(map[int]map[int]bool)
-	for i, fp := range fps {
-		documentAdjacencyList[i] = make(map[int]bool)
-		sameBucketIds := SameBucketIds(fp.Signature)
-		for _, id := range sameBucketIds {
-			if id != i {
-				documentAdjacencyList[i][id] = true
-			}
+func mhash(b []byte) uint64 { return metro.Hash64(b, 0) } 
+func getSimilarLsh(docs []common.Document) {
+	ms := make([]*minhash.MinWise, len(docs))
+	for i, doc := range(docs) {
+		ms[i] = minhash.NewMinWise(spooky.Hash64, mhash, 100)
+		for j := 0; j+flags.ShingleSize < len(doc.Text) + 1; j++ {
+			ms[i].Push([]byte(string(doc.Text[j : j+flags.ShingleSize])))				
 		}
 	}
-	return documentAdjacencyList
+	
+	for i := range(docs) {
+		score[i] = make(map[int]float64)
+		bools[i] = make(map[int]bool)
+		for j := range(docs) {
+			if i == j {
+				continue;
+			}
+			s := ms[i].Similarity(ms[j])
+			score[i][j] = s
+			bools[i][j] = true
+			total += 1
+			totalSum += s
+			scores = append(scores, s)
+		}
+	}		
 }
 
 func getSimilarModP(docs []common.Document) {
@@ -146,7 +154,7 @@ func getSimilarWinnowing(docs []common.Document) {
 func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	var documentAdjacencyList map[int]map[int]bool
 	if flags.FpType == common.MinhashFP {
-		documentAdjacencyList = getSimilarLsh(docs)
+		getSimilarLsh(docs)
 	} else if flags.FpType == common.ModFP {
 		getSimilarModP(docs)
 	} else if flags.FpType == common.Winnowing {
@@ -157,29 +165,28 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	
 	
 	pos := 0
-	if flags.FpType != common.MinhashFP {
-		proportion := flags.SimilarityProportion
-		sort.Float64s(scores)
-		l := len(docs)
-		numPairs := l*l - l
-		threshold := 0.0
-		numP := int(proportion * float64(numPairs))
-		if  numP < len(scores) {
-			threshold = scores[len(scores) - 1]
-		
-			threshold = scores[len(scores) - 1 - numP]
-		
-			for doc1 := range(score) {
-				for doc2, s := range(score[doc1]) {
-					if s < threshold {
-						delete(bools[doc1], doc2)					
-					} 
-				}
+	proportion := flags.SimilarityProportion
+	sort.Float64s(scores)
+	l := len(docs)
+	numPairs := l*l - l
+	threshold := 0.0
+	numP := int(proportion * float64(numPairs))
+	if  numP < len(scores) {
+		threshold = scores[len(scores) - 1]
+	
+		threshold = scores[len(scores) - 1 - numP]
+	
+		for doc1 := range(score) {
+			for doc2, s := range(score[doc1]) {
+				if s < threshold {
+					delete(bools[doc1], doc2)					
+				} 
 			}
 		}
-		
-		documentAdjacencyList = bools
 	}
+	
+	documentAdjacencyList = bools
+	
 	if flags.WriteData {
 		readWrite.SerialiseJaccards(scores[pos:])
 	}
