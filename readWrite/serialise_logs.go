@@ -38,15 +38,15 @@ func SerialiseGraph(alignments map[string]common.Alignment, alignmentsPerDocumen
     
     bytes, _ := json.Marshal(graphMap)
     fn := fmt.Sprintf("%s_graph%d.json",flags.DirName, flags.ShingleSize)
-    ioutil.WriteFile(path.Join(flags.LogDir, fn), bytes, 0644)
+    ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
 
 
 
 func SerialiseJaccards(scores []float64) {
-    os.Mkdir(flags.LogDir, os.ModePerm)
+    os.Mkdir(common.LogDir, os.ModePerm)
     fn := fmt.Sprintf("%s_jaccard_indexes%d.txt", flags.DirName, flags.ShingleSize)
-    f, _ := os.Create(path.Join(flags.LogDir, fn))
+    f, _ := os.Create(path.Join(common.LogDir, fn))
 	defer f.Close()
 	
 	for _, j := range scores {

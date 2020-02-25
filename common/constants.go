@@ -37,3 +37,8 @@ const SwAlignment = "smith_waterman"
 const Jaccard = "regular"
 const WeightedJaccard = "weighted"
 
+/**
+* Directory names
+**/
+const LogDir = "logs"
+const OutDir = "corrected"

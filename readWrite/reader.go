@@ -31,13 +31,10 @@ func TraverseDocs() ([]common.Document, error) {
 				return err
 			}
 			if info.IsDir() == false {
-				var readErr error = nil
-				var doc common.Document
 				subpath := path[len(flags.DirName) + 1:]
-				if flags.FormatType == common.Plaintext {
-					doc, readErr = plaintextRead(path, subpath)
-					docs = append(docs, doc)
-				}
+				doc, readErr := plaintextRead(path, subpath)
+				docs = append(docs, doc)
+				
 				if readErr != nil {
 					return readErr
 				}

@@ -23,7 +23,7 @@ func plaintextRead(filepath string, subpath string) (common.Document, error) {
 
 
 
-func ReadString(filepath string) (string, error){
+func ReadRunes(filepath string) ([]rune, error){
 	text, err := ioutil.ReadFile(filepath)
-	return string(text), err
+	return ConvToStandardUnicode(text), err
 }

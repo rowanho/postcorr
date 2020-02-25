@@ -1,7 +1,7 @@
 package readWrite
 
 import (
-	"postCorr/flags"
+	"postCorr/common"
 	
 	"fmt"
 	"os"
@@ -10,25 +10,25 @@ import (
 	"path"
 )
 var first = true
-
+var outdir = common.OutDir
 func PlaintextWrite(docId string, text []rune) error {
 
 	if first {
 		i := 0
-		newDir := flags.OutDir
+		newDir := common.OutDir
 		_, err := os.Stat(newDir)
 		for  !os.IsNotExist(err){
 			i +=  1
-			newDir =  flags.OutDir + strconv.Itoa(i)
+			newDir =  common.OutDir + strconv.Itoa(i)
 			_, err = os.Stat(newDir);
 		}
 		first = false
-		flags.OutDir = newDir
+		outdir = newDir
 	}
 	
 	split := strings.Split(docId, "/")
 	fn := split[len(split)-1]
-	dirName := path.Join(flags.OutDir, docId[:len(docId)-len(fn)])
+	dirName := path.Join(common.OutDir, docId[:len(docId)-len(fn)])
 	os.MkdirAll(dirName, os.ModePerm)
 	f, err := os.Create(path.Join(dirName, fn))
 

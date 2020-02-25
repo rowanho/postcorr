@@ -40,7 +40,7 @@ func min_int(x int, y int) int {
 /**
 * Using the inverted index, outputs the documents that have higher matches than the threshold docs
 **/
-func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedIndex inverted.InvertedIndex, threshold float64) {
+func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedIndex inverted.InvertedIndex) {
 	numMatches := make([]int, len(fpList))
 	
 	for fp := range fpList[targetDoc] {
@@ -134,7 +134,7 @@ func getSimilarModP(docs []common.Document) {
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)
 	for i := range fps {
-		invertedIndexHighScores(fps, i, invertedIndex, flags.JaccardThreshold)
+		invertedIndexHighScores(fps, i, invertedIndex)
 	}
 }
 
@@ -146,7 +146,7 @@ func getSimilarWinnowing(docs []common.Document) {
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)
 	for i := range fps {
-		invertedIndexHighScores(fps, i, invertedIndex, flags.JaccardThreshold)
+		invertedIndexHighScores(fps, i, invertedIndex)
 	}
 }
 

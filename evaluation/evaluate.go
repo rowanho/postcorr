@@ -6,10 +6,11 @@ import (
     "postCorr/common"
     
     "os"
+    "path"
     "path/filepath"
     "fmt"
     
-    "github.com/agnivade/levenshtein"
+    "github.com/rowanho/levenshtein"
 )
 
 
@@ -22,10 +23,10 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
     correctedDistances := make([]int, 0)
     docIds := make([]string, 0)
 	err := filepath.Walk(flags.DirName,
-		func(path string, info os.FileInfo, err error) error {
+		func(pth string, info os.FileInfo, err error) error {
             right := ""
-            if path != flags.DirName {
-                right = path[len(flags.DirName) + 1:]
+            if pth != flags.DirName {
+                right = pth[len(flags.DirName) + 1:]
             }
 			if err != nil {
 				return err
@@ -33,18 +34,15 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
 			if info.IsDir() == false {
                 _, correctable := correctedDocs[right]
 
-                var groundTruth string
-                var corrected string
-                var original string
-                var readErr error
+                var groundTruth []rune
+                var corrected []rune
                 
-				if flags.FormatType == common.Plaintext {
-					original, readErr = readWrite.ReadString(path)
-                    groundTruth, readErr = readWrite.ReadString(flags.Groundtruth + "/" + right)
-                    if correctable {
-                        corrected = string(docs[docMap[right]].Text)
-                    }
-				}
+				original, readErr := readWrite.ReadRunes(pth)
+                groundTruth, readErr = readWrite.ReadRunes(path.Join(flags.Groundtruth, right))
+                if correctable {
+                    corrected = docs[docMap[right]].Text
+                }
+				
                 
 				if readErr != nil {
                     fmt.Println(readErr)

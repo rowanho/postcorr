@@ -5,15 +5,11 @@ package flags
 **/
 
 var DirName string
-var OutDir string
-var LogDir string
-var FormatType string
 var WriteData bool
 var WriteOutput bool
 var FpType string
 var SimilarityProportion float64
 var JaccardType string
-var JaccardThreshold float64
 var Parallel bool
 var RunAlignment bool
 var ShingleSize int
