@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 from PIL import Image
 import pytesseract
@@ -42,6 +43,10 @@ def main():
     else:
         perform_traversal_single(image_path, output_path)
          
+
+def lint_text(text):
+    text = re.sub(' +',' ',text))
+    return text
     
 if __name__ == '__main__':
     main()

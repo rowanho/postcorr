@@ -18,6 +18,8 @@ github.com/rowanho/levenshtein v1.0.4-0.20200225200017-144a3cbc39e1 h1:Ji4whXPHj
 github.com/rowanho/levenshtein v1.0.4-0.20200225200017-144a3cbc39e1/go.mod h1:Xear9t2V+ypYATli+XeuC4NA+dr+9Sz+KzwX0coy1Yc=
 github.com/rowanho/levenshtein v1.0.4-0.20200225201351-6e2d6d4aaf9a h1:Jqn3BEWBZbkmWswFV9j/vJU4pH00ax4Kn+yuZzWuESM=
 github.com/rowanho/levenshtein v1.0.4-0.20200225201351-6e2d6d4aaf9a/go.mod h1:Xear9t2V+ypYATli+XeuC4NA+dr+9Sz+KzwX0coy1Yc=
+github.com/rowanho/levenshtein v1.0.4-0.20200226152522-1377989db536 h1:Gcv5fU7SUbCaFUi3YMpEToz+JXjZv8VFwFcQ+fuhD30=
+github.com/rowanho/levenshtein v1.0.4-0.20200226152522-1377989db536/go.mod h1:Xear9t2V+ypYATli+XeuC4NA+dr+9Sz+KzwX0coy1Yc=
 golang.org/x/text v0.3.2 h1:tW2bmiBqwgJj/UpqtC8EpXEZVYOwU0yG4iWbprSVAcs=
 golang.org/x/text v0.3.2/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=

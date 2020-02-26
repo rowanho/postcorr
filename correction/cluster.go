@@ -45,6 +45,10 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 			readWrite.PlaintextWrite(docID, documents[docMap[docID]].Text)
 		}
 	}
+	
+	if flags.WriteData {
+		readWrite.SerialiseVote(reuseGraph)
+	}
 
 	return correctedDocs, totalCorrections
 }
