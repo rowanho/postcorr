@@ -107,6 +107,12 @@ func Gotoh(matchReward int, gapOpen int, gapEx int, a []rune, b []rune) (int, []
             j -= 1                
         }
     }
+    d = nil
+    p = nil
+    q = nil
     
+    d_bc = nil
+    p_bc = nil
+    q_bc = nil
     return maxScore, reverseInt(aIndices), reverseInt(bIndices)
 }

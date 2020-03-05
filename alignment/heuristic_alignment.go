@@ -92,7 +92,7 @@ func bandedDp(matchReward int, gapCost int, a []rune , b []rune, maxBaDiff int, 
     maxI := loRow
     maxJ := loDiag - 1
     
-    h[0][loDiag - 1]  = math.MinInt32
+    h[loRow][loDiag - 1]  = math.MinInt32
     
     for i := loRow + 1; i < hiRow + 1; i ++ {
         if loDiag > 1 {
@@ -207,3 +207,4 @@ func HeuristicAlignment(matchReward int, gapCost int, a []rune, b []rune) (int, 
     }
     return bandedDp(matchReward, gapCost, a, b, maxBaDiff, minBaDiff)
 }
+

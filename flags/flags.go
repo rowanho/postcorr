@@ -16,5 +16,6 @@ var ShingleSize int
 var WinnowingWindow int
 var P int
 var Groundtruth string
+var Affine bool
 var FastAlign bool
 var NumAligns int

@@ -24,6 +24,7 @@ func main() {
 	shingleSize := flag.Int("shingleSize", 7, "Length of shingle")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
 	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
+	affine := flag.Bool("affine", true, "Whether or not to use affine gap scoring")
 	fastAlign := flag.Bool("fastAlign", false, "Whether or not to use heuristic alignment (faster but less accurate)")
 	p := flag.Int("p", 5, "P to mod by when using modp")
 	numAligns := flag.Int("numAligns", 2, "The number of disjoint alignments we attempt to make")
@@ -43,6 +44,7 @@ func main() {
 	flags.Groundtruth = *groundTruth
 	flags.FastAlign = *fastAlign
 	flags.NumAligns = *numAligns
+	flags.Affine = *affine
 	execute()
 }
 
@@ -75,7 +77,14 @@ func execute() {
 	
 	if flags.RunAlignment {
 		fmt.Println("Aligning")
-		alignments, alignmentsPerDocument := alignment.AlignParallel(documentAdjacencyList, docList)
+		var alignments map[string]common.Alignment
+		var alignmentsPerDocument map[string][]string
+		if flags.Affine && !flags.FastAlign {
+			// We might run  out of memory if we create a lot of go routines, best to use serial methods
+			alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)
+		} else {
+			alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList)
+		}
 		
 		if flags.WriteData {
 			readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
