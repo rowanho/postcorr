@@ -33,12 +33,14 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 
 	primText := documents[docMap[primaryDocumentID]].Text
 	for ind := minStart; ind < maxEnd; ind++ {
+		numVotes := 1
 		counts := map[rune]int{}
 		max := 1
 		maxRune := primText[ind]
 		counts[primText[ind]] = 1
 		for _, alMap := range alignmentMaps {
 			if val, exists := alMap.Mapping[ind]; exists {
+				numVotes += 1
 				r := documents[docMap[alMap.SecondaryDocumentID]].Text[val]
 				_, ok := counts[r]
 				if ok == true {
@@ -56,7 +58,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		//fmt.Println(counts)
 		//fmt.Println(primText[ind])
 
-		if primText[ind] != maxRune {
+		if primText[ind] != maxRune && max > numVotes / 2 {
 			primText[ind] = maxRune
 			noCorrections += 1
 		}

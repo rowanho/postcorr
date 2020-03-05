@@ -3,9 +3,7 @@ package alignment
 import (
 	"postCorr/common"
 	"postCorr/flags"
-	
-	"fmt"
-	
+		
 	"github.com/google/uuid"
 )
 
@@ -89,9 +87,9 @@ func GetAlignments(matchReward int, gapCost int, primary common.Document,
 		var secIndices []int
 		if flags.Affine {
 			if flags.FastAlign {
-				score, primIndices, secIndices = HeuristicAffineAlignment(2, 5, 1, primaryString, secondaryString)				
+				score, primIndices, secIndices = HeuristicAffineAlignment(2, 4, 1, primaryString, secondaryString)				
 			} else {
-				score, primIndices, secIndices = Gotoh(2, 5, 1, primaryString, secondaryString)			
+				score, primIndices, secIndices = Gotoh(2, 4, 1, primaryString, secondaryString)			
 			}
 		} else {
 			if flags.FastAlign {
@@ -100,7 +98,6 @@ func GetAlignments(matchReward int, gapCost int, primary common.Document,
 				score, primIndices, secIndices = SmithWaterman(matchReward, gapCost, primaryString, secondaryString)
 			}
 		}
-		fmt.Println(score, len(primIndices), len(secIndices))
 
 		if len(primIndices) == 0 {
 			break;
