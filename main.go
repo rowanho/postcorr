@@ -17,16 +17,16 @@ func main() {
 	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
 	writeData := flag.Bool("writeData", false, "Whether to write data to file for eg: distribution plot.")
-	detailedEvaluation := flag.Bool("detailed_eval", false, "Whether to run detailed evaluation of edit distance.")
+	detailedEvaluation := flag.Bool("detailedEval", false, "Whether to run detailed evaluation of edit distance.")
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	similarityProportion := flag.Float64("proportion", 0.05, "The proportion of document pairs to align")
 	jaccardType := flag.String("jaccard", common.WeightedJaccard, "The type of jaccard similarity, 'regular' or 'weighted'")
 	shingleSize := flag.Int("shingleSize", 7, "Length of shingle")
-	parallel := flag.Bool("parallel", false, "Whether or not to run alignments in parallel with goroutines")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
 	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
 	fastAlign := flag.Bool("fastAlign", false, "Whether or not to use heuristic alignment (faster but less accurate)")
 	p := flag.Int("p", 5, "P to mod by when using modp")
+	numAligns := flag.Int("numAligns", 2, "The number of disjoint alignments we attempt to make")
 	flag.Parse()
 	
 	flags.WriteOutput = *writeOutput
@@ -37,12 +37,12 @@ func main() {
 	flags.ShingleSize = * shingleSize
 	flags.SimilarityProportion = *similarityProportion
 	flags.JaccardType = * jaccardType
-	flags.Parallel = *parallel
 	flags.RunAlignment = * runAlignment
 	flags.WinnowingWindow = *winnowingWindow
 	flags.P = *p
 	flags.Groundtruth = *groundTruth
 	flags.FastAlign = *fastAlign
+	flags.NumAligns = *numAligns
 	execute()
 }
 
@@ -75,13 +75,7 @@ func execute() {
 	
 	if flags.RunAlignment {
 		fmt.Println("Aligning")
-		var alignments map[string]common.Alignment
-		var alignmentsPerDocument  map[string][]string
-		if flags.Parallel {
-			alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList)
-		} else {
-			alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)
-		}
+		alignments, alignmentsPerDocument := alignment.AlignParallel(documentAdjacencyList, docList)
 		
 		if flags.WriteData {
 			readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
@@ -108,7 +102,7 @@ func execute() {
 		fmt.Printf("Mean edit distance after correction: %5.2f \n", correctedStats.Mean)
 		
 		if len(correctedDocs) > 0 {
-			fmt.Printf("Out of %d the corrected documents, mean edit distance improved from %5.2f to %5.2f \n", 
+			fmt.Printf("Out of %d the corrected documents, mean edit distance changed from %5.2f to %5.2f \n", 
 							len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
 		} else {
 			fmt.Println("No documents corrected!")

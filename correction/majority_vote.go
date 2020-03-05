@@ -64,12 +64,24 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 	//fmt.Println(string(primText))
 	if flags.WriteData && noCorrections > 0 {
 		reuseCluster := make(map[string]string)
-		reuseCluster[primaryDocumentID] = string(primText[minStart: maxEnd])
+		p := []rune(strings.Repeat("_", maxEnd + 1 - minStart))
+		for _, m := range(alignmentMaps) {
+			for i := m.Start; i <= m.End; i++ {
+				if _, exists := m.Mapping[i]; exists {
+					p[i - minStart] = primText[i]
+				}
+			}
+		}
+		reuseCluster[primaryDocumentID] = string(p)
 		for _, m := range(alignmentMaps) {
 			s := m.Mapping[m.Start]
 			e := m.Mapping[m.End]
-			r := strings.Repeat(" ", m.Start - minStart)
-			reuseCluster[m.SecondaryDocumentID] = r + string(documents[docMap[m.SecondaryDocumentID]].Text[s:e])
+			r := strings.Repeat("_", m.Start - minStart)
+			t := []rune(strings.Repeat("_", e + 1 - s))
+			for _, secPos := range m.Mapping {
+				t[secPos - s] = documents[docMap[m.SecondaryDocumentID]].Text[secPos]
+			}
+			reuseCluster[m.SecondaryDocumentID] = r + string(t)
 		}
 		
 		reuseGraph[primaryDocumentID] = append(reuseGraph[primaryDocumentID], reuseCluster)
