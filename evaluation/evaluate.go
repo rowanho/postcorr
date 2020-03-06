@@ -18,13 +18,16 @@ import (
 * Traverses the input and output directories, and sums the edit distances of each file
 * Between the data and the ground truth data
 **/
-func editDistances(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) ([]string, []int, []int, error) {
+func editDistances(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) ([]string, []int, []int, []int, []int, error) {
     originalDistances := make([]int, 0)
     correctedDistances := make([]int, 0)
+    ogWordDistances := make([]int, 0)
+    corrWordDistances := make([]int, 0)
+    
     docIds := make([]string, 0)
-    improvedStats := levenshtein.NewEditStats()
-    worsenedStats := levenshtein.NewEditStats()
-    sameStats := levenshtein.NewEditStats()
+    changedStatsTotal := levenshtein.NewEditStats()
+    changedStats := levenshtein.NewEditStats()
+    var changeDist int
 	err := filepath.Walk(flags.DirName,
 		func(pth string, info os.FileInfo, err error) error {
             right := ""
@@ -46,33 +49,31 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
                     corrected = docs[docMap[right]].Text
                 }
 				
-                
 				if readErr != nil {
                     fmt.Println(readErr)
 					return readErr
 				}
-                
+                        
                 if flags.DetailedEvaluation {
-                    originalDist, ogEditStats :=  levenshtein.ComputeDistanceWithConstruction(original, groundTruth)
-                    originalDistances = append(originalDistances, originalDist)
                     if correctable {
-                        correctedDist, correctedEditStats := levenshtein.ComputeDistanceWithConstruction(corrected, groundTruth)
-                        correctedDistances = append(correctedDistances, correctedDist)
-                        mergeStats(improvedStats, worsenedStats, sameStats, ogEditStats, correctedEditStats)
-                    } else {
-                        correctedDistances = append(correctedDistances, originalDist)                    
-                    }                    
+                        changeDist, changedStats =  levenshtein.ComputeDistanceWithConstruction(original, corrected)
+                    }
+                } 
+                mergeStats(changedStats, changedStatsTotal)
+                originalDist := levenshtein.ComputeDistance(original, groundTruth)
+                originalDistances = append(originalDistances, originalDist)
+                ogWordDist := levenshtein.ComputeWordDistance(original, groundTruth)
+                ogWordDistances = append(ogWordDistances, ogWordDist)
+                
+                if correctable {
+                    correctedDist := levenshtein.ComputeDistance(corrected, groundTruth)
+                    correctedDistances = append(correctedDistances, correctedDist)
+                    correctedWordDist := levenshtein.ComputeWordDistance(corrected, groundTruth)
+                    corrWordDistances = append(corrWordDistances, correctedWordDist)
                 } else {
-                    originalDist := levenshtein.ComputeDistance(original, groundTruth)
-                    originalDistances = append(originalDistances, originalDist)
-                    
-                    if correctable {
-                        correctedDist := levenshtein.ComputeDistance(corrected, groundTruth)
-                        correctedDistances = append(correctedDistances, correctedDist)
-                    } else {
-                        correctedDistances = append(correctedDistances, originalDist)                    
-                    }                    
-                }
+                    correctedDistances = append(correctedDistances, originalDist) 
+                    corrWordDistances = append(corrWordDistances, ogWordDist)                   
+                }                                
                 docIds = append(docIds, right)
 			}
 			return nil
@@ -80,56 +81,38 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
 	)
     
     if err != nil {
-        return []string{}, []int{}, []int{}, err
+        return []string{}, []int{}, []int{}, []int{}, []int{}, err
     }
     if flags.DetailedEvaluation {
-        statsBreakDown(improvedStats, worsenedStats, sameStats)
+        printStats(changedStatsTotal)
     }
-	return  docIds, originalDistances, correctedDistances, err
+	return  docIds, originalDistances, correctedDistances, ogWordDistances, corrWordDistances, err
 }
 
 
-func statsBreakDown(improvedStats, worsenedStats, sameStats levenshtein.EditStats) {
-    printStats("corrected", improvedStats)
-    printStats("unchanged", sameStats)
-    printStats("degraded", worsenedStats)
-}
-
-func printStats(printString string, stats levenshtein.EditStats) {
+func printStats(stats levenshtein.EditStats) {
     topDels := max_n_dict(stats.Dels, 20)
     topIns := max_n_dict(stats.Ins, 20)
     topSubs := max_n_dict(stats.Subs, 20)
-    fmt.Println("Top deleted", printString, "characters", topDels)
-    fmt.Println("Top inserted", printString, "characters", topIns)
-    fmt.Println("Top substituted", printString, "characters", topSubs)
+    fmt.Println("Top deleted characters", topDels)
+    fmt.Println("Top inserted characters", topIns)
+    fmt.Println("Top substituted characters", topSubs)
 }
 
-func mergeStats(improvedStats, worsenedStats, sameStats, ogEditStats, correctedEditStats levenshtein.EditStats) {
-    mergeDict(improvedStats.Dels, worsenedStats.Dels, sameStats.Dels, ogEditStats.Dels, correctedEditStats.Dels)
-    mergeDict(improvedStats.Ins, worsenedStats.Ins, sameStats.Ins, ogEditStats.Ins, correctedEditStats.Ins)
-    mergeDict(improvedStats.Subs, worsenedStats.Subs, sameStats.Subs, ogEditStats.Subs, correctedEditStats.Subs)
+func mergeStats(updateStats, totalStats levenshtein.EditStats) {
+    mergeDict(updateStats.Dels, totalStats.Dels)
+    mergeDict(updateStats.Ins, totalStats.Ins)
+    mergeDict(updateStats.Subs, totalStats.Subs)
 }
 
-func mergeDict(improved, worsened, same, og, corrected map[string]int) {
-    for s := range og {
-        if _, exists := corrected[s]; exists {
-            if og[s] == corrected[s] {
-                same[s] += og[s]
-            } else if og[s] <  corrected[s] {
-                worsened[s] += og[s] - corrected[s]
-            } else {
-                improved[s] += corrected[s] - og[s]
-            }
+func mergeDict(update, total map[string]int) {
+    for s := range update {
+        if _, exists := total[s]; exists {
+            total[s] += update[s]
         } else {
-            improved[s] += og[s]
+            total[s] = update[s]
         }
-    }
-    
-    for s := range corrected {
-        if _, exists := og[s]; !exists {
-            worsened[s] += corrected[s]
-        }  
-    }
+    }    
 }
 
 type kv struct {
@@ -178,10 +161,11 @@ type EvalStats = struct {
     MeanInCorrected float64
 }
 
-func GetEvaluationStats(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) (EvalStats,  EvalStats, error) {
-    docIds, originalDistances, correctedDistances, err := editDistances(docs, docMap, correctedDocs)
+func GetEvaluationStats(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) (EvalStats,  EvalStats, EvalStats, EvalStats, error) {
+    docIds, originalDistances, correctedDistances, 
+    ogWordDistances, corrWordDistances, err := editDistances(docs, docMap, correctedDocs)
     if err != nil {
-        return EvalStats{}, EvalStats{},  err
+        return EvalStats{}, EvalStats{}, EvalStats{}, EvalStats{}, err
     }
     
     sum, mean, mean2:= sum_mean(originalDistances, docIds, correctedDocs)
@@ -197,5 +181,18 @@ func GetEvaluationStats(docs []common.Document, docMap map[string]int, corrected
         MeanInCorrected: mean2,
     }
     
-    return originalStats, correctedStats, nil
+    sum, mean, mean2 = sum_mean(ogWordDistances, docIds, correctedDocs)
+    originalWordStats := EvalStats{
+        Mean: mean,
+        Total: sum,
+        MeanInCorrected: mean2,
+    }
+    sum, mean, mean2 = sum_mean(corrWordDistances, docIds, correctedDocs)
+    correctedWordStats := EvalStats{
+        Mean: mean,
+        Total: sum,
+        MeanInCorrected: mean2,
+    }
+    
+    return originalStats, correctedStats, originalWordStats, correctedWordStats, nil
 }

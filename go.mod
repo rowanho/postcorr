@@ -4,7 +4,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/rowanho/Inverted-Index-Generator v0.0.0-20200224174131-79bdaa914849
 	github.com/rowanho/go-minhash v0.0.0-20190315135803-ad340ca03076
-	github.com/rowanho/levenshtein v1.0.4-0.20200226152522-1377989db536
+	github.com/rowanho/levenshtein v1.0.4-0.20200306123202-9d1254311c30
 	golang.org/x/text v0.3.2
 )
 

@@ -102,14 +102,20 @@ func execute() {
 	
 	// Evaluation
 	if flags.RunAlignment &&  len(flags.Groundtruth) > 0 {
-		originalStats, correctedStats, _ := evaluation.GetEvaluationStats(docList, docMap, correctedDocs)
+		originalStats, correctedStats,  originalWordStats, correctedWordStats, _ := evaluation.GetEvaluationStats(docList, docMap, correctedDocs)
 		
-		fmt.Printf("Total edit distance before correction: %d\n", originalStats.Total)
-		fmt.Printf("Total edit distance after correction: %d \n", correctedStats.Total)
+		fmt.Printf("Total character distance before correction: %d\n", originalStats.Total)
+		fmt.Printf("Total character distance after correction: %d \n", correctedStats.Total)
 		
-		fmt.Printf("Mean edit distance before correction: %5.2f \n", originalStats.Mean)
-		fmt.Printf("Mean edit distance after correction: %5.2f \n", correctedStats.Mean)
+		fmt.Printf("Mean character distance before correction: %5.2f \n", originalStats.Mean)
+		fmt.Printf("Mean character distance after correction: %5.2f \n", correctedStats.Mean)
 		
+		fmt.Printf("Total word distance before correction: %d\n", originalWordStats.Total)
+		fmt.Printf("Total word distance after correction: %d \n", correctedWordStats.Total)
+		
+		fmt.Printf("Mean word distance before correction: %5.2f \n", originalWordStats.Mean)
+		fmt.Printf("Mean word distance after correction: %5.2f \n", correctedWordStats.Mean)
+	
 		if len(correctedDocs) > 0 {
 			fmt.Printf("Out of %d the corrected documents, mean edit distance changed from %5.2f to %5.2f \n", 
 							len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
