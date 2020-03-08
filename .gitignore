@@ -9,3 +9,7 @@ eval
 logs
 datasets/
 real_datasets/
+__pycache__
+*.pyc
+synthetic_data
+!requirements.txt
