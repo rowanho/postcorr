@@ -5,7 +5,7 @@ import (
 	"postCorr/flags"
 	"postCorr/readWrite"
 	
-	"fmt"
+	//"fmt"
 	"sort"
 	
 	minhash "github.com/rowanho/go-minhash"
@@ -20,6 +20,16 @@ var totalSum float64 = 0.0
 var scores []float64 = []float64{}
 var score map[int]map[int]float64 = make(map[int]map[int]float64, 0)
 var bools map[int]map[int]bool = make(map[int]map[int]bool, 0)
+
+func ResetRuntime() {
+	total = 0
+	totalSum = 0.0
+	scores = []float64{}
+	score = make(map[int]map[int]float64, 0)
+	bools = make(map[int]map[int]bool, 0)
+
+}
+
 
 func max_int(x int, y int) int {
 	if x > y {
@@ -160,9 +170,8 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	} else if flags.FpType == common.Winnowing {
 		getSimilarWinnowing(docs)
 	}
-	fmt.Println(total)
-	fmt.Printf("Average jaccard index was %6.3f \n", totalSum / float64(total))
-	
+	//fmt.Println(total)
+	//fmt.Printf("Average jaccard index was %6.3f \n", totalSum / float64(total))
 	
 	pos := 0
 	proportion := flags.SimilarityProportion
@@ -186,7 +195,7 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	}
 	
 	documentAdjacencyList = bools
-	
+
 	if flags.WriteData {
 		readWrite.SerialiseJaccards(scores[pos:])
 	}
