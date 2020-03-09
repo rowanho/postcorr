@@ -7,24 +7,26 @@ import (
     "postCorr/readWrite"
     "postCorr/common"
     
+    "fmt"
     "testing"
 )
 
-func setup() {
+func setup(length int) {
     flags.ShingleSize = 5
     flags.SimilarityProportion = 1.0
     flags.NumAligns = 1
     flags.FpType = common.ModFP
-    flags.DirName = "synthetic_data/benchmark_align/500_chars/err"
+    flags.DirName = fmt.Sprintf("synthetic_data/benchmark_align/%d_chars/err", length)
     flags.P = 1
     fingerprinting.ResetRuntime()
 }
 
-// Benchmarking alignment
-func BenchmarkAlignment(b *testing.B) {
-    setup()
-    flags.Affine = false
-    flags.FastAlign = false
+
+// Benchmarking heuristic affine alignment
+func benchmarkAlignment(b *testing.B, length int, affine bool, heuristic bool) {
+    setup(length)
+    flags.Affine = affine
+    flags.FastAlign = heuristic
     docList, _ := readWrite.TraverseDocs()
     documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
     b.ResetTimer()
@@ -33,44 +35,20 @@ func BenchmarkAlignment(b *testing.B) {
     }
 }
 
-// Benchmarking heuristic affine alignment
+func BenchmarkRegular(b *testing.B) {
+    benchmarkAlignment(b, 500, false, false)
+}
+
 func BenchmarkHeuristic(b *testing.B) {
-    setup()
-    flags.Affine = false
-    flags.FastAlign = true
-    docList, _ := readWrite.TraverseDocs()
-    documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
-    b.ResetTimer()
-    for n := 0; n < b.N; n++ {
-        alignment.AlignSerial(documentAdjacencyList, docList)
-    }
+    benchmarkAlignment(b, 500, false, true)
 }
 
-// Benchmarking alignment
-func BenchmarkAffineAlignment(b *testing.B) {
-    setup()
-    flags.Affine = true
-    docList, _ := readWrite.TraverseDocs()
-    documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
-    b.ResetTimer()
-    for n := 0; n < b.N; n++ {
-        alignment.AlignSerial(documentAdjacencyList, docList)
-    }
+func BenchmarkAffine(b *testing.B) {
+    benchmarkAlignment(b, 500, true, false)
 }
 
-// Benchmarking heuristic affine alignment
 func BenchmarkAffineHeuristic(b *testing.B) {
-    setup()
-    flags.Affine = true
-    flags.FastAlign = true
-
-    docList, _ := readWrite.TraverseDocs()
-    documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
-    b.ResetTimer()
-    for n := 0; n < b.N; n++ {
-        alignment.AlignSerial(documentAdjacencyList, docList)    
-    }
+    benchmarkAlignment(b, 500, true, true)
 }
-
 
 

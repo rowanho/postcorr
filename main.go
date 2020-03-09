@@ -57,7 +57,7 @@ func execute() {
 	docList, docsErr := readWrite.TraverseDocs()
 
 	if docsErr != nil {
-		fmt.Println("Error reading documents %s", docsErr)
+		fmt.Printf("Error reading documents %s", docsErr)
 		return
 	}
 

@@ -27,7 +27,6 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
     docIds := make([]string, 0)
     changedStatsTotal := levenshtein.NewEditStats()
     changedStats := levenshtein.NewEditStats()
-    var changeDist int
 	err := filepath.Walk(flags.DirName,
 		func(pth string, info os.FileInfo, err error) error {
             right := ""
@@ -56,7 +55,7 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
                         
                 if flags.DetailedEvaluation {
                     if correctable {
-                        changeDist, changedStats =  levenshtein.ComputeDistanceWithConstruction(original, corrected)
+                        _, changedStats =  levenshtein.ComputeDistanceWithConstruction(original, corrected)
                     }
                 } 
                 mergeStats(changedStats, changedStatsTotal)
