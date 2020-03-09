@@ -149,20 +149,20 @@ func findPeakRegion(diagonalSums map[int]int, width int) (int, int) {
     min := 0
     max := 0
     maxVal := 0
-    for width, value := range diagonalSums {
-        if width < min {
-            min = width
+    for d, value := range diagonalSums {
+        if d < min {
+            min = d
         } 
-        if width > max {
-            max = width
+        if d > max {
+            max = d
         } 
-        if value > maxVal {
-            maxVal = value
+        if  value > maxVal {
+            maxVal = d
         }
     }
         
     if width <= max - min {
-        return maxVal, (max - min) / 2
+        return maxVal, (max + min) / 2
     }
     
     bestAbDiff := 0
@@ -186,7 +186,7 @@ func findPeakRegion(diagonalSums map[int]int, width int) (int, int) {
 
 func HeuristicAlignment(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
     k := flags.ShingleSize
-    bandSize := 50
+    bandSize := 200
     
     tableA := getKwords(a, k)
     tableB := getKwords(b, k)

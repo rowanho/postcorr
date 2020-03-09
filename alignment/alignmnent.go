@@ -81,7 +81,6 @@ func AlignSerial(documentAdjacencyList map[int]map[int]bool, docs []common.Docum
 		     }
 		}
 	}
-
 	return alignments, alignmentDocIdMap
 
 }
