@@ -54,8 +54,8 @@ def get_page_links(ext):
     return links
 
 def get_high_scorers(links, n, k):
-    start =1400
-    end = 1650
+    start =1600
+    end = 1800
     link_scores = []
     for l in links[start:end]:
         page_texts = []
@@ -105,7 +105,9 @@ def download_page_images(dir, ext):
         img_wrapper = parser.find('div', class_='prp-page-image')
         img_src = img_wrapper.find('img')['src']
         image_data = requests.get('https:' + img_src).content
+        print(l)
         while not is_jpg(image_data):
+            print('not', l)
             image_data = requests.get('https:' + img_src).content
         extension = img_src.split('.')[-1]
         with open(os.path.join(dir, f'{n}.{extension}'), 'wb') as file:
@@ -126,5 +128,5 @@ def main():
     download_page_texts(text_dir, ext)
     
 if __name__ == '__main__':
-    hs()
-    #main()
+    #hs()
+    main()
