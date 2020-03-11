@@ -15,7 +15,7 @@ import (
 )
 
 var words = []string{}
-var n = 3
+var n = 1
 var reuseGraph = make(map[string][]map[string]string)
 var threshold = 2.0
 /**
@@ -56,6 +56,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				requiresNewWord = true
 			} else if requiresNewWord {
 				currentWord = getCurrentWord(primText, ind)
+				words = append(words, currentWord)
 				requiresNewWord = false
 			}
 		}
@@ -96,10 +97,15 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				score := getLmScore(currentWord, joined)
 				if score != "inf" {
 					f, _ := strconv.ParseFloat(score, 64)
-					if f < threshold {
+					if f > threshold {
 						primText[ind] = maxRune
 						noCorrections += 1						
+					} else {
+						fmt.Println("Prevented")
 					}
+				} else {
+					primText[ind] = maxRune
+					noCorrections += 1					
 				}
 			} else {
 				primText[ind] = maxRune
@@ -153,8 +159,8 @@ func wordsBeforePoint(text []rune, pos int, n int) []string {
 		}
 	}
 	
-	for _, start := range wordStarts {
-		words = append(words, getCurrentWord(text, start))
+	for i := len(wordStarts) -1; i  > -1; i -- {
+		words = append(words, getCurrentWord(text, wordStarts[i]))
 	}
 	return words
 }
@@ -167,6 +173,10 @@ func getCurrentWord(text []rune, pos int) string {
 			break;
 		}
 		end ++
+	}
+	
+	if end == len(text) {
+		return string(text[pos:])
 	}
 	
 	return string(text[pos:end + 1])
@@ -190,6 +200,5 @@ func getLmScore(word string, context string) string {
 		return "0.0"
 	}
 	s := string(body)
-	fmt.Println(s)
 	return s
 }

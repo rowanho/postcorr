@@ -5,7 +5,7 @@ import (
 	"postCorr/flags"
 	"postCorr/readWrite"
 	
-	//"fmt"
+	"fmt"
 	"sort"
 	
 	minhash "github.com/rowanho/go-minhash"
@@ -161,7 +161,19 @@ func getSimilarWinnowing(docs []common.Document) {
 }
 
 
-func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
+func GetAllPairwise(docs []common.Document) (map[int]map[int]float64, []float64) {
+	fmt.Println(flags.JaccardType)
+	if flags.FpType == common.MinhashFP {
+		getSimilarLsh(docs)
+	} else if flags.FpType == common.ModFP {
+		getSimilarModP(docs)
+	} else if flags.FpType == common.Winnowing {
+		getSimilarWinnowing(docs)
+	}	
+	return score, scores
+}
+	
+func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool  {
 	var documentAdjacencyList map[int]map[int]bool
 	if flags.FpType == common.MinhashFP {
 		getSimilarLsh(docs)

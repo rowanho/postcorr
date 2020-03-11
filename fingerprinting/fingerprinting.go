@@ -36,11 +36,10 @@ func ModP(text string, windowSize int, p int) map[uint64]int {
 		// Apply mod, check if 0
 		fp := ComputeFNV64(text[i : i+windowSize])
 		if fp%pU == 0 {
-			if _, exists := fps[fp]; !exists {
-				fps[fp] += 1
-			}
+			fps[fp] += 1
 		}
 	}
+	
 	return fps
 }
 
