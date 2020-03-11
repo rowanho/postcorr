@@ -24,10 +24,11 @@ func main() {
 	shingleSize := flag.Int("shingleSize", 7, "Length of shingle")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
 	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
-	affine := flag.Bool("affine", true, "Whether or not to use affine gap scoring")
+	affine := flag.Bool("affine", false, "Whether or not to use affine gap scoring")
 	fastAlign := flag.Bool("fastAlign", false, "Whether or not to use heuristic alignment (faster but less accurate)")
 	p := flag.Int("p", 5, "P to mod by when using modp")
 	numAligns := flag.Int("numAligns", 2, "The number of disjoint alignments we attempt to make")
+	useLM := flag.Bool("useLM", false, "Whether to use a language model to inform correction")
 	flag.Parse()
 	
 	flags.WriteOutput = *writeOutput
@@ -45,7 +46,9 @@ func main() {
 	flags.FastAlign = *fastAlign
 	flags.NumAligns = *numAligns
 	flags.Affine = *affine
+	flags.UseLM = *useLM
 	execute()
+	
 }
 
 /**
@@ -79,6 +82,7 @@ func execute() {
 		fmt.Println("Aligning")
 		var alignments map[string]common.Alignment
 		var alignmentsPerDocument map[string][]string
+		fmt.Println(flags.Affine)
 		if flags.Affine && !flags.FastAlign {
 			// We might run  out of memory if we create a lot of go routines, best to use serial methods
 			alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)

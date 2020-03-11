@@ -19,3 +19,4 @@ var Groundtruth string
 var Affine bool
 var FastAlign bool
 var NumAligns int
+var UseLM bool

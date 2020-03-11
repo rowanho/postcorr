@@ -34,21 +34,23 @@ func benchmarkAlignment(b *testing.B, length int, affine bool, heuristic bool) {
         alignment.AlignSerial(documentAdjacencyList, docList)
     }
 }
+/**
 
 func BenchmarkRegular(b *testing.B) {
-    benchmarkAlignment(b, 500, false, false)
+    benchmarkAlignment(b, 3000, false, false)
 }
-
+**/
 func BenchmarkHeuristic(b *testing.B) {
-    benchmarkAlignment(b, 500, false, true)
+    benchmarkAlignment(b, 2500, false, true)
 }
 
+/**
 func BenchmarkAffine(b *testing.B) {
-    benchmarkAlignment(b, 500, true, false)
+    benchmarkAlignment(b, 3000, true, false)
 }
-
+**/
 func BenchmarkAffineHeuristic(b *testing.B) {
-    benchmarkAlignment(b, 500, true, true)
+    benchmarkAlignment(b, 2500, true, true)
 }
 
 

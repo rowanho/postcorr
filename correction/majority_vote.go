@@ -5,10 +5,19 @@ import (
 	"postCorr/flags"
 	
 	"strings"
+	"unicode"
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"fmt"
 )
 
+var words = []string{}
+var n = 3
 var reuseGraph = make(map[string][]map[string]string)
-
+var threshold = 2.0
 /**
 *   Performs a majority vote across all parts of the alignment
 *   If indices were counted as aligning, they are used in the vote
@@ -18,6 +27,7 @@ var reuseGraph = make(map[string][]map[string]string)
 **/
 
 func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) ([]rune, int) {
+	
 	noCorrections := 0
 	maxEnd := 0
 	minStart := 100000000
@@ -32,7 +42,24 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 	}
 
 	primText := documents[docMap[primaryDocumentID]].Text
+	if flags.UseLM {
+		words = wordsBeforePoint(primText, minStart, n)
+	}
+	var currentWord string
+	if len(words) > 0 {
+		currentWord = words[len(words) -1]
+	}
+	requiresNewWord := false
 	for ind := minStart; ind < maxEnd; ind++ {
+		if flags.UseLM {
+			if unicode.IsSpace(primText[ind]) {
+				requiresNewWord = true
+			} else if requiresNewWord {
+				currentWord = getCurrentWord(primText, ind)
+				requiresNewWord = false
+			}
+		}
+		
 		numVotes := 1
 		counts := map[rune]int{}
 		max := 1
@@ -59,8 +86,25 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		//fmt.Println(primText[ind])
 
 		if primText[ind] != maxRune && max > numVotes / 2 {
-			primText[ind] = maxRune
-			noCorrections += 1
+			if flags.UseLM && len(words) > 0 {
+				end := len(words) - 1
+				start := end - n
+				if start < 0 {
+					start = 0
+				}
+				joined := strings.Join(words[start:end], " ")
+				score := getLmScore(currentWord, joined)
+				if score != "inf" {
+					f, _ := strconv.ParseFloat(score, 64)
+					if f < threshold {
+						primText[ind] = maxRune
+						noCorrections += 1						
+					}
+				}
+			} else {
+				primText[ind] = maxRune
+				noCorrections += 1
+			}
 		}
 	}
 	//fmt.Println(string(primText))
@@ -89,4 +133,63 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		reuseGraph[primaryDocumentID] = append(reuseGraph[primaryDocumentID], reuseCluster)
 	}
 	return primText, noCorrections
+}
+
+func wordsBeforePoint(text []rune, pos int, n int) []string {
+	words := make([]string, 0)
+	wordStarts := make([]int, 0)
+	hitChars := false
+	for i := pos; i > -1; i -- {
+		if unicode.IsSpace(text[i]) {
+			if hitChars {
+				wordStarts = append(wordStarts, i + 1)
+				hitChars = false
+				if len(wordStarts) > n {
+					break;
+				}
+			}
+		} else if !hitChars {
+			hitChars = true
+		}
+	}
+	
+	for _, start := range wordStarts {
+		words = append(words, getCurrentWord(text, start))
+	}
+	return words
+}
+
+func getCurrentWord(text []rune, pos int) string {
+	
+	end := pos
+	for i := pos; i < len(text); i++ {
+		if unicode.IsSpace(text[i]) {
+			break;
+		}
+		end ++
+	}
+	
+	return string(text[pos:end + 1])
+}
+
+
+func getLmScore(word string, context string) string {
+	requestBody, _ := json.Marshal(map[string]string {
+		"word" : word,
+		"sentence" : context,
+	})
+	
+	resp, err := http.Post("http://localhost:5000/", "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return "0.0"
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "0.0"
+	}
+	s := string(body)
+	fmt.Println(s)
+	return s
 }

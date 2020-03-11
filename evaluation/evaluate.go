@@ -63,7 +63,6 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
                 originalDistances = append(originalDistances, originalDist)
                 ogWordDist := levenshtein.ComputeWordDistance(original, groundTruth)
                 ogWordDistances = append(ogWordDistances, ogWordDist)
-                
                 if correctable {
                     correctedDist := levenshtein.ComputeDistance(corrected, groundTruth)
                     correctedDistances = append(correctedDistances, correctedDist)
@@ -163,6 +162,7 @@ type EvalStats = struct {
 func GetEvaluationStats(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) (EvalStats,  EvalStats, EvalStats, EvalStats, error) {
     docIds, originalDistances, correctedDistances, 
     ogWordDistances, corrWordDistances, err := editDistances(docs, docMap, correctedDocs)
+    
     if err != nil {
         return EvalStats{}, EvalStats{}, EvalStats{}, EvalStats{}, err
     }
