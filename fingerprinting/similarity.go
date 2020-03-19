@@ -151,7 +151,7 @@ func getSimilarModP(docs []common.Document) {
 func getSimilarWinnowing(docs []common.Document) {
 	fps := make([]map[uint64]int, len(docs))
 	for i, doc := range docs {
-		fp := Winnowing(preProcess(string(doc.Text)), flags.ShingleSize, flags.WinnowingWindow)	
+		fp := Winnowing(preProcess(string(doc.Text)), flags.ShingleSize, flags.WinnowingT)	
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)

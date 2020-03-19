@@ -18,23 +18,19 @@ def get_errs(text, sub_err_rate, deletion_rate):
         i += 1
     return ''.join(char_list)
 
-def get_errs_with_long_inserts(text, sub_err_rate, insertion_rate, insertion_avg_length):
+def get_errs_with_word_subs(text, sub_err_rate, word_sub_rate):
     char_list = list(text)
     l = len(char_list)
     i = 0
     while i < l:
         if random.random() < sub_err_rate and char_list[i] != '':
             char_list[i] = str(chr(random.randint(35, 120))) 
-        if random.random() < insertion_rate:
-            ins_l = 0
-            if insertion_avg_length > 0:
-                ins_l = random.randint(insertion_avg_length - 2, insertion_avg_length + 2)
-            for j in range(ins_l):
-                char_list.insert(i, str(chr(random.randint(35, 120))))
-                i += ins_l
-            l -= 1
         i += 1
-    return ''.join(char_list)
+    words = (''.join(char_list)).split(' ')
+    for i in range(len(words)):    
+        if random.random() < word_sub_rate:
+            words[i] = ''.join([str(chr(random.randint(35, 120))) for _ in range(len(words[i]))])
+    return ' '.join(words)
     
 
 
@@ -47,11 +43,11 @@ def seed_errors(dirname, new_dir, sub_err_rate, deletion_rate):
         with open(os.path.join(new_dir, filename), 'w') as file:
             file.write(content)
             
-def seed_errors_ins(dirname, new_dir, sub_err_rate, insertion_rate, insertion_avg_length):
+def seed_errors_word(dirname, new_dir, sub_err_rate, word_sub_rate):
     create_new_dir(dirname, new_dir)
     for filename in os.listdir(new_dir):
         with open(os.path.join(new_dir, filename), 'r') as file:
-            content = get_errs_with_long_inserts(file.read(), sub_err_rate, insertion_rate, insertion_avg_length)
+            content = get_errs_with_word_subs(file.read(), sub_err_rate, word_sub_rate)
         with open(os.path.join(new_dir, filename), 'w') as file:
             file.write(content)
             

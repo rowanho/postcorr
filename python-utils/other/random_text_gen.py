@@ -1,5 +1,5 @@
 import os
-from error_seeder import create_artifical_reuse, seed_errors, seed_errors_ins
+from error_seeder import create_artifical_reuse, seed_errors, seed_errors_word
 from essential_generators import DocumentGenerator
 from random import randint
 from distutils.dir_util import copy_tree
@@ -34,7 +34,7 @@ def gen_random_files(dir_name, num_files, c, sub_err_rate, deletion_rate, reuse_
     create_artifical_reuse(gt, reuse_rate, num_reuse, reuse_sent_length)
     seed_errors(gt, err,  sub_err_rate, deletion_rate)
     
-def gen_random_files_ins(dir_name, num_files, c, sub_err_rate, ins_rate, ins_length, reuse_rate, num_reuse, reuse_sent_length):
+def gen_random_files_word(dir_name, num_files, c, sub_err_rate, word_sub_rate, reuse_rate, num_reuse, reuse_sent_length):
     os.mkdir(dir_name)
     gt = os.path.join(dir_name,'gt')
     err = os.path.join(dir_name,'err')
@@ -45,7 +45,7 @@ def gen_random_files_ins(dir_name, num_files, c, sub_err_rate, ins_rate, ins_len
             file.write(text)
     
     create_artifical_reuse(gt, reuse_rate, num_reuse, reuse_sent_length)
-    seed_errors_ins(gt, err,  sub_err_rate, ins_rate, ins_length)
+    seed_errors_word(gt, err,  sub_err_rate, word_sub_rate)
 
 def gen_subs_delete():
     gen_random_files('synthetic_data/align_performance/2_reuse', 20, 2000, 0.03, 0.01, 1.0, 1, 2)    
@@ -55,12 +55,14 @@ def gen_subs_delete():
     gen_random_files('synthetic_data/align_performance/10_reuse', 20, 2000, 0.03, 0.01, 1.0, 1, 10)
     
     
-def gen_subs_inserts():
-    gen_random_files_ins('synthetic_data/gap_performance/2_ins', 20, 2000, 0.03, 0.05, 2, 1.0, 1, 5)
-    gen_random_files_ins('synthetic_data/gap_performance/4_ins', 20, 2000, 0.03, 0.05, 2, 1.0, 1, 5)    
-    gen_random_files_ins('synthetic_data/gap_performance/6_ins', 20, 2000, 0.03, 0.05, 6, 1.0, 1, 5)
-    gen_random_files_ins('synthetic_data/gap_performance/8_ins', 20, 2000, 0.03, 0.05, 2, 1.0, 1, 5)    
-    gen_random_files_ins('synthetic_data/gap_performance/10_ins', 20, 2000, 0.03, 0.05, 10, 1.0, 1, 5)
+def gen_subs_words():
+    #gen_random_files_word('synthetic_data/gap_performance/0_word', 20, 2000, 0.03, 0.0, 1.0, 1, 5)
+    #gen_random_files_word('synthetic_data/gap_performance/4_word', 20, 2000, 0.03, 0.04, 1.0, 1, 5)    
+    #gen_random_files_word('synthetic_data/gap_performance/8_word', 20, 2000, 0.03, 0.08, 1.0, 1, 5)
+    #gen_random_files_word('synthetic_data/gap_performance/12_word', 20, 2000, 0.03, 0.12,  1.0, 1, 5)    
+    #gen_random_files_word('synthetic_data/gap_performance/16_word', 20, 2000, 0.03, 0.16, 1.0, 1, 5)
+    gen_random_files_word('synthetic_data/gap_performance/20_word', 20, 2000, 0.03, 0.20, 1.0, 1, 5)
+    
     
 if __name__ == '__main__':
-    gen_subs_inserts()
+    gen_subs_words()

@@ -4,6 +4,8 @@ import (
 	"postCorr/common"
 	"postCorr/flags"
 	"postCorr/readWrite"
+	
+	"fmt"
 )
 
 type alignMap = struct {
@@ -49,7 +51,9 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 	if flags.WriteData {
 		readWrite.SerialiseVote(reuseGraph)
 	}
-
+	if flags.UseLM {
+		fmt.Printf("Prevented %d\n", prevCount)
+	}
 	return correctedDocs, totalCorrections
 }
 

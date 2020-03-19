@@ -13,7 +13,7 @@ var SimilarityProportion float64
 var JaccardType string
 var RunAlignment bool
 var ShingleSize int
-var WinnowingWindow int
+var WinnowingT int
 var P int
 var Groundtruth string
 var Affine bool

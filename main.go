@@ -11,8 +11,10 @@ import (
 	"flag"
 	"fmt"
 )
-
-func main() {
+func main(){
+	EvaluateJaccard()
+}
+func main2() {
 	dirName := flag.String("input", "test_dataset", "path to dataset")
 	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
@@ -23,7 +25,7 @@ func main() {
 	jaccardType := flag.String("jaccard", common.WeightedJaccard, "The type of jaccard similarity, 'regular' or 'weighted'")
 	shingleSize := flag.Int("shingleSize", 7, "Length of shingle")
 	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
-	winnowingWindow := flag.Int("t", 15, "Size of winnowing window t")
+	winnowingT := flag.Int("t", 15, "Size of winnowing threshold t, must be >= k")
 	affine := flag.Bool("affine", false, "Whether or not to use affine gap scoring")
 	fastAlign := flag.Bool("fastAlign", false, "Whether or not to use heuristic alignment (faster but less accurate)")
 	p := flag.Int("p", 5, "P to mod by when using modp")
@@ -40,7 +42,7 @@ func main() {
 	flags.SimilarityProportion = *similarityProportion
 	flags.JaccardType = * jaccardType
 	flags.RunAlignment = * runAlignment
-	flags.WinnowingWindow = *winnowingWindow
+	flags.WinnowingT = *winnowingT
 	flags.P = *p
 	flags.Groundtruth = *groundTruth
 	flags.FastAlign = *fastAlign

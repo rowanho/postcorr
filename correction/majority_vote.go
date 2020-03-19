@@ -11,13 +11,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"fmt"
 )
 
 var words = []string{}
 var n = 1
 var reuseGraph = make(map[string][]map[string]string)
-var threshold = 2.0
+var threshold = 10.0
+var prevCount = 0
 /**
 *   Performs a majority vote across all parts of the alignment
 *   If indices were counted as aligning, they are used in the vote
@@ -101,7 +101,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 						primText[ind] = maxRune
 						noCorrections += 1						
 					} else {
-						fmt.Println("Prevented")
+						prevCount += 1
 					}
 				} else {
 					primText[ind] = maxRune
@@ -138,6 +138,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		
 		reuseGraph[primaryDocumentID] = append(reuseGraph[primaryDocumentID], reuseCluster)
 	}
+		
 	return primText, noCorrections
 }
 
