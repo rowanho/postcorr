@@ -11,10 +11,10 @@ import (
 	"flag"
 	"fmt"
 )
-func main(){
+func main2(){
 	EvaluateJaccard()
 }
-func main2() {
+func main() {
 	dirName := flag.String("input", "test_dataset", "path to dataset")
 	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
