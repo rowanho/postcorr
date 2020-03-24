@@ -10,13 +10,14 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"math"
 	"strconv"
+	//"fmt"
 )
 
 var words = []string{}
 var n = 1
 var reuseGraph = make(map[string][]map[string]string)
-var threshold = 10.0
 var prevCount = 0
 /**
 *   Performs a majority vote across all parts of the alignment
@@ -27,7 +28,7 @@ var prevCount = 0
 **/
 
 func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) ([]rune, int) {
-	
+	threshold := -math.Log2(flags.LmThreshold)
 	noCorrections := 0
 	maxEnd := 0
 	minStart := 100000000

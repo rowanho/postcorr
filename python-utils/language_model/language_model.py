@@ -3,7 +3,7 @@ import nltk
 import re
 from nltk.lm import MLE, Vocabulary
 from nltk.lm.preprocessing import padded_everygram_pipeline
-from nltk.corpus import brown
+from nltk.corpus import brown, reuters
 from flask import Flask, request
 app = Flask(__name__)
 
@@ -16,13 +16,10 @@ def lower_list(l):
             keep.append(l[i].lower())
     return keep
         
-train, vocab = padded_everygram_pipeline(n, [lower_list(sent) for sent in brown.sents()])
-
+train, vocab = padded_everygram_pipeline(n, [lower_list(sent) for sent in (brown.sents() + reuters.sents())])
 #train, vocab = padded_everygram_pipeline(n, [['then', 'she', 'said'], ['then', 'he', 'said']])
 lang_model = MLE(n)
 lang_model.fit(train, vocab)
-print(lang_model.logscore('atlanta', ['city', 'of']))
-print(lang_model.logscore('the', ['he', 'saw']))
 
 @app.route('/', methods=['post'])
 def get_lang_probability():

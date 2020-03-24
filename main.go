@@ -31,6 +31,7 @@ func main() {
 	p := flag.Int("p", 5, "P to mod by when using modp")
 	numAligns := flag.Int("numAligns", 2, "The number of disjoint alignments we attempt to make")
 	useLM := flag.Bool("useLM", false, "Whether to use a language model to inform correction")
+	lmThreshold := flag.Float64("lmThreshold", 0.1, "The probability score under which language model permits correction")
 	flag.Parse()
 	
 	flags.WriteOutput = *writeOutput
@@ -49,6 +50,7 @@ func main() {
 	flags.NumAligns = *numAligns
 	flags.Affine = *affine
 	flags.UseLM = *useLM
+	flags.LmThreshold = *lmThreshold
 	execute()
 	
 }

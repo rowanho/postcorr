@@ -20,3 +20,4 @@ var Affine bool
 var FastAlign bool
 var NumAligns int
 var UseLM bool
+var LmThreshold float64
