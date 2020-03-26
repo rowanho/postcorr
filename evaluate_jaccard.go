@@ -12,24 +12,6 @@ import (
 )
 
 
-func posInt(slice []int, value int) int {
-    for p, v := range slice {
-        if (v == value) {
-            return p
-        }
-    }
-    return -1
-}
-
-func  posFl(slice []float64, value float64) int {
-    for p, v := range slice {
-        if (v == value) {
-            return p
-        }
-    }
-    return -1
-}
-
 func aligns() (map[int]map[int]int, []int){
     docList, _ := readWrite.TraverseDocs()
 
@@ -55,9 +37,9 @@ func getTopKPrecision(alScores map[int]map[int]int, alScoreList []int, kProporti
     docList, _ := readWrite.TraverseDocs()
     documentScores, docScoreList := fingerprinting.GetAllPairwise(docList)
     fingerprinting.ResetRuntime()
-    sort.Float64s(docScoreList)   
+    sort.Float64s(docScoreList)
     topFScore := docScoreList[int(cutoff_a)] 
-    if topFScore == 0.0 {
+    if docScoreList[len(docScoreList) -1] == 0.0 {
         return 0.0
     }  
     fmt.Println(topFScore)
@@ -77,12 +59,37 @@ func getTopKPrecision(alScores map[int]map[int]int, alScoreList []int, kProporti
     return float64(top) / float64(top + bot)
 }
 
-func EvaluateJaccard() {
-    downsamples := []int{1, 30, 60, 90, 120, 150, 180}
+func EvaluateK() {
+    ks := []int{2, 5, 8, 11, 14, 17, 20, 23, 26, 29}
     flags.NumAligns = 1
-    flags.DirName = "real_datasets/copyright/ocr_min"
+    flags.DirName = "real_datasets/denmark/ocr_err"
     flags.Affine = false
-    flags.ShingleSize = 5
+    flags.P = 1
+    flags.FpType = common.ModFP
+    als, alList := aligns()
+    sort.Ints(alList)
+    for _, k := range ks  {
+        flags.ShingleSize = k
+        fmt.Println(k)
+        flags.JaccardType = common.Jaccard
+        proportion := 0.1
+        topk := getTopKPrecision(als, alList, proportion)
+        fmt.Printf("Top k precision %5.2f\n", topk)
+        // Do the same for the weighted jaccard
+        flags.JaccardType = common.WeightedJaccard
+        topkWeighted := getTopKPrecision(als, alList, proportion)
+        fmt.Printf("Top k precision weighted %5.2f \n", topkWeighted)
+
+    }    
+
+}
+
+func EvaluateJaccard() {
+    downsamples := []int{1, 10, 20, 30, 40, 50, 60}
+    flags.NumAligns = 1
+    flags.DirName = "real_datasets/denmark/ocr_min"
+    flags.Affine = false
+    flags.ShingleSize = 2
     flags.JaccardType = common.Jaccard
     als, alList := aligns()
     sort.Ints(alList)

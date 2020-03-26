@@ -12,7 +12,8 @@ import (
 	"fmt"
 )
 func main2(){
-	EvaluateJaccard()
+	EvaluateK()
+	//EvaluateJaccard()
 }
 func main() {
 	dirName := flag.String("input", "test_dataset", "path to dataset")
