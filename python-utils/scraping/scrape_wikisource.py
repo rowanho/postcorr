@@ -47,7 +47,7 @@ def get_page_links(ext):
     links = []
     res = requests.get(base + ext)
     parser = BeautifulSoup(res.text, 'html.parser')
-    potential_page_links = parser.find_all('a', class_='prp-pagequality-4 quality4')
+    potential_page_links = parser.find_all('a', class_='prp-pagequality-3 quality3')
     for p in potential_page_links:
         if p.getText().isnumeric():
             links.append(p['href'])
@@ -104,11 +104,12 @@ def download_page_images(dir, ext):
         parser = BeautifulSoup(res.text, 'html.parser')
         img_wrapper = parser.find('div', class_='prp-page-image')
         img_src = img_wrapper.find('img')['src']
+        print(img_src)
         image_data = requests.get('https:' + img_src).content
         print(l)
-        while not is_jpg(image_data):
-            print('not', l)
-            image_data = requests.get('https:' + img_src).content
+        #while not is_jpg(image_data):
+         #   print('not', img_src)
+         #   image_data = requests.get('https:' + img_src).content
         extension = img_src.split('.')[-1]
         with open(os.path.join(dir, f'{n}.{extension}'), 'wb') as file:
             file.write(image_data)
