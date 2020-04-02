@@ -48,8 +48,12 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 		}
 	}
 	
-	if flags.WriteData {
+	if flags.LogLevel > 0 {
 		readWrite.SerialiseVote(reuseGraph)
+	}
+
+	if flags.LogLevel > 1  {
+		readWrite.SerialiseEdits(correctionGraph)
 	}
 	if flags.UseLM {
 		fmt.Printf("Prevented %d\n", prevCount)

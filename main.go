@@ -19,7 +19,7 @@ func main() {
 	dirName := flag.String("input", "test_dataset", "path to dataset")
 	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
-	writeData := flag.Bool("writeData", false, "Whether to write data to file for eg: distribution plot.")
+	logLevel := flag.Int("logLevel", 0, "The level of logging used, 0 (no logging), 1 or 2")
 	detailedEvaluation := flag.Bool("detailedEval", false, "Whether to run detailed evaluation of edit distance.")
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	similarityProportion := flag.Float64("proportion", 0.05, "The proportion of document pairs to align")
@@ -37,7 +37,7 @@ func main() {
 	
 	flags.WriteOutput = *writeOutput
 	flags.DirName = *dirName
-	flags.WriteData = * writeData
+	flags.LogLevel = *logLevel
 	flags.FpType = *fpType
 	flags.DetailedEvaluation = *detailedEvaluation
 	flags.ShingleSize = * shingleSize
@@ -95,7 +95,7 @@ func execute() {
 			alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList)
 		}
 		
-		if flags.WriteData {
+		if flags.LogLevel > 1 {
 			readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
 		}
 		scoreSum := 0

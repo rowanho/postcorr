@@ -3,7 +3,8 @@ package correction
 import (
 	"postCorr/common"
 	"postCorr/flags"
-	
+	"postCorr/readWrite"
+
 	"strings"
 	"unicode"
 	"bytes"
@@ -12,13 +13,17 @@ import (
 	"net/http"
 	"math"
 	"strconv"
-	//"fmt"
+    "path"
+
+	"github.com/rowanho/levenshtein"
 )
 
 var words = []string{}
 var n = 1
 var reuseGraph = make(map[string][]map[string]string)
 var prevCount = 0
+var correctionGraph = make(map[string]map[int]string)
+
 /**
 *   Performs a majority vote across all parts of the alignment
 *   If indices were counted as aligning, they are used in the vote
@@ -41,6 +46,15 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			maxEnd = alMap.End
 		}
 	}
+	var groundText []rune
+	if flags.LogLevel > 1 && flags.Groundtruth != "" {
+    	right := primaryDocumentID[len(flags.DirName) + 1:]
+    	groundText, _ = readWrite.ReadRunes(path.Join(flags.Groundtruth, right))
+    	if _, exists := correctionGraph[primaryDocumentID]; !exists {
+    		correctionGraph[primaryDocumentID] = make(map[int]string)
+    	}
+	}
+
 
 	primText := documents[docMap[primaryDocumentID]].Text
 	if flags.UseLM {
@@ -86,7 +100,13 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		}
 		//fmt.Println(counts)
 		//fmt.Println(primText[ind])
+		var prevText []rune
+		if flags.LogLevel > 1 && flags.Groundtruth != "" {
+			prevText = make([]rune, len(primText))
+			copy(prevText, primText)
+		}
 
+		prevNoCorrections := noCorrections
 		if primText[ind] != maxRune && max > numVotes / 2 {
 			if flags.UseLM && len(words) > 0 {
 				end := len(words) - 1
@@ -113,9 +133,21 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				noCorrections += 1
 			}
 		}
+
+		if prevNoCorrections < noCorrections && flags.LogLevel > 1 && flags.Groundtruth != "" {
+			before := levenshtein.ComputeDistance(groundText, prevText)
+			after := levenshtein.ComputeDistance(groundText, primText)
+			if before > after{
+				correctionGraph[primaryDocumentID][ind] = "worse"
+			} else if before == after{
+				correctionGraph[primaryDocumentID][ind] = "same"
+			} else {
+				correctionGraph[primaryDocumentID][ind] = "better"
+			}
+		}
 	}
 	//fmt.Println(string(primText))
-	if flags.WriteData && noCorrections > 0 {
+	if flags.LogLevel > 0 && noCorrections > 0 {
 		reuseCluster := make(map[string]string)
 		p := []rune(strings.Repeat("_", maxEnd + 1 - minStart))
 		for _, m := range(alignmentMaps) {

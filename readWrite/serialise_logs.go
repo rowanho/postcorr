@@ -60,3 +60,9 @@ func SerialiseVote(r map[string][]map[string]string) {
     fn := fmt.Sprintf("%s_reuse_graph%d.json",common.LogDir, flags.ShingleSize)
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
+
+func SerialiseEdits(e map[string]map[int]string) {
+    bytes, _ := json.Marshal(e)
+    fn := fmt.Sprintf("%s_edit_graph%d.json",common.LogDir, flags.ShingleSize)
+    ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
+}

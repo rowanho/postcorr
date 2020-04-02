@@ -208,7 +208,7 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool  {
 	
 	documentAdjacencyList = bools
 
-	if flags.WriteData {
+	if flags.LogLevel > 0 {
 		readWrite.SerialiseJaccards(scores[pos:])
 	}
 
