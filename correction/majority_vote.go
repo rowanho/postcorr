@@ -14,6 +14,7 @@ import (
 	"math"
 	"strconv"
     "path"
+    "fmt"
 
 	"github.com/rowanho/levenshtein"
 )
@@ -22,7 +23,7 @@ var words = []string{}
 var n = 1
 var reuseGraph = make(map[string][]map[string]string)
 var prevCount = 0
-var correctionGraph = make(map[string]map[int]string)
+var correctionGraph = make(map[string][]map[int]string)
 
 /**
 *   Performs a majority vote across all parts of the alignment
@@ -48,11 +49,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 	}
 	var groundText []rune
 	if flags.LogLevel > 1 && flags.Groundtruth != "" {
-    	right := primaryDocumentID[len(flags.DirName) + 1:]
-    	groundText, _ = readWrite.ReadRunes(path.Join(flags.Groundtruth, right))
-    	if _, exists := correctionGraph[primaryDocumentID]; !exists {
-    		correctionGraph[primaryDocumentID] = make(map[int]string)
-    	}
+    	groundText, _ = readWrite.ReadRunes(path.Join(flags.Groundtruth, primaryDocumentID))
 	}
 
 
@@ -65,6 +62,8 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		currentWord = words[len(words) -1]
 	}
 	requiresNewWord := false
+	reuseEdits := make(map[int]string)
+
 	for ind := minStart; ind < maxEnd; ind++ {
 		if flags.UseLM {
 			if unicode.IsSpace(primText[ind]) {
@@ -132,19 +131,23 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				primText[ind] = maxRune
 				noCorrections += 1
 			}
+
 		}
 
 		if prevNoCorrections < noCorrections && flags.LogLevel > 1 && flags.Groundtruth != "" {
 			before := levenshtein.ComputeDistance(groundText, prevText)
 			after := levenshtein.ComputeDistance(groundText, primText)
-			if before > after{
-				correctionGraph[primaryDocumentID][ind] = "worse"
+			fmt.Println(before, after)
+			if before < after{
+				reuseEdits[ind] = "worse"
 			} else if before == after{
-				correctionGraph[primaryDocumentID][ind] = "same"
+				reuseEdits[ind] = "same"
 			} else {
-				correctionGraph[primaryDocumentID][ind] = "better"
+				reuseEdits[ind] = "better"
 			}
 		}
+
+
 	}
 	//fmt.Println(string(primText))
 	if flags.LogLevel > 0 && noCorrections > 0 {
@@ -168,8 +171,14 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			}
 			reuseCluster[m.SecondaryDocumentID] = r + string(t)
 		}
-		
+		scaledReuseEdits := make(map[int]string)
+
+		for key, val := range reuseEdits { 
+			scaledReuseEdits[key - minStart] = val
+		}
+
 		reuseGraph[primaryDocumentID] = append(reuseGraph[primaryDocumentID], reuseCluster)
+		correctionGraph[primaryDocumentID] = append(correctionGraph[primaryDocumentID], scaledReuseEdits)
 	}
 		
 	return primText, noCorrections
