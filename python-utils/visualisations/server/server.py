@@ -2,32 +2,59 @@ from flask import Flask, request, jsonify
 import sys
 import os
 import json
-path = sys.argv[1]
+corrected_dir = sys.argv[1]
 
 app = Flask(__name__)
-
-@app.route('/serve_file', methods=['post'])
-def serve_file():
-	filename = request.form['filename']
-	with open(os.path.join(path,filename)) as b:
-		buf = b.read()
-	return buf
 
 @app.route('/serve_reuse', methods=['post'])
 def serve_reuse():
 	filename = request.form['filename']
-	with open(os.path.join('logs', 'logs_reuse_graph.json')) as b:
-		buf = b.read()
-		j = json.loads()
-	return jsonify(j[filename])
 
-@app.route('/serve_improvements', methods=['post'])
-def serve_improvements():
-	filename = request.form['filename']
-	with open(os.path.join('logs', 'logs_edit_graph.json')) as b:
+	with open(os.path.join(corrected_dir, filename)) as b:
+		file_text = b.read()
+	with open(os.path.join('logs', 'vote_graph.json')) as b:
 		buf = b.read()
-		j = json.loads()
-	return jsonify(j[filename])
+		text_json = json.loads(buf)
+	with open(os.path.join('logs', 'vote_start_ends.json')) as b:
+		buf = b.read()
+		se_json = json.loads(buf)
+
+	start_ends_list = se_json[filename]
+	text_segment_list = text_json[filename]
+
+	with open(os.path.join('logs', 'edit_graph.json')) as b:
+		buf = b.read()
+		edit_json = json.loads(buf)
+	edits_list = edit_json[filename]
+
+	alternating_segments = []
+	if len(text_segment_list) == 0:
+		alternating_segments.append(file_text)
+
+	prev = 0
+	print(edits_list)
+	for i, text_segment in enumerate(text_segment_list):
+		start = start_ends_list[i]['start']
+		end = start_ends_list[i]['end'] + 1
+		alternating_segments.append(file_text[prev:start])
+		encoded = get_encoded(file_text[start:end], edits_list[i])
+		alternating_segments.append(encoded)
+		prev = end
+		if i == len(text_segment_list) - 1:
+			alternating_segments.append(file_text[end:])
+	return jsonify({'segments':alternating_segments, 'reuse_map': text_segment_list})
+
+def get_encoded(text_segment, edits):
+	print(edits)
+	if len(edits) == 0:
+		return text_segment
+	text_segment_chars = list(text_segment)
+	pos = 0
+	for i in range(len(text_segment_chars)):
+		if str(i) in edits:
+			typ = edits[str(i)]
+			text_segment_chars[i] = f'<mark class="{typ}"' + text_segment_chars[i] + '</mark>'
+	return ''.join(text_segment_chars)
 
 
 @app.route('/', methods=['get'])

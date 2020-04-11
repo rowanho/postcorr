@@ -36,7 +36,7 @@ func SerialiseGraph(alignments map[string]common.Alignment, alignmentsPerDocumen
     }
     
     bytes, _ := json.Marshal(graphMap)
-    fn := fmt.Sprintf("%s_graph.json",common.LogDir)
+    fn := "graph.json"
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
 
@@ -44,7 +44,7 @@ func SerialiseGraph(alignments map[string]common.Alignment, alignmentsPerDocumen
 
 func SerialiseJaccards(scores []float64) {
     os.Mkdir(common.LogDir, os.ModePerm)
-    fn := fmt.Sprintf("%s_jaccard_indexes.txt", common.LogDir)
+    fn := "jaccard_indexes.txt"
     f, _ := os.Create(path.Join(common.LogDir, fn))
 	defer f.Close()
 	
@@ -56,17 +56,17 @@ func SerialiseJaccards(scores []float64) {
 
 func SerialiseVote(r map[string][]map[string]string) {
     bytes, _ := json.Marshal(r)
-    fn := fmt.Sprintf("%s_vote_graph.json",common.LogDir)
+    fn := "vote_graph.json"
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
 
 func SerialiseStartEnds(r map[string][]map[string]int) {
     bytes, _ := json.Marshal(r)
-    fn := fmt.Sprintf("%s_vote_start_ends.json",common.LogDir)
+    fn := "vote_start_ends.json"
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)    
 }
 func SerialiseEdits(e map[string][]map[int]string) {
     bytes, _ := json.Marshal(e)
-    fn := fmt.Sprintf("%s_edit_graph.json",common.LogDir)
+    fn := "edit_graph.json"
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
