@@ -22,6 +22,7 @@ import (
 var words = []string{}
 var n = 1
 var reuseGraph = make(map[string][]map[string]string)
+var reuseStartEndGraph = make(map[string][]map[string]int)
 var prevCount = 0
 var correctionGraph = make(map[string][]map[int]string)
 
@@ -178,6 +179,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		}
 
 		reuseGraph[primaryDocumentID] = append(reuseGraph[primaryDocumentID], reuseCluster)
+		reuseStartEndGraph[primaryDocumentID] = append(reuseStartEndGraph[primaryDocumentID], map[string]int{"start": minStart, "end": maxEnd,})
 		correctionGraph[primaryDocumentID] = append(correctionGraph[primaryDocumentID], scaledReuseEdits)
 	}
 		

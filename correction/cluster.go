@@ -50,6 +50,7 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 	
 	if flags.LogLevel > 0 {
 		readWrite.SerialiseVote(reuseGraph)
+		readWrite.SerialiseStartEnds(reuseStartEndGraph)
 	}
 
 	if flags.LogLevel > 1  {
