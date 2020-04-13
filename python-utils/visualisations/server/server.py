@@ -9,7 +9,6 @@ app = Flask(__name__)
 @app.route('/serve_reuse', methods=['post'])
 def serve_reuse():
 	filename = request.form['filename']
-
 	with open(os.path.join(corrected_dir, filename)) as b:
 		file_text = b.read()
 	with open(os.path.join('logs', 'vote_graph.json')) as b:
@@ -27,22 +26,24 @@ def serve_reuse():
 		edit_json = json.loads(buf)
 	edits_list = edit_json[filename]
 
-	alternating_segments = []
+	reuse_map = {}
+	alternating_segments = ""
 	if len(text_segment_list) == 0:
-		alternating_segments.append(file_text)
+		alternating_segments = f'<div>{file_text}</div>'
 
 	prev = 0
 	print(edits_list)
 	for i, text_segment in enumerate(text_segment_list):
 		start = start_ends_list[i]['start']
 		end = start_ends_list[i]['end'] + 1
-		alternating_segments.append(file_text[prev:start])
+		alternating_segments += f'<div>{file_text[prev:start]}</div>'
 		encoded = get_encoded(file_text[start:end], edits_list[i])
-		alternating_segments.append(encoded)
+		alternating_segments += f'<div class="reused">{encoded}</div>'
 		prev = end
 		if i == len(text_segment_list) - 1:
-			alternating_segments.append(file_text[end:])
-	return jsonify({'segments':alternating_segments, 'reuse_map': text_segment_list})
+			alternating_segments += f'<div>{file_text[end:]}</div>'
+		reuse_map[encoded] = text_segment
+	return jsonify({'segments':alternating_segments, 'reuse_map': reuse_map})
 
 def get_encoded(text_segment, edits):
 	print(edits)
