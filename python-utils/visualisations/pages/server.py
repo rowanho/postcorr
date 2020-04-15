@@ -50,8 +50,9 @@ def serve_reuse():
 		if i == len(text_segment_list) - 1:
 			alternating_segments += f'<span>{to_html(file_text[end:])}</span>'
 		escaped_text_segment = {}
-		reuse_map[uid] = get_modal_html(text_segment, filename)
+		reuse_map[uid] = get_modal_html(text_segment, filename, edits_list[i])
 	return jsonify({'segments':alternating_segments, 'reuse_map': reuse_map})
+
 
 def get_encoded(text_segment, edits):
 	if len(edits) == 0:
@@ -67,22 +68,27 @@ def get_encoded(text_segment, edits):
 			text_segment_chars[i] = to_html(text_segment_chars[i])
 	return ''.join(text_segment_chars)
 
-def get_modal_html(text_segment, leader_key):
+def get_modal_html(text_segment, leader_key, edits):
 	html_text = []
 	html_text.append('<table style="width:100%">')
-	build_row(leader_key, text_segment[leader_key], html_text)
+	text_segment[leader_key] = get_encoded(text_segment[leader_key], edits)
+	build_row(leader_key, text_segment[leader_key], html_text, esc=False)
 	for key, val in text_segment.items():
 		if key != leader_key:
 			build_row(key, val, html_text)
 	html_text.append('</table>')
 	return '\n'.join(html_text)
 
-def build_row(key, val, html_text):
+def build_row(key, val, html_text, esc=True):
 	html_text.append('<tr>')
 	html_text.append(f'<td>{to_html(key)}</td>')
-	escaped = to_html(val).replace('<br>', ' ')
+	if esc:
+		escaped = to_html(val).replace('<br>', ' ')
+	else:
+		escaped = val.replace('<br>', ' ')
 	html_text.append(f'<td>{escaped}</td>')
 	html_text.append('</tr>')
+
 
 
 @app.route('/', methods=['get'])
