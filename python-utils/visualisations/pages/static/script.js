@@ -1,10 +1,10 @@
 var searchString = window.location.search
 var params = new URLSearchParams(searchString);
 var pathname = params.get("filename");
-var globaldict;
 // Get the modal
 
 $(document).ready(function(){
+	var globaldict;
 	var modal = document.getElementById("reuse-modal");
 	$.post( "/serve_reuse", {"filename": pathname}, function( data ) {
 		console.log(data)
@@ -17,7 +17,9 @@ $(document).ready(function(){
 	});
 
 	$("#main").on("click", ".reused", function() {
-		console.log('clicked on reused');
+		console.log(globaldict['reuse_map']);
+		content = globaldict['reuse_map'][$(this).attr("uid")];
+		$(".modal-table").html(content)
 		modal.style.display = "block";
 	});
 });

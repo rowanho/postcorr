@@ -3,6 +3,7 @@ import sys
 import os
 import json#
 import html
+from uuid import uuid4
 
 corrected_dir = sys.argv[1]
 
@@ -37,17 +38,19 @@ def serve_reuse():
 		alternating_segments = f'<div>{to_html(file_text)}</div>'
 
 	prev = 0
-	print(edits_list)
 	for i, text_segment in enumerate(text_segment_list):
+
 		start = start_ends_list[i]['start']
 		end = start_ends_list[i]['end'] + 1
 		alternating_segments += f'<span>{to_html(file_text[prev:start])}</span>'
 		encoded = get_encoded(file_text[start:end], edits_list[i])
-		alternating_segments += f'<span class="reused">{encoded}</span>'
+		uid = str(uuid4())
+		alternating_segments += f'<span class="reused" uid="{uid}">{encoded}</span>'
 		prev = end
 		if i == len(text_segment_list) - 1:
 			alternating_segments += f'<span>{to_html(file_text[end:])}</span>'
-		reuse_map[encoded] = text_segment
+		escaped_text_segment = {}
+		reuse_map[uid] = get_modal_html(text_segment, filename)
 	return jsonify({'segments':alternating_segments, 'reuse_map': reuse_map})
 
 def get_encoded(text_segment, edits):
@@ -63,6 +66,23 @@ def get_encoded(text_segment, edits):
 		else:
 			text_segment_chars[i] = to_html(text_segment_chars[i])
 	return ''.join(text_segment_chars)
+
+def get_modal_html(text_segment, leader_key):
+	html_text = []
+	html_text.append('<table style="width:100%">')
+	build_row(leader_key, text_segment[leader_key], html_text)
+	for key, val in text_segment.items():
+		if key != leader_key:
+			build_row(key, val, html_text)
+	html_text.append('</table>')
+	return '\n'.join(html_text)
+
+def build_row(key, val, html_text):
+	html_text.append('<tr>')
+	html_text.append(f'<td>{to_html(key)}</td>')
+	escaped = to_html(val).replace('<br>', ' ')
+	html_text.append(f'<td>{escaped}</td>')
+	html_text.append('</tr>')
 
 
 @app.route('/', methods=['get'])
