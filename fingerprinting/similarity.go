@@ -4,18 +4,18 @@ import (
 	"postCorr/common"
 	"postCorr/flags"
 	"postCorr/readWrite"
-	
+
 	"fmt"
 	"sort"
-	
+
 	minhash "github.com/rowanho/go-minhash"
 	spooky "github.com/dgryski/go-spooky"
 	metro "github.com/dgryski/go-metro"
-	
+
 	inverted "github.com/rowanho/Inverted-Index-Generator/invertedindex"
 )
 
-var total int = 0 
+var total int = 0
 var totalSum float64 = 0.0
 var scores []float64 = []float64{}
 var score map[int]map[int]float64 = make(map[int]map[int]float64, 0)
@@ -44,7 +44,7 @@ func min_int(x int, y int) int {
 		return x
 	} else {
 		return y
-	}	
+	}
 }
 
 /**
@@ -52,21 +52,21 @@ func min_int(x int, y int) int {
 **/
 func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedIndex inverted.InvertedIndex) {
 	numMatches := make([]int, len(fpList))
-	
+
 	for fp := range fpList[targetDoc] {
 		contains := inverted.Find(invertedIndex, fp)
 		if flags.JaccardType == common.WeightedJaccard {
 			for _, c := range contains {
 				// Add the minimum of the two counts
 					numMatches[c] += min_int(fpList[c][fp], fpList[targetDoc][fp])
-			} 
+			}
 		} else {
 			for _, c := range contains {
 				numMatches[c] += 1
-			}						
+			}
 		}
 	}
-	
+
 	score[targetDoc] = make(map[int]float64)
 	bools[targetDoc] = make(map[int]bool)
 	for i, n := range numMatches {
@@ -80,7 +80,7 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 				if _, exists := fpList[targetDoc][fp]; !exists {
 					maxSum += freq
 				} else {
-					maxSum += max_int(fpList[targetDoc][fp], freq)					
+					maxSum += max_int(fpList[targetDoc][fp], freq)
 				}
 			}
 			for fp, freq := range fpList[targetDoc] {
@@ -91,7 +91,7 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 			if maxSum > 0 {
 				jaccard = float64(n) / float64(maxSum)
 			}
-			
+
 		} else {
 			// Jaccard Index
 			l := len(fpList[i]) + len(fpList[targetDoc]) - n
@@ -99,26 +99,26 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 				jaccard = (float64(n) / float64(len(fpList[i]) + len(fpList[targetDoc]) - n))
 			}
 		}
-		
+
 		totalSum += jaccard
 		total += 1
-		
+
 		scores = append(scores, jaccard)
 		score[targetDoc][i] = jaccard
 		bools[targetDoc][i] = true
 	}
 }
 
-func mhash(b []byte) uint64 { return metro.Hash64(b, 0) } 
+func mhash(b []byte) uint64 { return metro.Hash64(b, 0) }
 func getSimilarLsh(docs []common.Document) {
 	ms := make([]*minhash.MinWise, len(docs))
 	for i, doc := range(docs) {
 		ms[i] = minhash.NewMinWise(spooky.Hash64, mhash, 100)
 		for j := 0; j+flags.ShingleSize < len(doc.Text) + 1; j++ {
-			ms[i].Push([]byte(string(doc.Text[j : j+flags.ShingleSize])))				
+			ms[i].Push([]byte(string(doc.Text[j : j+flags.ShingleSize])))
 		}
 	}
-	
+
 	for i := range(docs) {
 		score[i] = make(map[int]float64)
 		bools[i] = make(map[int]bool)
@@ -133,7 +133,7 @@ func getSimilarLsh(docs []common.Document) {
 			totalSum += s
 			scores = append(scores, s)
 		}
-	}		
+	}
 }
 
 func getSimilarModP(docs []common.Document) {
@@ -151,7 +151,7 @@ func getSimilarModP(docs []common.Document) {
 func getSimilarWinnowing(docs []common.Document) {
 	fps := make([]map[uint64]int, len(docs))
 	for i, doc := range docs {
-		fp := Winnowing(preProcess(string(doc.Text)), flags.ShingleSize, flags.WinnowingT)	
+		fp := Winnowing(preProcess(string(doc.Text)), flags.ShingleSize, flags.WinnowingT)
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)
@@ -169,10 +169,10 @@ func GetAllPairwise(docs []common.Document) (map[int]map[int]float64, []float64)
 		getSimilarModP(docs)
 	} else if flags.FpType == common.Winnowing {
 		getSimilarWinnowing(docs)
-	}	
+	}
 	return score, scores
 }
-	
+
 func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool  {
 	var documentAdjacencyList map[int]map[int]bool
 	if flags.FpType == common.MinhashFP {
@@ -184,7 +184,7 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool  {
 	}
 	//fmt.Println(total)
 	//fmt.Printf("Average jaccard index was %6.3f \n", totalSum / float64(total))
-	
+
 	pos := 0
 	proportion := flags.SimilarityProportion
 	sort.Float64s(scores)
@@ -194,23 +194,23 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool  {
 	numP := int(proportion * float64(numPairs))
 	if  numP < len(scores) {
 		threshold = scores[len(scores) - 1]
-	
+
 		threshold = scores[len(scores) - 1 - numP]
-	
+
 		for doc1 := range(score) {
 			for doc2, s := range(score[doc1]) {
 				if s < threshold {
-					delete(bools[doc1], doc2)					
-				} 
+					delete(bools[doc1], doc2)
+				}
 			}
 		}
 	}
-	
+
 	documentAdjacencyList = bools
 
-	if flags.LogLevel > 0 {
+	if flags.Logging {
 		readWrite.SerialiseJaccards(scores[pos:])
 	}
 
-	return documentAdjacencyList		
+	return documentAdjacencyList
 }

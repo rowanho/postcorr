@@ -5,8 +5,8 @@ import json#
 import html
 from uuid import uuid4
 
-corrected_dir = sys.argv[1]
-
+original_dir = sys.argv[1]
+corrected_dir = sys.argv[2]
 app = Flask(__name__)
 
 def to_html(text):
@@ -17,6 +17,8 @@ def serve_reuse():
 	filename = request.form['filename']
 	with open(os.path.join(corrected_dir, filename)) as b:
 		file_text = b.read()
+	with open(os.path.join(original_dir, filename)) as b:
+		original_file_text = b.read()
 	with open(os.path.join('logs', 'vote_graph.json')) as b:
 		buf = b.read()
 		text_json = json.loads(buf)
@@ -38,10 +40,11 @@ def serve_reuse():
 		alternating_segments = f'<div>{to_html(file_text)}</div>'
 
 	prev = 0
-	for i, text_segment in enumerate(text_segment_list):
 
+	for i, text_segment in enumerate(text_segment_list):
 		start = start_ends_list[i]['start']
 		end = start_ends_list[i]['end'] + 1
+		text_segment[filename + '_unedited'] = original_file_text[start:end]
 		alternating_segments += f'<span>{to_html(file_text[prev:start])}</span>'
 		encoded = get_encoded(file_text[start:end], edits_list[i])
 		uid = str(uuid4())
@@ -72,10 +75,11 @@ def get_modal_html(text_segment, leader_key, edits):
 	html_text = []
 	html_text.append('<table style="width:100%">')
 	text_segment[leader_key] = get_encoded(text_segment[leader_key], edits)
-	build_row(leader_key, text_segment[leader_key], html_text, esc=False)
+	build_row(f'Edited text ({leader_key})', text_segment[leader_key], html_text, esc=False)
+	build_row(f'Unedited text ({leader_key})', text_segment[leader_key + '_unedited'], html_text, esc=False)
 	for key, val in text_segment.items():
-		if key != leader_key:
-			build_row(key, val, html_text)
+		if key != leader_key and key != (leader_key + '_unedited'):
+			build_row(f'Witness ({key})', val, html_text)
 	html_text.append('</table>')
 	return '\n'.join(html_text)
 

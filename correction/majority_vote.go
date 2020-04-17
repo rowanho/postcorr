@@ -49,7 +49,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		}
 	}
 	var groundText []rune
-	if flags.LogLevel > 1 && flags.Groundtruth != "" {
+	if flags.Logging && flags.Groundtruth != "" {
     	groundText, _ = readWrite.ReadRunes(path.Join(flags.Groundtruth, primaryDocumentID))
 	}
 
@@ -75,7 +75,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				requiresNewWord = false
 			}
 		}
-		
+
 		numVotes := 1
 		counts := map[rune]int{}
 		max := 1
@@ -101,7 +101,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		//fmt.Println(counts)
 		//fmt.Println(primText[ind])
 		var prevText []rune
-		if flags.LogLevel > 1 && flags.Groundtruth != "" {
+		if flags.Logging && flags.Groundtruth != "" {
 			prevText = make([]rune, len(primText))
 			copy(prevText, primText)
 		}
@@ -120,13 +120,13 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 					f, _ := strconv.ParseFloat(score, 64)
 					if f > threshold {
 						primText[ind] = maxRune
-						noCorrections += 1						
+						noCorrections += 1
 					} else {
 						prevCount += 1
 					}
 				} else {
 					primText[ind] = maxRune
-					noCorrections += 1					
+					noCorrections += 1
 				}
 			} else {
 				primText[ind] = maxRune
@@ -135,7 +135,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 
 		}
 
-		if prevNoCorrections < noCorrections && flags.LogLevel > 1 && flags.Groundtruth != "" {
+		if prevNoCorrections < noCorrections && flags.Logging && flags.Groundtruth != "" {
 			before := levenshtein.ComputeDistance(groundText, prevText)
 			after := levenshtein.ComputeDistance(groundText, primText)
 			fmt.Println(before, after)
@@ -151,7 +151,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 
 	}
 	//fmt.Println(string(primText))
-	if flags.LogLevel > 0 && noCorrections > 0 {
+	if flags.Logging && noCorrections > 0 {
 		reuseCluster := make(map[string]string)
 		p := []rune(strings.Repeat("_", maxEnd + 1 - minStart))
 		for _, m := range(alignmentMaps) {
@@ -174,7 +174,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		}
 		scaledReuseEdits := make(map[int]string)
 
-		for key, val := range reuseEdits { 
+		for key, val := range reuseEdits {
 			scaledReuseEdits[key - minStart] = val
 		}
 
@@ -182,7 +182,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		reuseStartEndGraph[primaryDocumentID] = append(reuseStartEndGraph[primaryDocumentID], map[string]int{"start": minStart, "end": maxEnd,})
 		correctionGraph[primaryDocumentID] = append(correctionGraph[primaryDocumentID], scaledReuseEdits)
 	}
-		
+
 	return primText, noCorrections
 }
 
@@ -203,7 +203,7 @@ func wordsBeforePoint(text []rune, pos int, n int) []string {
 			hitChars = true
 		}
 	}
-	
+
 	for i := len(wordStarts) -1; i  > -1; i -- {
 		words = append(words, getCurrentWord(text, wordStarts[i]))
 	}
@@ -211,7 +211,7 @@ func wordsBeforePoint(text []rune, pos int, n int) []string {
 }
 
 func getCurrentWord(text []rune, pos int) string {
-	
+
 	end := pos
 	for i := pos; i < len(text); i++ {
 		if unicode.IsSpace(text[i]) {
@@ -219,11 +219,11 @@ func getCurrentWord(text []rune, pos int) string {
 		}
 		end ++
 	}
-	
+
 	if end == len(text) {
 		return string(text[pos:])
 	}
-	
+
 	return string(text[pos:end + 1])
 }
 
@@ -233,7 +233,7 @@ func getLmScore(word string, context string) string {
 		"word" : word,
 		"sentence" : context,
 	})
-	
+
 	resp, err := http.Post("http://localhost:5000/", "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return "0.0"

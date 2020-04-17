@@ -5,7 +5,7 @@ package flags
 **/
 
 var DirName string
-var LogLevel int
+var Logging bool
 var WriteOutput bool
 var DetailedEvaluation bool
 var FpType string

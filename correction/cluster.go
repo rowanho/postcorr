@@ -4,7 +4,7 @@ import (
 	"postCorr/common"
 	"postCorr/flags"
 	"postCorr/readWrite"
-	
+
 	"fmt"
 )
 
@@ -47,13 +47,10 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 			readWrite.PlaintextWrite(docID, documents[docMap[docID]].Text)
 		}
 	}
-	
-	if flags.LogLevel > 0 {
+
+	if flags.Logging {
 		readWrite.SerialiseVote(reuseGraph)
 		readWrite.SerialiseStartEnds(reuseStartEndGraph)
-	}
-
-	if flags.LogLevel > 1  {
 		readWrite.SerialiseEdits(correctionGraph)
 	}
 	if flags.UseLM {

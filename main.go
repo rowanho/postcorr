@@ -19,7 +19,7 @@ func main() {
 	dirName := flag.String("input", "test_dataset", "path to dataset")
 	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
-	logLevel := flag.Int("logLevel", 0, "The level of logging used, 0 (no logging), 1 or 2")
+	logging := flag.Bool("logging", false, "Whether to generate log files in the logs folder")
 	detailedEvaluation := flag.Bool("detailedEval", false, "Whether to run detailed evaluation of edit distance.")
 	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
 	similarityProportion := flag.Float64("proportion", 0.05, "The proportion of document pairs to align")
@@ -34,10 +34,10 @@ func main() {
 	useLM := flag.Bool("useLM", false, "Whether to use a language model to inform correction")
 	lmThreshold := flag.Float64("lmThreshold", 0.1, "The probability score under which language model permits correction")
 	flag.Parse()
-	
+
 	flags.WriteOutput = *writeOutput
 	flags.DirName = *dirName
-	flags.LogLevel = *logLevel
+	flags.Logging = *logging
 	flags.FpType = *fpType
 	flags.DetailedEvaluation = *detailedEvaluation
 	flags.ShingleSize = * shingleSize
@@ -53,7 +53,7 @@ func main() {
 	flags.UseLM = *useLM
 	flags.LmThreshold = *lmThreshold
 	execute()
-	
+
 }
 
 /**
@@ -73,16 +73,16 @@ func execute() {
 	for i, doc := range docList {
 		docMap[doc.ID] = i
 	}
-	
+
 	documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
-	
+
 	numPairs := 0
-	
+
 	for _, similarDocs := range documentAdjacencyList {
 		numPairs += len(similarDocs)
 	}
 	fmt.Printf("Found %d high scoring pairs \n", numPairs / 2)
-	
+
 	if flags.RunAlignment {
 		fmt.Println("Aligning")
 		var alignments map[string]common.Alignment
@@ -94,13 +94,13 @@ func execute() {
 		} else {
 			alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList)
 		}
-		
-		if flags.LogLevel > 1 {
+
+		if flags.Logging {
 			readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
 		}
 		scoreSum := 0
 		for _, al := range alignments {
-			scoreSum += al.Score 
+			scoreSum += al.Score
 		}
 
 		fmt.Printf("Score sum: %d \n", scoreSum)
@@ -108,29 +108,28 @@ func execute() {
 		correctedDocs, totalCorrections = correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
 		fmt.Println("Number of corrections made: ", totalCorrections)
 	}
-	
+
 	// Evaluation
 	if flags.RunAlignment &&  len(flags.Groundtruth) > 0 {
 		originalStats, correctedStats,  originalWordStats, correctedWordStats, _ := evaluation.GetEvaluationStats(docList, docMap, correctedDocs)
-		
+
 		fmt.Printf("Total character distance before correction: %d\n", originalStats.Total)
 		fmt.Printf("Total character distance after correction: %d \n", correctedStats.Total)
-		
+
 		fmt.Printf("Mean character distance before correction: %5.2f \n", originalStats.Mean)
 		fmt.Printf("Mean character distance after correction: %5.2f \n", correctedStats.Mean)
-		
+
 		fmt.Printf("Total word distance before correction: %d\n", originalWordStats.Total)
 		fmt.Printf("Total word distance after correction: %d \n", correctedWordStats.Total)
-		
+
 		fmt.Printf("Mean word distance before correction: %5.2f \n", originalWordStats.Mean)
 		fmt.Printf("Mean word distance after correction: %5.2f \n", correctedWordStats.Mean)
-	
+
 		if len(correctedDocs) > 0 {
-			fmt.Printf("Out of %d the corrected documents, mean edit distance changed from %5.2f to %5.2f \n", 
+			fmt.Printf("Out of %d the corrected documents, mean edit distance changed from %5.2f to %5.2f \n",
 							len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
 		} else {
 			fmt.Println("No documents corrected!")
 		}
 	}
 }
-
