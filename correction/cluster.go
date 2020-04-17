@@ -39,7 +39,9 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 			correctedDocText, noCorrections := MajorityVote(primaryDocumentID, alignmentMaps, documents, docMap)
 			documents[docMap[primaryDocumentID]].Text = correctedDocText
 			totalCorrections += noCorrections
-			correctedDocs[primaryDocumentID] = true
+			if noCorrections > 0 {
+				correctedDocs[primaryDocumentID] = true
+			}
 		}
 	}
 	if flags.WriteOutput {

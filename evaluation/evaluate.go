@@ -4,13 +4,13 @@ import (
     "postCorr/readWrite"
     "postCorr/flags"
     "postCorr/common"
-    
+
     "os"
     "path"
     "path/filepath"
     "fmt"
     "sort"
-    
+
     "github.com/rowanho/levenshtein"
 )
 
@@ -23,11 +23,9 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
     correctedDistances := make([]int, 0)
     ogWordDistances := make([]int, 0)
     corrWordDistances := make([]int, 0)
-    
+
     docIds := make([]string, 0)
-    changedStatsTotal := levenshtein.NewEditStats()
-    changedStats := levenshtein.NewEditStats()
-	err := filepath.Walk(flags.DirName,
+	  err := filepath.Walk(flags.DirName,
 		func(pth string, info os.FileInfo, err error) error {
             right := ""
             if pth != flags.DirName {
@@ -41,24 +39,18 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
 
                 var groundTruth []rune
                 var corrected []rune
-                
+
 				original, readErr := readWrite.ReadRunes(pth)
                 groundTruth, readErr = readWrite.ReadRunes(path.Join(flags.Groundtruth, right))
                 if correctable {
                     corrected = docs[docMap[right]].Text
                 }
-				
+
 				if readErr != nil {
                     fmt.Println(readErr)
 					return readErr
 				}
-                        
-                if flags.DetailedEvaluation {
-                    if correctable {
-                        _, changedStats =  levenshtein.ComputeDistanceWithConstruction(original, corrected)
-                    }
-                } 
-                mergeStats(changedStats, changedStatsTotal)
+
                 originalDist := levenshtein.ComputeDistance(original, groundTruth)
                 originalDistances = append(originalDistances, originalDist)
                 ogWordDist := levenshtein.ComputeWordDistance(original, groundTruth)
@@ -69,20 +61,17 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
                     correctedWordDist := levenshtein.ComputeWordDistance(corrected, groundTruth)
                     corrWordDistances = append(corrWordDistances, correctedWordDist)
                 } else {
-                    correctedDistances = append(correctedDistances, originalDist) 
-                    corrWordDistances = append(corrWordDistances, ogWordDist)                   
-                }                                
+                    correctedDistances = append(correctedDistances, originalDist)
+                    corrWordDistances = append(corrWordDistances, ogWordDist)
+                }
                 docIds = append(docIds, right)
 			}
 			return nil
 		},
 	)
-    
+
     if err != nil {
         return []string{}, []int{}, []int{}, []int{}, []int{}, err
-    }
-    if flags.DetailedEvaluation {
-        printStats(changedStatsTotal)
     }
 	return  docIds, originalDistances, correctedDistances, ogWordDistances, corrWordDistances, err
 }
@@ -110,7 +99,7 @@ func mergeDict(update, total map[string]int) {
         } else {
             total[s] = update[s]
         }
-    }    
+    }
 }
 
 type kv struct {
@@ -119,21 +108,21 @@ type kv struct {
 }
 
 func max_n_dict(counts map[string]int, n int) map[string]int {
-    
+
     if n > len(counts) {
         n = len(counts)
     }
     ss := make([]kv, len(counts))
     i := 0
     for k, v := range counts {
-        ss[i] =  kv{k, v} 
+        ss[i] =  kv{k, v}
         i += 1
     }
 
     sort.Slice(ss, func(i, j int) bool {
         return ss[i].Value > ss[j].Value
     })
-    
+
     res := make(map[string]int)
     for _, kv := range ss[:n] {
         res[kv.Key] = kv.Value
@@ -149,7 +138,7 @@ func sum_mean(slice []int, docIds []string, correctedDocs map[string]bool) (int,
         if _, exists := correctedDocs[docIds[i]]; exists {
             totalCorrected += ed
         }
-    }  
+    }
     return total, float64(total) / float64(len(slice)), float64(totalCorrected) / float64(len(correctedDocs))
 }
 
@@ -160,13 +149,13 @@ type EvalStats = struct {
 }
 
 func GetEvaluationStats(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) (EvalStats,  EvalStats, EvalStats, EvalStats, error) {
-    docIds, originalDistances, correctedDistances, 
+    docIds, originalDistances, correctedDistances,
     ogWordDistances, corrWordDistances, err := editDistances(docs, docMap, correctedDocs)
-    
+
     if err != nil {
         return EvalStats{}, EvalStats{}, EvalStats{}, EvalStats{}, err
     }
-    
+
     sum, mean, mean2:= sum_mean(originalDistances, docIds, correctedDocs)
     originalStats := EvalStats{
         Mean: mean,
@@ -179,7 +168,7 @@ func GetEvaluationStats(docs []common.Document, docMap map[string]int, corrected
         Total: sum,
         MeanInCorrected: mean2,
     }
-    
+
     sum, mean, mean2 = sum_mean(ogWordDistances, docIds, correctedDocs)
     originalWordStats := EvalStats{
         Mean: mean,
@@ -192,6 +181,6 @@ func GetEvaluationStats(docs []common.Document, docMap map[string]int, corrected
         Total: sum,
         MeanInCorrected: mean2,
     }
-    
+
     return originalStats, correctedStats, originalWordStats, correctedWordStats, nil
 }

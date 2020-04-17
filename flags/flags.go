@@ -7,7 +7,6 @@ package flags
 var DirName string
 var Logging bool
 var WriteOutput bool
-var DetailedEvaluation bool
 var FpType string
 var SimilarityProportion float64
 var JaccardType string
