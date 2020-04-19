@@ -73,7 +73,7 @@ def get_encoded(text_segment, edits):
 
 def get_modal_html(text_segment, leader_key, edits):
 	html_text = []
-	html_text.append('<table style="width:100%">')
+	html_text.append('<table style="table-layout:fixed; width:100%; word-break: break-all">')
 	text_segment[leader_key] = get_encoded(text_segment[leader_key], edits)
 	build_row(f'Edited text ({leader_key})', text_segment[leader_key], html_text, esc=False)
 	build_row(f'Unedited text ({leader_key})', text_segment[leader_key + '_unedited'], html_text, esc=False)
