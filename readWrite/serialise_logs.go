@@ -2,7 +2,7 @@ package readWrite
 
 import (
     "postCorr/common"
-    
+
     "encoding/json"
     "io/ioutil"
     "path"
@@ -16,25 +16,24 @@ type Edge = struct {
 }
 
 func SerialiseGraph(alignments map[string]common.Alignment, alignmentsPerDocument map[string][]string) {
-    
+
     graphMap := make(map[string][]Edge)
-    
+
     for docId, alIds := range alignmentsPerDocument {
         for _, alId := range alIds {
             e := Edge {
                 DocumentID : alignments[alId].SecondaryDocumentID,
                 Score : alignments[alId].Score,
             }
-            
+
             if _, exists := graphMap[docId]; !exists {
-                graphMap[docId] = []Edge{e}    
+                graphMap[docId] = []Edge{e}
             } else {
-                
                 graphMap[docId] = append(graphMap[docId], e)
             }
         }
     }
-    
+
     bytes, _ := json.Marshal(graphMap)
     fn := "graph.json"
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
@@ -47,10 +46,10 @@ func SerialiseJaccards(scores []float64) {
     fn := "jaccard_indexes.txt"
     f, _ := os.Create(path.Join(common.LogDir, fn))
 	defer f.Close()
-	
+
 	for _, j := range scores {
 		f.WriteString(fmt.Sprintf("%f", j) + "\n")
-	}    
+	}
 }
 
 
@@ -60,13 +59,13 @@ func SerialiseVote(r map[string][]map[string]string) {
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
 
-func SerialiseStartEnds(r map[string][]map[string]int) {
+func SerialiseStartEnds(r map[string][]map[string]int, suffix string) {
     bytes, _ := json.Marshal(r)
-    fn := "vote_start_ends.json"
-    ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)    
+    fn := "vote_start_ends" + suffix + ".json"
+    ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
-func SerialiseEdits(e map[string][]map[int]string) {
+func SerialiseEdits(e map[string]map[int]string, suffix string) {
     bytes, _ := json.Marshal(e)
-    fn := "edit_graph.json"
+    fn := "edit_graph_" + suffix + ".json"
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }

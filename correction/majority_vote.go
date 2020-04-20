@@ -3,7 +3,6 @@ package correction
 import (
 	"postCorr/common"
 	"postCorr/flags"
-	"postCorr/readWrite"
 
 	"strings"
 	"unicode"
@@ -13,18 +12,34 @@ import (
 	"net/http"
 	"math"
 	"strconv"
-    "path"
-    "fmt"
-
-	"github.com/rowanho/levenshtein"
 )
 
 var words = []string{}
 var n = 1
 var reuseGraph = make(map[string][]map[string]string)
 var reuseStartEndGraph = make(map[string][]map[string]int)
+var oldStartEndGraph = make(map[string][]map[string]int)
 var prevCount = 0
-var correctionGraph = make(map[string][]map[int]string)
+var substitutionGraph = make(map[string]map[int]string)
+var deletionGraph = make(map[string]map[int]string)
+// Marks the indices for removal
+var removeIndices = make(map[string]map[int]bool)
+var editIndices = make(map[string]map[int]rune)
+
+var deletionsAt = make(map[string]map[int]int)
+
+func getDeletionsSoFar(primaryDocumentID string, start int) int {
+	d := 0
+	if _, exists := deletionsAt[primaryDocumentID]; !exists {
+		return d
+	}
+	for key, entry := range deletionsAt[primaryDocumentID] {
+		if key < start {
+			d += entry
+		}
+	}
+	return d
+}
 
 /**
 *   Performs a majority vote across all parts of the alignment
@@ -34,7 +49,14 @@ var correctionGraph = make(map[string][]map[int]string)
 *   Also eturns an integer representing the number of corrections made
 **/
 
-func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) ([]rune, int) {
+func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) (int) {
+	if _, exists := removeIndices[primaryDocumentID]; !exists {
+			removeIndices[primaryDocumentID] = make(map[int]bool)
+	}
+
+	if _, exists := editIndices[primaryDocumentID]; !exists {
+			editIndices[primaryDocumentID] = make(map[int]rune)
+	}
 	threshold := -math.Log2(flags.LmThreshold)
 	noCorrections := 0
 	maxEnd := 0
@@ -48,10 +70,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			maxEnd = alMap.End
 		}
 	}
-	var groundText []rune
-	if flags.Logging && flags.Groundtruth != "" {
-    	groundText, _ = readWrite.ReadRunes(path.Join(flags.Groundtruth, primaryDocumentID))
-	}
+	deletions := 0
 
 
 	primText := documents[docMap[primaryDocumentID]].Text
@@ -63,7 +82,6 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		currentWord = words[len(words) -1]
 	}
 	requiresNewWord := false
-	reuseEdits := make(map[int]string)
 
 	for ind := minStart; ind < maxEnd; ind++ {
 		if flags.UseLM {
@@ -81,8 +99,10 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		max := 1
 		maxRune := primText[ind]
 		counts[primText[ind]] = 1
+		notAlignedInPrim := true
 		for _, alMap := range alignmentMaps {
 			if val, exists := alMap.Mapping[ind]; exists {
+				notAlignedInPrim = false
 				numVotes += 1
 				r := documents[docMap[alMap.SecondaryDocumentID]].Text[val]
 				_, ok := counts[r]
@@ -98,15 +118,41 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				}
 			}
 		}
-		//fmt.Println(counts)
-		//fmt.Println(primText[ind])
-		var prevText []rune
-		if flags.Logging && flags.Groundtruth != "" {
-			prevText = make([]rune, len(primText))
-			copy(prevText, primText)
+
+		// is part of a gap, check for possible deletion modification
+		if flags.RemoveInsertions && notAlignedInPrim {
+			if flags.UseLM && len(words) > 0 {
+					end := len(words) - 1
+					start := end - n
+					if start < 0 {
+						start = 0
+					}
+					joined := strings.Join(words[start:end], " ")
+					score := getLmScore(currentWord, joined)
+					if score != "inf" {
+						f, _ := strconv.ParseFloat(score, 64)
+						if f > threshold {
+							removeIndices[primaryDocumentID][ind] = true
+							deletions += 1
+							noCorrections += 1
+						} else {
+							prevCount += 1
+						}
+					} else {
+						removeIndices[primaryDocumentID][ind] = true
+						deletions += 1
+						noCorrections += 1
+					}
+
+			} else {
+				removeIndices[primaryDocumentID][ind] = true
+				deletions += 1
+				noCorrections += 1
+			}
 		}
 
-		prevNoCorrections := noCorrections
+		//fmt.Println(counts)
+		//fmt.Println(primText[ind])
 		if primText[ind] != maxRune && max > numVotes / 2 {
 			if flags.UseLM && len(words) > 0 {
 				end := len(words) - 1
@@ -119,36 +165,20 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				if score != "inf" {
 					f, _ := strconv.ParseFloat(score, 64)
 					if f > threshold {
-						primText[ind] = maxRune
+						editIndices[primaryDocumentID][ind] = maxRune
 						noCorrections += 1
 					} else {
 						prevCount += 1
 					}
 				} else {
-					primText[ind] = maxRune
+					editIndices[primaryDocumentID][ind] = maxRune
 					noCorrections += 1
 				}
 			} else {
-				primText[ind] = maxRune
+				editIndices[primaryDocumentID][ind] = maxRune
 				noCorrections += 1
 			}
-
 		}
-
-		if prevNoCorrections < noCorrections && flags.Logging && flags.Groundtruth != "" {
-			before := levenshtein.ComputeDistance(groundText, prevText)
-			after := levenshtein.ComputeDistance(groundText, primText)
-			fmt.Println(before, after)
-			if before < after{
-				reuseEdits[ind] = "worse"
-			} else if before == after{
-				reuseEdits[ind] = "same"
-			} else {
-				reuseEdits[ind] = "better"
-			}
-		}
-
-
 	}
 	//fmt.Println(string(primText))
 	if flags.Logging && noCorrections > 0 {
@@ -172,18 +202,16 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			}
 			reuseCluster[m.SecondaryDocumentID] = r + string(t)
 		}
-		scaledReuseEdits := make(map[int]string)
-
-		for key, val := range reuseEdits {
-			scaledReuseEdits[key - minStart] = val
-		}
 
 		reuseGraph[primaryDocumentID] = append(reuseGraph[primaryDocumentID], reuseCluster)
-		reuseStartEndGraph[primaryDocumentID] = append(reuseStartEndGraph[primaryDocumentID], map[string]int{"start": minStart, "end": maxEnd,})
-		correctionGraph[primaryDocumentID] = append(correctionGraph[primaryDocumentID], scaledReuseEdits)
-	}
+		oldStartEndGraph[primaryDocumentID] = append(oldStartEndGraph[primaryDocumentID], map[string]int{"start": minStart, "end": maxEnd,})
 
-	return primText, noCorrections
+		if _, exists := deletionsAt[primaryDocumentID]; !exists {
+			deletionsAt[primaryDocumentID] = make(map[int]int)
+		}
+		deletionsAt[primaryDocumentID][maxEnd] = deletions
+	}
+	return noCorrections
 }
 
 func wordsBeforePoint(text []rune, pos int, n int) []string {
