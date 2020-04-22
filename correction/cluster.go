@@ -26,6 +26,7 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 	}
 	subEdits := make(map[int]string)
 	delEdits := make(map[int]string)
+	insEdits := make(map[int]string)
 	newText := make([]rune, 0)
 	endPoint := 0
 	modified := false
@@ -34,22 +35,19 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 		if _, exists := removeIndices[primaryDocumentID][i]; exists {
 			modified = true
 			sub = false
-			endPoint = len(newText)
 		} else if _, exists := editIndices[primaryDocumentID][i]; exists {
 			modified = true
 			sub = true
-			endPoint = i + 1
 			newText = append(newText, editIndices[primaryDocumentID][i])
 		} else {
 			modified = false
 			newText = append(newText, text[i])
 		}
-
+		endPoint = len(newText)
 		if flags.Logging && flags.Groundtruth != "" && modified {
-			before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[endPoint:]...))
-			after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint+1], text[endPoint+1:]...))
-			fmt.Println(before, after)
 			if sub {
+				before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint-1], text[i:]...))
+				after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
 				if before < after {
 					subEdits[endPoint] = "worse"
 					} else if before == after {
@@ -58,6 +56,8 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 						subEdits[endPoint] = "better"
 					}
 			} else {
+				before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i:]...))
+				after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
 				if before < after {
 					delEdits[i] = "worse"
 					} else if before == after {
@@ -67,9 +67,28 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 					}
 			}
 		}
+
+		if _, exists := additionIndices[primaryDocumentID][i]; exists {
+			endPoint = len(newText)
+			newText = append(newText, additionIndices[primaryDocumentID][i]...)
+			if flags.Logging && flags.Groundtruth != "" {
+				for l := endPoint + 1; l <= endPoint + len(additionIndices[primaryDocumentID][i]); l++ {
+					before := levenshtein.ComputeDistance(groundText, append(newText[:l-1], text[i+1:]...))
+					after := levenshtein.ComputeDistance(groundText, append(newText[:l], text[i+1:]...))
+					if before < after {
+						insEdits[l] = "worse"
+					} else if before == after {
+						insEdits[l] = "same"
+					} else {
+						insEdits[l] = "better"
+					}
+				}
+			}
+		}
 	}
 	substitutionGraph[primaryDocumentID] = subEdits
 	deletionGraph[primaryDocumentID] = delEdits
+	insertionGraph[primaryDocumentID] = insEdits
 	return newText
 }
 
@@ -116,6 +135,7 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 		readWrite.SerialiseStartEnds(reuseStartEndGraph, "new")
 		readWrite.SerialiseEdits(substitutionGraph, "sub")
 		readWrite.SerialiseEdits(deletionGraph, "del")
+		readWrite.SerialiseEdits(insertionGraph, "ins")
 	}
 	if flags.UseLM {
 		fmt.Printf("Prevented %d\n", prevCount)

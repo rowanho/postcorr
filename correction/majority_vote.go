@@ -22,10 +22,11 @@ var oldStartEndGraph = make(map[string][]map[string]int)
 var prevCount = 0
 var substitutionGraph = make(map[string]map[int]string)
 var deletionGraph = make(map[string]map[int]string)
+var insertionGraph = make(map[string]map[int]string)
 // Marks the indices for removal
 var removeIndices = make(map[string]map[int]bool)
 var editIndices = make(map[string]map[int]rune)
-
+var additionIndices = make(map[string]map[int][]rune)
 var deletionsAt = make(map[string]map[int]int)
 
 func getDeletionsSoFar(primaryDocumentID string, start int) int {
@@ -41,6 +42,188 @@ func getDeletionsSoFar(primaryDocumentID string, start int) int {
 	return d
 }
 
+// Finds potential gaps for deletion, <= length of threshold
+func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document,docMap map[string]int) (int) {
+	threshold := -math.Log2(flags.LmThreshold)
+	maxEnd := 0
+	minStart := 100000000
+	for _, alMap := range alignmentMaps {
+		if alMap.Start < minStart {
+			minStart = alMap.Start
+		}
+		if alMap.End > maxEnd {
+			maxEnd = alMap.End
+		}
+	}
+	deletions := 0
+
+
+	primText := documents[docMap[primaryDocumentID]].Text
+	if flags.UseLM {
+		words = wordsBeforePoint(primText, minStart, n)
+	}
+	var currentWord string
+	if len(words) > 0 {
+		currentWord = words[len(words) -1]
+	}
+	requiresNewWord := false
+
+	pairStart := 0
+	gapSection := true
+	for ind := minStart; ind < maxEnd; ind++ {
+		notAlignedInPrim := true
+		if flags.UseLM {
+			if unicode.IsSpace(primText[ind]) {
+				requiresNewWord = true
+			} else if requiresNewWord {
+				currentWord = getCurrentWord(primText, ind)
+				words = append(words, currentWord)
+				requiresNewWord = false
+			}
+		}
+
+		for _, alMap := range alignmentMaps {
+			if _, exists := alMap.Mapping[ind]; exists {
+				notAlignedInPrim  = false
+			}
+		}
+
+		if notAlignedInPrim {
+			if !gapSection {
+				pairStart = ind
+			} else {
+				gapSection = true
+			}
+
+		} else if gapSection {
+				if ind - pairStart <= flags.InsertDeleteThreshold {
+					for j := pairStart; j < ind; j ++ {
+						if flags.UseLM && len(words) > 0 {
+							end := len(words) - 1
+							start := end - n
+							if start < 0 {
+								start = 0
+							}
+							joined := strings.Join(words[start:end], " ")
+							score := getLmScore(currentWord, joined)
+							if score != "inf" {
+								f, _ := strconv.ParseFloat(score, 64)
+								if f > threshold {
+									removeIndices[primaryDocumentID][j] = true
+									deletions += 1
+								} else {
+									prevCount += 1
+								}
+							} else {
+								removeIndices[primaryDocumentID][j] = true
+								deletions += 1
+							}
+						} else {
+							removeIndices[primaryDocumentID][j] = true
+							deletions += 1
+						}
+					}
+			}
+			gapSection = false
+		}
+	}
+	return deletions
+}
+
+
+// Finds potential gaps for insertion, <= length of threshold
+func applyInsertions(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document,docMap map[string]int) int {
+	threshold := -math.Log2(flags.LmThreshold)
+	maxEnd := 0
+	minStart := 100000000
+	for _, alMap := range alignmentMaps {
+		if alMap.Start < minStart {
+			minStart = alMap.Start
+		}
+		if alMap.End > maxEnd {
+			maxEnd = alMap.End
+		}
+	}
+	primText := documents[docMap[primaryDocumentID]].Text
+	if flags.UseLM {
+		words = wordsBeforePoint(primText, minStart, n)
+	}
+	var currentWord string
+	if len(words) > 0 {
+		currentWord = words[len(words) -1]
+	}
+	requiresNewWord := false
+
+	insertions := 0
+	for ind := minStart; ind < maxEnd - 1; ind++ {
+		if flags.UseLM {
+			if unicode.IsSpace(primText[ind]) {
+				requiresNewWord = true
+			} else if requiresNewWord {
+				currentWord = getCurrentWord(primText, ind)
+				words = append(words, currentWord)
+				requiresNewWord = false
+			}
+		}
+		commonStrings := make(map[string]int)
+		count := 0
+		for _, alMap := range alignmentMaps {
+			start := -1
+			end := -1
+			if _, exists := alMap.Mapping[ind]; !exists {
+				start = alMap.Mapping[ind]
+			}
+
+			if _, exists := alMap.Mapping[ind + 1]; !exists {
+				end = alMap.Mapping[ind + 1]
+			}
+
+			if start > - 1 && end - start > 0 {
+				count += 1
+				if  end - start < flags.InsertDeleteThreshold {
+					s := documents[docMap[alMap.SecondaryDocumentID]].Text[start: end +1]
+					commonStrings[string(s)] += 1
+				}
+			}
+
+		}
+
+		for str, freq := range commonStrings {
+			if freq >= count / 2 {
+				if flags.UseLM && len(words) > 0 {
+					end := len(words) - 1
+					start := end - n
+					if start < 0 {
+						start = 0
+					}
+					joined := strings.Join(words[start:end], " ")
+					score := getLmScore(currentWord, joined)
+					if score != "inf" {
+						f, _ := strconv.ParseFloat(score, 64)
+						if f > threshold {
+							additionIndices[primaryDocumentID][ind] = []rune(str)
+							insertions += len(str)
+						} else {
+							prevCount += len(str)
+						}
+					} else {
+						additionIndices[primaryDocumentID][ind] = []rune(str)
+						insertions += len(str)
+					}
+				} else {
+					additionIndices[primaryDocumentID][ind] = []rune(str)
+					insertions += len(str)
+				}
+
+				break;
+			}
+		}
+	}
+
+	return insertions
+}
+
+
 /**
 *   Performs a majority vote across all parts of the alignment
 *   If indices were counted as aligning, they are used in the vote
@@ -50,15 +233,27 @@ func getDeletionsSoFar(primaryDocumentID string, start int) int {
 **/
 
 func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) (int) {
+
 	if _, exists := removeIndices[primaryDocumentID]; !exists {
 			removeIndices[primaryDocumentID] = make(map[int]bool)
+	}
+
+	if _, exists := additionIndices[primaryDocumentID]; !exists {
+			additionIndices[primaryDocumentID] = make(map[int][]rune)
 	}
 
 	if _, exists := editIndices[primaryDocumentID]; !exists {
 			editIndices[primaryDocumentID] = make(map[int]rune)
 	}
 	threshold := -math.Log2(flags.LmThreshold)
-	noCorrections := 0
+
+	noDeletions := 0
+	noInsertions := 0
+	if flags.HandleInsertionDeletion {
+		noDeletions = applyDeletions(primaryDocumentID, alignmentMaps,  documents, docMap)
+		noInsertions = applyInsertions(primaryDocumentID, alignmentMaps, documents, docMap)
+	}
+	noCorrections := noDeletions + noInsertions
 	maxEnd := 0
 	minStart := 100000000
 
@@ -99,10 +294,8 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		max := 1
 		maxRune := primText[ind]
 		counts[primText[ind]] = 1
-		notAlignedInPrim := true
 		for _, alMap := range alignmentMaps {
 			if val, exists := alMap.Mapping[ind]; exists {
-				notAlignedInPrim = false
 				numVotes += 1
 				r := documents[docMap[alMap.SecondaryDocumentID]].Text[val]
 				_, ok := counts[r]
@@ -118,39 +311,6 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				}
 			}
 		}
-
-		// is part of a gap, check for possible deletion modification
-		if flags.RemoveInsertions && notAlignedInPrim {
-			if flags.UseLM && len(words) > 0 {
-					end := len(words) - 1
-					start := end - n
-					if start < 0 {
-						start = 0
-					}
-					joined := strings.Join(words[start:end], " ")
-					score := getLmScore(currentWord, joined)
-					if score != "inf" {
-						f, _ := strconv.ParseFloat(score, 64)
-						if f > threshold {
-							removeIndices[primaryDocumentID][ind] = true
-							deletions += 1
-							noCorrections += 1
-						} else {
-							prevCount += 1
-						}
-					} else {
-						removeIndices[primaryDocumentID][ind] = true
-						deletions += 1
-						noCorrections += 1
-					}
-
-			} else {
-				removeIndices[primaryDocumentID][ind] = true
-				deletions += 1
-				noCorrections += 1
-			}
-		}
-
 		//fmt.Println(counts)
 		//fmt.Println(primText[ind])
 		if primText[ind] != maxRune && max > numVotes / 2 {

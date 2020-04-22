@@ -32,7 +32,8 @@ func main() {
 	numAligns := flag.Int("numAligns", 2, "The number of disjoint alignments we attempt to make")
 	useLM := flag.Bool("useLM", false, "Whether to use a language model to inform correction")
 	lmThreshold := flag.Float64("lmThreshold", 0.1, "The probability score under which language model permits correction")
-	removeInsertions := flag.Bool("removeInsertions", false, "The correction algorithm tries to remove insertion it thinks are errors.")
+	handleInsertionDeletion := flag.Bool("insertDelete", false, "The correction algorithm tries to handle insertion and deletion errors.")
+	insertDeleteThreshold := flag.Int("insertDeleteThreshold", 2, "The maximum length of character sequence that the algorithm should attempt to modify during insertion/deletion changes.")
 	flag.Parse()
 
 	flags.WriteOutput = *writeOutput
@@ -51,7 +52,8 @@ func main() {
 	flags.Affine = *affine
 	flags.UseLM = *useLM
 	flags.LmThreshold = *lmThreshold
-	flags.RemoveInsertions = *removeInsertions
+	flags.HandleInsertionDeletion = *handleInsertionDeletion
+	flags.InsertDeleteThreshold = *insertDeleteThreshold
 	execute()
 
 }
