@@ -49,11 +49,11 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 				before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint-1], text[i:]...))
 				after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
 				if before < after {
-					subEdits[endPoint] = "worse"
+					subEdits[endPoint-1] = "worse"
 					} else if before == after {
-						subEdits[endPoint] = "same"
+						subEdits[endPoint-1] = "same"
 					} else {
-						subEdits[endPoint] = "better"
+						subEdits[endPoint-1] = "better"
 					}
 			} else {
 				before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i:]...))
@@ -72,7 +72,7 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 			endPoint = len(newText)
 			newText = append(newText, additionIndices[primaryDocumentID][i]...)
 			if flags.Logging && flags.Groundtruth != "" {
-				for l := endPoint + 1; l <= endPoint + len(additionIndices[primaryDocumentID][i]); l++ {
+				for l := endPoint; l < endPoint + len(additionIndices[primaryDocumentID][i]); l++ {
 					before := levenshtein.ComputeDistance(groundText, append(newText[:l-1], text[i+1:]...))
 					after := levenshtein.ComputeDistance(groundText, append(newText[:l], text[i+1:]...))
 					if before < after {
