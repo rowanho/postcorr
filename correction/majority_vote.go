@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"math"
 	"strconv"
+	"fmt"
 )
 
 var words = []string{}
@@ -28,17 +29,21 @@ var removeIndices = make(map[string]map[int]bool)
 var editIndices = make(map[string]map[int]rune)
 var additionIndices = make(map[string]map[int][]rune)
 var deletionsAt = make(map[string]map[int]int)
+var insertionsAt = make(map[string]map[int]int)
 
-func getDeletionsSoFar(primaryDocumentID string, start int) int {
+func getDifferenceSoFar(primaryDocumentID string, start int) int {
 	d := 0
-	if _, exists := deletionsAt[primaryDocumentID]; !exists {
-		return d
-	}
 	for key, entry := range deletionsAt[primaryDocumentID] {
-		if key < start {
+		if key <= start {
 			d += entry
 		}
 	}
+	for key, entry := range insertionsAt[primaryDocumentID] {
+		if key <= start {
+			d -= entry
+		}
+	}
+	fmt.Println(d)
 	return d
 }
 
@@ -126,6 +131,10 @@ func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, document
 			gapSection = false
 		}
 	}
+	if _, exists := deletionsAt[primaryDocumentID]; !exists {
+		deletionsAt[primaryDocumentID] = make(map[int]int)
+	}
+	deletionsAt[primaryDocumentID][maxEnd] = deletions
 	return deletions
 }
 
@@ -218,6 +227,10 @@ func applyInsertions(primaryDocumentID string, alignmentMaps []alignMap, documen
 			}
 		}
 	}
+	if _, exists := insertionsAt[primaryDocumentID]; !exists {
+		insertionsAt[primaryDocumentID] = make(map[int]int)
+	}
+	insertionsAt[primaryDocumentID][maxEnd] = insertions
 
 	return insertions
 }
@@ -250,7 +263,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 	noInsertions := 0
 	if flags.HandleInsertionDeletion {
 		noDeletions = applyDeletions(primaryDocumentID, alignmentMaps,  documents, docMap)
-	 	//noInsertions = applyInsertions(primaryDocumentID, alignmentMaps, documents, docMap)
+	 	noInsertions = applyInsertions(primaryDocumentID, alignmentMaps, documents, docMap)
 	}
 	noCorrections := noDeletions + noInsertions
 	maxEnd := 0
@@ -264,7 +277,6 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			maxEnd = alMap.End
 		}
 	}
-	deletions := 0
 
 
 	primText := documents[docMap[primaryDocumentID]].Text
@@ -364,11 +376,9 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 
 		reuseGraph[primaryDocumentID] = append(reuseGraph[primaryDocumentID], reuseCluster)
 		oldStartEndGraph[primaryDocumentID] = append(oldStartEndGraph[primaryDocumentID], map[string]int{"start": minStart, "end": maxEnd,})
-
-		if _, exists := deletionsAt[primaryDocumentID]; !exists {
-			deletionsAt[primaryDocumentID] = make(map[int]int)
-		}
-		deletionsAt[primaryDocumentID][maxEnd] = deletions
+		reuseStartEndGraph[primaryDocumentID] = append(reuseStartEndGraph[primaryDocumentID],
+			map[string]int{"start":minStart - getDifferenceSoFar(primaryDocumentID, minStart),
+			"end": maxEnd - getDifferenceSoFar(primaryDocumentID, maxEnd)})
 	}
 	return noCorrections
 }
