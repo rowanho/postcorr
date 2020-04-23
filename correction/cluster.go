@@ -113,13 +113,16 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 				alignmentMaps[i] = getAlignmentMap(alignments[alignmentId])
 			}
 			noCorrections := MajorityVote(primaryDocumentID, alignmentMaps, documents, docMap)
-			correctedDocText := modifyText(primaryDocumentID, documents[docMap[primaryDocumentID]].Text)
-			documents[docMap[primaryDocumentID]].Text = correctedDocText
 			totalCorrections += noCorrections
 			if noCorrections > 0 {
 				correctedDocs[primaryDocumentID] = true
 			}
 		}
+	}
+
+	for primaryDocumentID, _ := range correctedDocs {
+		correctedDocText := modifyText(primaryDocumentID, documents[docMap[primaryDocumentID]].Text)
+		documents[docMap[primaryDocumentID]].Text = correctedDocText
 	}
 	if flags.WriteOutput {
 		for  docID := range correctedDocs {

@@ -69,7 +69,7 @@ func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, document
 	requiresNewWord := false
 
 	pairStart := 0
-	gapSection := true
+	gapSection := false
 	for ind := minStart; ind < maxEnd; ind++ {
 		notAlignedInPrim := true
 		if flags.UseLM {
@@ -91,7 +91,6 @@ func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, document
 		if notAlignedInPrim {
 			if !gapSection {
 				pairStart = ind
-			} else {
 				gapSection = true
 			}
 
@@ -251,7 +250,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 	noInsertions := 0
 	if flags.HandleInsertionDeletion {
 		noDeletions = applyDeletions(primaryDocumentID, alignmentMaps,  documents, docMap)
-		noInsertions = applyInsertions(primaryDocumentID, alignmentMaps, documents, docMap)
+	 	//noInsertions = applyInsertions(primaryDocumentID, alignmentMaps, documents, docMap)
 	}
 	noCorrections := noDeletions + noInsertions
 	maxEnd := 0
