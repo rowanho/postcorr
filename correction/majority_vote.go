@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"math"
 	"strconv"
-	"fmt"
 )
 
 var words = []string{}
@@ -43,7 +42,6 @@ func getDifferenceSoFar(primaryDocumentID string, start int) int {
 			d -= entry
 		}
 	}
-	fmt.Println(d)
 	return d
 }
 
@@ -178,24 +176,23 @@ func applyInsertions(primaryDocumentID string, alignmentMaps []alignMap, documen
 		for _, alMap := range alignmentMaps {
 			start := -1
 			end := -1
-			if _, exists := alMap.Mapping[ind]; !exists {
+			if _, exists := alMap.Mapping[ind]; exists {
 				start = alMap.Mapping[ind]
 			}
 
-			if _, exists := alMap.Mapping[ind + 1]; !exists {
+			if _, exists := alMap.Mapping[ind + 1]; exists {
 				end = alMap.Mapping[ind + 1]
 			}
 
-			if start > - 1 && end - start > 0 {
-				count += 1
-				if  end - start < flags.InsertDeleteThreshold {
-					s := documents[docMap[alMap.SecondaryDocumentID]].Text[start: end +1]
+			if start > - 1 && end - start > 1 {
+				if  end - start -1 <= flags.InsertDeleteThreshold {
+					count += 1
+					s := documents[docMap[alMap.SecondaryDocumentID]].Text[start + 1: end]
 					commonStrings[string(s)] += 1
 				}
 			}
 
 		}
-
 		for str, freq := range commonStrings {
 			if freq >= count / 2 {
 				if flags.UseLM && len(words) > 0 {
