@@ -55,6 +55,15 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 					} else {
 						subEdits[endPoint-1] = "better"
 					}
+					if _, exists := newVoteLogs[primaryDocumentID][endPoint - 1]; !exists {
+						newVoteLogs[primaryDocumentID][endPoint - 1] = common.Vote{
+							EditDict: map[string]int{},
+							InsertDict: map[string]int{},
+						}
+					}
+					for key, val := range mVoteLogs[primaryDocumentID][i].EditDict {
+						newVoteLogs[primaryDocumentID][endPoint - 1].EditDict[key] = val
+					}
 			} else {
 				before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i:]...))
 				after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
@@ -81,6 +90,15 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 						insEdits[l] = "same"
 					} else {
 						insEdits[l] = "better"
+					}
+					if _, exists := newVoteLogs[primaryDocumentID][endPoint - 1]; !exists {
+						newVoteLogs[primaryDocumentID][endPoint - 1] = common.Vote{
+							EditDict: map[string]int{},
+							InsertDict: map[string]int{},
+						}
+					}
+					for key, val := range mVoteLogs[primaryDocumentID][i].InsertDict {
+						newVoteLogs[primaryDocumentID][endPoint - 1].InsertDict[key] = val
 					}
 				}
 			}
@@ -139,6 +157,7 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 		readWrite.SerialiseEdits(substitutionGraph, "sub")
 		readWrite.SerialiseEdits(deletionGraph, "del")
 		readWrite.SerialiseEdits(insertionGraph, "ins")
+		readWrite.SerialiseMVote(newVoteLogs)
 	}
 	if flags.UseLM {
 		fmt.Printf("Prevented %d\n", prevCount)

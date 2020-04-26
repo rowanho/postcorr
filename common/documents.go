@@ -6,3 +6,9 @@ type Document struct {
 	Text             []rune `json:"text"`
 	ComponentLengths []int  `json:"componentLengths"`
 }
+
+
+type Vote = struct {
+	EditDict map[string]int
+	InsertDict map[string]int
+}

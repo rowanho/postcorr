@@ -29,6 +29,8 @@ var editIndices = make(map[string]map[int]rune)
 var additionIndices = make(map[string]map[int][]rune)
 var deletionsAt = make(map[string]map[int]int)
 var insertionsAt = make(map[string]map[int]int)
+var mVoteLogs = make(map[string]map[int]common.Vote)
+var newVoteLogs = make(map[string]map[int]common.Vote)
 
 func getDifferenceSoFar(primaryDocumentID string, start int) int {
 	d := 0
@@ -193,8 +195,9 @@ func applyInsertions(primaryDocumentID string, alignmentMaps []alignMap, documen
 			}
 
 		}
+		prevInsertions := insertions
 		for str, freq := range commonStrings {
-			if freq >= count / 2 {
+			if freq >= count / 2 && count > 2 {
 				if flags.UseLM && len(words) > 0 {
 					end := len(words) - 1
 					start := end - n
@@ -221,6 +224,17 @@ func applyInsertions(primaryDocumentID string, alignmentMaps []alignMap, documen
 				}
 
 				break;
+			}
+		}
+		if prevInsertions < insertions {
+			if _, exists := mVoteLogs[primaryDocumentID][ind]; !exists {
+				mVoteLogs[primaryDocumentID][ind] = common.Vote{
+					EditDict: map[string]int{},
+					InsertDict: map[string]int{},
+				}
+			}
+			for key, val := range commonStrings {
+				mVoteLogs[primaryDocumentID][ind].InsertDict[key] = val
 			}
 		}
 	}
@@ -254,6 +268,12 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 	if _, exists := editIndices[primaryDocumentID]; !exists {
 			editIndices[primaryDocumentID] = make(map[int]rune)
 	}
+
+	if _, exists := mVoteLogs[primaryDocumentID]; !exists {
+			mVoteLogs[primaryDocumentID] = make(map[int]common.Vote)
+			newVoteLogs[primaryDocumentID] = make(map[int]common.Vote)
+	}
+
 	threshold := -math.Log2(flags.LmThreshold)
 
 	noDeletions := 0
@@ -319,6 +339,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				}
 			}
 		}
+		prevCorrections := noCorrections
 		//fmt.Println(counts)
 		//fmt.Println(primText[ind])
 		if primText[ind] != maxRune && max > numVotes / 2 {
@@ -347,6 +368,17 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				noCorrections += 1
 			}
 		}
+		if prevCorrections < noCorrections {
+			if _, exists := mVoteLogs[primaryDocumentID][ind]; !exists {
+				mVoteLogs[primaryDocumentID][ind] = common.Vote{
+					EditDict: map[string]int{},
+					InsertDict: map[string]int{},
+				}
+			}
+			for key, val := range counts {
+				mVoteLogs[primaryDocumentID][ind].EditDict[string([]rune{key})] = val
+			}
+		}
 	}
 	//fmt.Println(string(primText))
 	if flags.Logging && noCorrections > 0 {
@@ -365,7 +397,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			e := m.Mapping[m.End]
 			r := strings.Repeat("_", m.Start - minStart)
 			t := []rune(strings.Repeat("_", e + 1 - s))
-			for _, secPos := range m.Mapping {
+			for secPos := s; secPos <= e; secPos++ {
 				t[secPos - s] = documents[docMap[m.SecondaryDocumentID]].Text[secPos]
 			}
 			reuseCluster[m.SecondaryDocumentID] = r + string(t)

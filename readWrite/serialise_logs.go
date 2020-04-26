@@ -64,8 +64,15 @@ func SerialiseStartEnds(r map[string][]map[string]int, suffix string) {
     fn := "vote_start_ends_" + suffix + ".json"
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
+
 func SerialiseEdits(e map[string]map[int]string, suffix string) {
     bytes, _ := json.Marshal(e)
     fn := "edit_graph_" + suffix + ".json"
+    ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
+}
+
+func SerialiseMVote(e map[string]map[int]common.Vote) {
+    bytes, _ := json.Marshal(e)
+    fn := "vote_details.json"
     ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
