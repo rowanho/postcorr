@@ -52,12 +52,15 @@ A table of command line flags and their interactions
 | **jaccard**| string: 'weighted' or 'regular'| 'weighted' | The type of jaccard index used for candidate selection| When setting **fp** to minhash, there is no implementation for the weighted jaccard, so the program reverts back to using the regular non weighted method.|
 | **k** | integer: > 0 | 7 | Length of k-grams used for fingerprinting in the candidate selection process | |
 | **t** | integer: >= **k**| 15 |  Size of winnowing threshold *t* when using winnowing | Must be greater than or equal to **k**|
-| **candidateProportion**| float: > 0 and <= 1 | 0.05 | The proportion of pairs to select as candidate pairs for alignment. This will be the top proportion of scorers based on the score given by the candidate selection algorithm | | 
-| **numAligns**| integer > 0 | 2 | The number of local sequence alignments to attempt between two candidate documents. Higher numbers should help find multiple separate reused passages, but takes more time. | |
-| **alignThreshold** | integer >= 0 | 1 | The minimum score of a previous local alignment to continue finding more alignments between a given pair| Helps save time if **numAligns** is set to a higher value. | 
+| **candidate_proportion**| float: > 0 and <= 1 | 0.05 | The proportion of pairs to select as candidate pairs for alignment. This will be the top proportion of scorers based on the score given by the candidate selection algorithm | | 
+| **num_aligns**| integer > 0 | 2 | The number of local sequence alignments to attempt between two candidate documents. Higher numbers should help find multiple separate reused passages, but takes more time. | |
+| **align_threshold** | integer >= 0 | 1 | The minimum score of a previous local alignment to continue finding more alignments between a given pair| Helps save time if **numAligns** is set to a higher value. | 
 | **affine**| boolean | false | Whether of not to use affine alignment | |
-| **fastAlign**| boolean | false | Whether or not to use heuristic alignment| |
-
+| **fast_Align**| boolean | false | Whether or not to use heuristic alignment| |
+| **use_lm**| boolean | false | Whether to use a language model - this requires running additional python code as described below|
+| **insert_delete** | boolean | true | Whether to use insert/deletion to correct errors as well as substitution, as laid out in the paper| The flags **l_delete** and **l_insert** should be set|
+| **l_delete**| integer > 0 | 2 | The maximum length of character sequence that the algorithm will attempt considers an erroneous deletion in consensus vote. | |
+| **l_insert**| integer > 0 | 2 | The maximum length of character sequence that the algorithm will attempt considers an erroneous insertion in consensus vote.| |
 
 ## Using Additional Python Based Parts Of the Codebase
 
