@@ -6,7 +6,7 @@ import html
 from uuid import uuid4
 
 original_dir = sys.argv[1]
-corrected_dir = sys.argv[2]
+corrected_dir = 'corrected'
 app = Flask(__name__)
 def to_html(text):
 	return html.escape(text).replace("\n", "<br>")
