@@ -39,6 +39,26 @@ All instructions are for mac/linux. I can't guarantee there won't be issues on w
 ### Command Line Parameters
 * Run the executable with the relevant command line flags.
 * To view flags and their descriptions, run `./postCorr -h`
+
+A table of command line flags and their interactions 
+
+| Flags     | Datatype and Possible Values | Default Value | Description  | Interaction With Other Flags |
+| ------------- | ---------------------------- | ------------- | ------------ | --------------------------------- |
+| **input**     | string | None | Path to directory containing OCR dataset |  | 
+| **groundtruth**     | string| None  |   Path to directory containing groundtruth dataset |  |
+| **write** | boolean: 'true' or 'false'      |   true | Whether or not to write corrected output to the 'corrected' directory | None |
+| **logging** | boolean | true | whether or not to generate log files in the 'logs' directory|   |
+|**fp**|string: 'modp', 'winnowing' or 'minhash'|'modp'| Method of fingerprinting - 0 mod p, winnowing, or minhash, as described in the paper| The flag **k** should also be set to a preferred value. Choosing 0 mod p means the flag **p** should also be set. Choosing winnowing means the flag **t** should also be set. | 
+| **jaccard**| string: 'weighted' or 'regular'| 'weighted' | The type of jaccard index used for candidate selection| When setting **fp** to minhash, there is no implementation for the weighted jaccard, so the program reverts back to using the regular non weighted method.|
+| **k** | integer: > 0 | 7 | Length of k-grams used for fingerprinting in the candidate selection process | |
+| **t** | integer: >= **k**| 15 |  Size of winnowing threshold *t* when using winnowing | Must be greater than or equal to **k**|
+| **candidateProportion**| float: > 0 and <= 1 | 0.05 | The proportion of pairs to select as candidate pairs for alignment. This will be the top proportion of scorers based on the score given by the candidate selection algorithm | | 
+| **numAligns**| integer > 0 | 2 | The number of local sequence alignments to attempt between two candidate documents. Higher numbers should help find multiple separate reused passages, but takes more time. | |
+| **alignThreshold** | integer >= 0 | 1 | The minimum score of a previous local alignment to continue finding more alignments between a given pair| Helps save time if **numAligns** is set to a higher value. | 
+| **affine**| boolean | false | Whether of not to use affine alignment | |
+| **fastAlign**| boolean | false | Whether or not to use heuristic alignment| |
+
+
 ## Using Additional Python Based Parts Of the Codebase
 
 ### Installing dependencies
