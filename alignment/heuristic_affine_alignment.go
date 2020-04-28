@@ -8,7 +8,7 @@ import (
 
 
 func HeuristicAffineAlignment(matchReward int, gapOp int, gapEx int, a []rune, b []rune) (int, []int, []int) {
-    k := flags.ShingleSize
+    k := flags.K
     bandSize := 300
     
     tableA := getKwords(a, k)

@@ -100,7 +100,7 @@ func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, document
 			}
 
 		} else if gapSection {
-				if ind - pairStart <= flags.InsertDeleteThreshold {
+				if ind - pairStart <= flags.LInsert {
 					for j := pairStart; j < ind; j ++ {
 						if flags.UseLM && len(words) > 0 {
 							end := len(words) - 1
@@ -187,7 +187,7 @@ func applyInsertions(primaryDocumentID string, alignmentMaps []alignMap, documen
 			}
 
 			if start > - 1 && end - start > 1 {
-				if  end - start -1 <= flags.InsertDeleteThreshold {
+				if  end - start -1 <= flags.LDelete {
 					count += 1
 					s := documents[docMap[alMap.SecondaryDocumentID]].Text[start + 1: end]
 					commonStrings[string(s)] += 1

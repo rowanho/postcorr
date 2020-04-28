@@ -185,7 +185,7 @@ func findPeakRegion(diagonalSums map[int]int, width int) (int, int) {
 
 
 func HeuristicAlignment(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
-    k := flags.ShingleSize
+    k := flags.K
     bandSize := 200
     
     tableA := getKwords(a, k)

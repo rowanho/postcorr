@@ -66,7 +66,7 @@ func rescoreIndices(indices []int, increments []Inc) []int {
 }
 
 func GetAlignments(matchReward int, gapCost int, primary common.Document,
-	secondary common.Document, stopAt int, minScorePerLength int) ([]common.Alignment, []common.Alignment) {
+	secondary common.Document, stopAt int, minScore int) ([]common.Alignment, []common.Alignment) {
 
 	primaryString := make([]rune, len(primary.Text))
 	secondaryString := make([]rune, len(secondary.Text))
@@ -103,7 +103,7 @@ func GetAlignments(matchReward int, gapCost int, primary common.Document,
 			break;
 		}
 		
-		if score/int(len(primIndices)) < minScorePerLength {
+		if score < minScore {
 			break;
 		}
 		newPrimIndices := rescoreIndices(primIndices, primIncrements)

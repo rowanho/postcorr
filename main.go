@@ -16,36 +16,37 @@ func main2(){
 	//EvaluateJaccard()
 }
 func main() {
-	dirName := flag.String("input", "test_dataset", "path to dataset")
-	groundTruth := flag.String("groundtruth", "", "Directory containing groundtruth data")
-	writeOutput := flag.Bool("write", true, "Whether or not to write output to file")
-	logging := flag.Bool("logging", false, "Whether to generate log files in the logs folder")
-	fpType := flag.String("fp", common.MinhashFP, "Fingeprinting method")
-	similarityProportion := flag.Float64("proportion", 0.05, "The proportion of document pairs to align")
+	dirName := flag.String("input", "", "Path to directory containing OCR dataset")
+	groundTruth := flag.String("groundtruth", "", "Path to directory containing groundtruth dataset")
+	writeOutput := flag.Bool("write", true, "Whether or not to write output to file in the folder 'corrected'")
+	logging := flag.Bool("logging", true, "Whether to generate log files in the folder 'logs'")
+	fpType := flag.String("fp", common.ModFP, "Fingerprinting method: 'minhash', 'modp' or 'winnowing'")
+	similarityProportion := flag.Float64("candidate_proportion", 0.05, "The proportion of document pairs to align")
 	jaccardType := flag.String("jaccard", common.WeightedJaccard, "The type of jaccard similarity, 'regular' or 'weighted'")
-	shingleSize := flag.Int("shingleSize", 7, "Length of shingle")
-	runAlignment := flag.Bool("align", true, "Whether or not to run the alignment/correction phases")
+	shingleSize := flag.Int("k", 7, "Length of k-grams used for shingling")
 	winnowingT := flag.Int("t", 15, "Size of winnowing threshold t, must be >= k")
 	affine := flag.Bool("affine", false, "Whether or not to use affine gap scoring")
-	fastAlign := flag.Bool("fastAlign", false, "Whether or not to use heuristic alignment (faster but less accurate)")
-	p := flag.Int("p", 5, "P to mod by when using modp")
-	numAligns := flag.Int("numAligns", 2, "The number of disjoint alignments we attempt to make")
-	useLM := flag.Bool("useLM", false, "Whether to use a language model to inform correction")
-	lmThreshold := flag.Float64("lmThreshold", 0.1, "The probability score under which language model permits correction")
-	handleInsertionDeletion := flag.Bool("insertDelete", false, "The correction algorithm tries to handle insertion and deletion errors.")
-	insertDeleteThreshold := flag.Int("insertDeleteThreshold", 2, "The maximum length of character sequence that the algorithm should attempt to modify during insertion/deletion changes.")
+	fastAlign := flag.Bool("fast_align", false, "Whether or not to use heuristic alignment (faster but less accurate)")
+	p := flag.Int("p", 3, "P to mod by when using modp")
+	numAligns := flag.Int("num_aligns", 2, "The number of disjoint alignments we attempt to make")
+	alignThreshold := flag.Int("align_threshold", 0, "The minimum previous alignment score with which to keep aligning 2 documents.")
+	useLM := flag.Bool("use_lm", false, "Whether to use a language model to inform correction")
+	lmThreshold := flag.Float64("lm_threshold", 0.1, "The probability score under which language model permits correction")
+	handleInsertionDeletion := flag.Bool("insert_delete", true, "The correction algorithm tries to handle insertion and deletion errors.")
+	lInsert := flag.Int("l_insert", 2, "The maximum length of character sequence that the algorithm will attempt considers an erroneous insertion in consensus vote.")
+	lDelete := flag.Int("l_delete", 2, "The maximum length of character sequence that the algorithm will attempt considers an erroneous deletion in consensus vote. ")
 	flag.Parse()
 
 	flags.WriteOutput = *writeOutput
 	flags.DirName = *dirName
 	flags.Logging = *logging
 	flags.FpType = *fpType
-	flags.ShingleSize = * shingleSize
+	flags.K = *shingleSize
 	flags.SimilarityProportion = *similarityProportion
-	flags.JaccardType = * jaccardType
-	flags.RunAlignment = * runAlignment
+	flags.JaccardType = *jaccardType
 	flags.WinnowingT = *winnowingT
 	flags.P = *p
+	flags.AlignThreshold = *alignThreshold
 	flags.Groundtruth = *groundTruth
 	flags.FastAlign = *fastAlign
 	flags.NumAligns = *numAligns
@@ -53,7 +54,8 @@ func main() {
 	flags.UseLM = *useLM
 	flags.LmThreshold = *lmThreshold
 	flags.HandleInsertionDeletion = *handleInsertionDeletion
-	flags.InsertDeleteThreshold = *insertDeleteThreshold
+	flags.LInsert= *lInsert
+	flags.LDelete = *lDelete
 	execute()
 
 }
@@ -85,34 +87,33 @@ func execute() {
 	}
 	fmt.Printf("Found %d high scoring pairs \n", numPairs / 2)
 
-	if flags.RunAlignment {
-		fmt.Println("Aligning")
-		var alignments map[string]common.Alignment
-		var alignmentsPerDocument map[string][]string
-		fmt.Println(flags.Affine)
-		if flags.Affine && !flags.FastAlign {
-			// We might run  out of memory if we create a lot of go routines, best to use serial methods
-			alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)
-		} else {
-			alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList)
-		}
-
-		if flags.Logging {
-			readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
-		}
-		scoreSum := 0
-		for _, al := range alignments {
-			scoreSum += al.Score
-		}
-
-		fmt.Printf("Score sum: %d \n", scoreSum)
-		alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
-		correctedDocs, totalCorrections = correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
-		fmt.Println("Number of corrections made: ", totalCorrections)
+	fmt.Println("Aligning")
+	var alignments map[string]common.Alignment
+	var alignmentsPerDocument map[string][]string
+	fmt.Println(flags.Affine)
+	if flags.Affine && !flags.FastAlign {
+		// We might run  out of memory if we create a lot of go routines, best to use serial methods
+		alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)
+	} else {
+		alignments, alignmentsPerDocument = alignment.AlignParallel(documentAdjacencyList, docList)
 	}
 
+	if flags.Logging {
+		readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
+	}
+	scoreSum := 0
+	for _, al := range alignments {
+		scoreSum += al.Score
+	}
+
+	fmt.Printf("Score sum: %d \n", scoreSum)
+	alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
+	correctedDocs, totalCorrections = correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
+	fmt.Println("Number of corrections made: ", totalCorrections)
+
+
 	// Evaluation
-	if flags.RunAlignment &&  len(flags.Groundtruth) > 0 {
+	if len(flags.Groundtruth) > 0 {
 		originalStats, correctedStats,  originalWordStats, correctedWordStats, _ := evaluation.GetEvaluationStats(docList, docMap, correctedDocs)
 
 		fmt.Printf("Total character distance before correction: %d\n", originalStats.Total)

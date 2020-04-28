@@ -69,7 +69,7 @@ func EvaluateK() {
     als, alList := aligns()
     sort.Ints(alList)
     for _, k := range ks  {
-        flags.ShingleSize = k
+        flags.K = k
         fmt.Println(k)
         flags.JaccardType = common.Jaccard
         proportion := 0.1
@@ -89,7 +89,7 @@ func EvaluateJaccard() {
     flags.NumAligns = 1
     flags.DirName = "real_datasets/denmark/ocr_min"
     flags.Affine = false
-    flags.ShingleSize = 2
+    flags.K = 2
     flags.JaccardType = common.Jaccard
     als, alList := aligns()
     sort.Ints(alList)
@@ -107,7 +107,7 @@ func EvaluateJaccard() {
         topkWeighted := getTopKPrecision(als, alList, proportion)
         fmt.Printf("Top k precision weighted %5.2f \n", topkWeighted)
         flags.FpType = common.Winnowing
-        flags.WinnowingT = d + flags.ShingleSize - 1
+        flags.WinnowingT = d + flags.K - 1
         fmt.Println("Winnowing")
         flags.JaccardType = common.Jaccard
         topk = getTopKPrecision(als, alList, proportion)

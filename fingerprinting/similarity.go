@@ -114,8 +114,8 @@ func getSimilarLsh(docs []common.Document) {
 	ms := make([]*minhash.MinWise, len(docs))
 	for i, doc := range(docs) {
 		ms[i] = minhash.NewMinWise(spooky.Hash64, mhash, 100)
-		for j := 0; j+flags.ShingleSize < len(doc.Text) + 1; j++ {
-			ms[i].Push([]byte(string(doc.Text[j : j+flags.ShingleSize])))
+		for j := 0; j+flags.K < len(doc.Text) + 1; j++ {
+			ms[i].Push([]byte(string(doc.Text[j : j+flags.K])))
 		}
 	}
 
@@ -139,7 +139,7 @@ func getSimilarLsh(docs []common.Document) {
 func getSimilarModP(docs []common.Document) {
 	fps := make([]map[uint64]int, len(docs))
 	for i, doc := range docs {
-		fp := ModP(preProcess(string(doc.Text)), flags.ShingleSize, flags.P)
+		fp := ModP(preProcess(string(doc.Text)), flags.K, flags.P)
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)
@@ -151,7 +151,7 @@ func getSimilarModP(docs []common.Document) {
 func getSimilarWinnowing(docs []common.Document) {
 	fps := make([]map[uint64]int, len(docs))
 	for i, doc := range docs {
-		fp := Winnowing(preProcess(string(doc.Text)), flags.ShingleSize, flags.WinnowingT)
+		fp := Winnowing(preProcess(string(doc.Text)), flags.K, flags.WinnowingT)
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)

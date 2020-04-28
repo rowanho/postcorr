@@ -12,7 +12,7 @@ import (
 )
 
 func setup(length int) {
-    flags.ShingleSize = 5
+    flags.K = 5
     flags.SimilarityProportion = 1.0
     flags.NumAligns = 1
     flags.FpType = common.ModFP
