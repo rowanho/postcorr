@@ -31,12 +31,12 @@ Contains python code for implementing a language model, and
 
 ## Running the Code
 
-## Basic Setup With Golang
+### Basic Setup With Golang
 All instructions are for mac/linux. I can't guarantee there won't be issues on windows, but nothing is hardcoded which prevents windows use.
-### Installing and Building
+#### Installing and Building
 * Install go: https://golang.org/doc/install
 * Build the code with `go build`, this will create an executable called **postCorr**
-### Command Line Parameters
+#### Command Line Parameters
 * Run the executable with the relevant command line flags.
 * To view flags and their descriptions, run `./postCorr -h`
 
@@ -63,14 +63,14 @@ A table of command line flags and their interactions
 | **l_delete**| integer > 0 | 2 | The maximum length of character sequence that the algorithm will attempt considers an erroneous deletion in consensus vote. | |
 | **l_insert**| integer > 0 | 2 | The maximum length of character sequence that the algorithm will attempt considers an erroneous insertion in consensus vote.| |
 
-## Using Additional Python Based Parts Of the Codebase
+### Using Additional Python Based Parts Of the Codebase
 
-### Installing dependencies
+#### Installing dependencies
 * Install a new python 3.7 environment
 * Within the environment, install dependencies with `pip install -r requirements.txt` 
 
 
-### Running the Language Model Code 
+#### Running the Language Model Code 
 nltk is the relevant dependency here, and requires some extra steps to get data for training.
 * run the following inside a shell of the python environment 
 ```
@@ -81,7 +81,7 @@ nltk is the relevant dependency here, and requires some extra steps to get data 
 * Next, in the base directory of the code, run the model with `python python-utils/language_model/language_model.py`, and wait until the code finishes training and displays a server ready message.
 * We can now run the **postCorr** executable with the flag `-useLM=true`
 
-### Running the Browser Based Visualisation Tool
+#### Running the Browser Based Visualisation Tool
 The browser based tool relies on the a run of the main program being completed with the *logging* flag being set to true. After this, the usage steps are as follows:
 
 * Run the python server with `python python-utils/visualiser/server.py *input-directory*`, where \*input\* directory is the name of the directory containing the original OCR data.
