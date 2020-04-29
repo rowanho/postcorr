@@ -34,6 +34,11 @@ var insertionsAt = make(map[string]map[int]int)
 var mVoteLogs = make(map[string]map[int]common.Vote)
 var newVoteLogs = make(map[string]map[int]common.Vote)
 
+
+func isNewLineSpace(r rune) bool {
+	return unicode.IsSpace(r) || r == '\t' || r == '\n'
+}
+
 func getDifferenceSoFar(primaryDocumentID string, start int) int {
 	d := 0
 	for key, entry := range deletionsAt[primaryDocumentID] {
@@ -77,7 +82,6 @@ func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, document
 	pairStart := 0
 	gapSection := false
 	for ind := minStart; ind < maxEnd; ind++ {
-		notAlignedInPrim := true
 		if flags.UseLM {
 			if unicode.IsSpace(primText[ind]) {
 				requiresNewWord = true
@@ -87,14 +91,18 @@ func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, document
 				requiresNewWord = false
 			}
 		}
-
+		count := 0
+		notAlignedInPrim := 0
 		for _, alMap := range alignmentMaps {
-			if _, exists := alMap.Mapping[ind]; exists {
-				notAlignedInPrim = false
+			if alMap.Start <= ind && alMap.End >= ind {
+				if _, exists := alMap.Mapping[ind]; !exists {
+					notAlignedInPrim += 1
+				}
 			}
+			count += 1
 		}
 
-		if notAlignedInPrim {
+		if count > 2 && notAlignedInPrim > ( count / 2) {
 			if !gapSection {
 				pairStart = ind
 				gapSection = true
@@ -103,6 +111,9 @@ func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, document
 		} else if gapSection {
 			if ind-pairStart <= flags.LInsert {
 				for j := pairStart; j < ind; j++ {
+					if isNewLineSpace(primText[j]) {
+						continue;
+					}
 					if flags.UseLM && len(words) > 0 {
 						end := len(words) - 1
 						start := end - n
@@ -284,6 +295,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 	noCorrections := noDeletions + noInsertions
 	maxEnd := 0
 	minStart := 100000000
+	primText := documents[docMap[primaryDocumentID]].Text
 
 	for _, alMap := range alignmentMaps {
 		if alMap.Start < minStart {
@@ -294,7 +306,6 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		}
 	}
 
-	primText := documents[docMap[primaryDocumentID]].Text
 	if flags.UseLM {
 		words = wordsBeforePoint(primText, minStart, n)
 	}
@@ -341,7 +352,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 		//fmt.Println(counts)
 		//fmt.Println(primText[ind])
 		if primText[ind] != maxRune && max > numVotes/2 {
-			if flags.UseLM && len(words) > 0 {
+			if flags.UseLM && len(words) > 0 && !isNewLineSpace(primText[ind]) {
 				end := len(words) - 1
 				start := end - n
 				if start < 0 {
@@ -361,7 +372,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 					editIndices[primaryDocumentID][ind] = maxRune
 					noCorrections += 1
 				}
-			} else {
+			} else if !isNewLineSpace(primText[ind]) {
 				editIndices[primaryDocumentID][ind] = maxRune
 				noCorrections += 1
 			}
@@ -399,8 +410,8 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 				t[secPos-s] = documents[docMap[m.SecondaryDocumentID]].Text[secPos]
 			}
 			reuseCluster[m.SecondaryDocumentID] = r + string(t)
-		}
 
+		}
 		reuseGraph[primaryDocumentID] = append(reuseGraph[primaryDocumentID], reuseCluster)
 		oldStartEndGraph[primaryDocumentID] = append(oldStartEndGraph[primaryDocumentID], map[string]int{"start": minStart, "end": maxEnd})
 		reuseStartEndGraph[primaryDocumentID] = append(reuseStartEndGraph[primaryDocumentID],

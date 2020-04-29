@@ -9,6 +9,7 @@ import (
 	"path"
 
 	"github.com/rowanho/levenshtein"
+	"github.com/schollz/progressbar"
 )
 
 type alignMap = struct {
@@ -130,10 +131,12 @@ func modifyText(primaryDocumentID string, text []rune) []rune {
 **/
 
 func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]common.Alignment, documents []common.Document, docMap map[string]int) (map[string]bool, int) {
-
+	bar := progressbar.New(100)
 	totalCorrections := 0
 	correctedDocs := make(map[string]bool)
 	// Loop through the cluster list
+	c := 0
+	prev := 0
 	for _, cluster := range clustersList {
 		// Attempt to correct the primary document of the cluster
 		if len(cluster) > 1 {
@@ -148,8 +151,14 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 				correctedDocs[primaryDocumentID] = true
 			}
 		}
+		c += 1
+		prog := (c * 100) / len(clustersList)
+		if prog > prev {
+			bar.Add(1)
+			prev = prog
+		}
 	}
-
+	fmt.Println("")
 	for primaryDocumentID := range correctedDocs {
 		correctedDocText := modifyText(primaryDocumentID, documents[docMap[primaryDocumentID]].Text)
 		documents[docMap[primaryDocumentID]].Text = correctedDocText

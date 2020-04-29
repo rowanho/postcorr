@@ -5,7 +5,8 @@ import (
 )
 
 func reverseRune(r []rune) []rune {
-	f := append([]rune{}, r...)
+	f := make([]rune, len(r))
+	copy(f, r)
 	for i, j := 0, len(f)-1; i < j; i, j = i+1, j-1 {
 		f[i], f[j] = f[j], f[i]
 	}

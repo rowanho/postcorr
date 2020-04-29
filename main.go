@@ -95,7 +95,6 @@ func execute() {
 	fmt.Println("Running Alignment...")
 	var alignments map[string]common.Alignment
 	var alignmentsPerDocument map[string][]string
-	fmt.Println(flags.Affine)
 	if flags.Affine && !flags.FastAlign {
 		// We might run  out of memory if we create a lot of go routines, best to use serial methods
 		alignments, alignmentsPerDocument = alignment.AlignSerial(documentAdjacencyList, docList)

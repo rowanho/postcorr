@@ -23,8 +23,9 @@ func NeedlemanWunsch(matchReward int, gapCost int, a []rune, b []rune) (int, []i
 		return -matchReward + cost + gapCost, []int{0}, []int{0}
 	} else if l2 == 1 {
 		for i, c := range a {
-			if c == a[0] {
+			if c == b[0] {
 				max_i = i
+				matched = true
 			}
 			cost -= gapCost
 		}

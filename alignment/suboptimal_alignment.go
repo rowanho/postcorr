@@ -125,7 +125,7 @@ func GetAlignments(matchReward int, gapCost int, primary common.Document,
 		copy(primIncrements[posToInsert+1:], primIncrements[posToInsert:])
 		primIncrements[posToInsert] = Inc{
 			Point:  newPrimIndices[0],
-			Amount: len(newPrimIndices),
+			Amount: newPrimIndices[len(newPrimIndices)-1] - newPrimIndices[0] + 1,
 		}
 
 		posToInsert = 0
@@ -139,7 +139,7 @@ func GetAlignments(matchReward int, gapCost int, primary common.Document,
 		copy(secIncrements[posToInsert+1:], secIncrements[posToInsert:])
 		secIncrements[posToInsert] = Inc{
 			Point:  newSecIndices[0],
-			Amount: len(newSecIndices),
+			Amount: newSecIndices[len(newSecIndices)-1] - newSecIndices[0] + 1,
 		}
 		count += 1
 		al := createAlignment(score, primary.ID, secondary.ID, newPrimIndices, newSecIndices)
