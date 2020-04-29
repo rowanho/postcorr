@@ -54,7 +54,7 @@ A table of command line flags and their interactions
 | **t** | integer: >= **k**| 15 |  Size of winnowing threshold *t* when using winnowing | Must be greater than or equal to **k**|
 | **candidate_proportion**| float: > 0 and <= 1 | 0.05 | The proportion of pairs to select as candidate pairs for alignment. This will be the top proportion of scorers based on the score given by the candidate selection algorithm | | 
 | **num_aligns**| integer > 0 | 2 | The number of local sequence alignments to attempt between two candidate documents. Higher numbers should help find multiple separate reused passages, but takes more time. | |
-| **align_threshold** | integer >= 0 | 1 | The minimum score of a previous local alignment to continue finding more alignments between a given pair| Helps save time if **numAligns** is set to a higher value. | 
+| **align_threshold** | integer >= 0 | 1 | The minimum score of a previous local alignment to continue finding more alignments between a given pair| Helps save time if **num_aligns** is set to a higher value. | 
 | **affine**| boolean | false | Whether of not to use affine alignment | |
 | **fast_align**| boolean | false | Whether or not to use heuristic alignment| **band_width** should be set|
 | **band_width**| integer | 200 | The heuristic algorithm's dynamic programming band width *w* | |
