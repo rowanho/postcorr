@@ -45,7 +45,10 @@ def serve_reuse():
 		alternating_segments = f'<div>{to_html(file_text)}</div>'
 
 	prev = 0
-
+	z = list(zip(text_segment_list, old_start_ends_list, new_start_ends_list))
+	z.sort(key=lambda x: x[2]['start'])
+	uz = list(zip(*z))
+	text_segment_list, old_start_ends_list, new_start_ends_list = tuple(uz)
 	for i, text_segment in enumerate(text_segment_list):
 		old_start = old_start_ends_list[i]['start']
 		old_end = old_start_ends_list[i]['end'] + 1
@@ -117,7 +120,6 @@ def get_hover_text(jsn, is_sub):
 		dct = jsn['EditDict']
 	else:
 		dct = jsn['InsertDict']
-	print(dct)
 	mx = 0
 	mx_key = ''
 	for key, val in dct.items():
@@ -131,7 +133,6 @@ def get_hover_text(jsn, is_sub):
 				text.append(f'{process(key)}: {val}')
 	t = '\n'.join(text)
 	r =  f'<span class = "hovertext"> {t}</span>'
-	print(r)
 	return r
 
 def process(txt):

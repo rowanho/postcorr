@@ -44,52 +44,64 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 			newText = append(newText, text[i])
 		}
 		endPoint = len(newText)
-		if flags.Logging && flags.Groundtruth != "" && modified {
+		if flags.Logging  && modified {
 			if sub {
-				before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint-1], text[i:]...))
-				after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
-				if before < after {
-					subEdits[endPoint-1] = "worse"
+				if flags.Groundtruth != ""{
+					before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint-1], text[i:]...))
+					after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
+					if before < after {
+						subEdits[endPoint-1] = "worse"
 					} else if before == after {
 						subEdits[endPoint-1] = "same"
 					} else {
-						subEdits[endPoint-1] = "better"
+							subEdits[endPoint-1] = "better"
 					}
-					if _, exists := newVoteLogs[primaryDocumentID][endPoint - 1]; !exists {
-						newVoteLogs[primaryDocumentID][endPoint - 1] = common.Vote{
-							EditDict: map[string]int{},
-							InsertDict: map[string]int{},
-						}
+				} else {
+					subEdits[endPoint-1] = "same"
+				}
+				if _, exists := newVoteLogs[primaryDocumentID][endPoint - 1]; !exists {
+					newVoteLogs[primaryDocumentID][endPoint - 1] = common.Vote{
+						EditDict: map[string]int{},
+						InsertDict: map[string]int{},
 					}
-					for key, val := range mVoteLogs[primaryDocumentID][i].EditDict {
-						newVoteLogs[primaryDocumentID][endPoint - 1].EditDict[key] = val
-					}
+				}
+				for key, val := range mVoteLogs[primaryDocumentID][i].EditDict {
+					newVoteLogs[primaryDocumentID][endPoint - 1].EditDict[key] = val
+				}
 			} else {
-				before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i:]...))
-				after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
-				if before < after {
-					delEdits[i] = "worse"
+				if flags.Groundtruth != "" {
+					before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i:]...))
+					after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
+					if before < after {
+						delEdits[i] = "worse"
 					} else if before == after {
-						delEdits[i] = "same"
+							delEdits[i] = "same"
 					} else {
-						delEdits[i] = "better"
+							delEdits[i] = "better"
 					}
+				} else {
+					delEdits[i] = "same"
+				}
 			}
 		}
 
 		if _, exists := additionIndices[primaryDocumentID][i]; exists {
 			endPoint = len(newText)
 			newText = append(newText, additionIndices[primaryDocumentID][i]...)
-			if flags.Logging && flags.Groundtruth != "" {
+			if flags.Logging {
 				for l := endPoint; l < endPoint + len(additionIndices[primaryDocumentID][i]); l++ {
-					before := levenshtein.ComputeDistance(groundText, append(newText[:l-1], text[i+1:]...))
-					after := levenshtein.ComputeDistance(groundText, append(newText[:l], text[i+1:]...))
-					if before < after {
-						insEdits[l] = "worse"
-					} else if before == after {
-						insEdits[l] = "same"
+					if flags.Groundtruth != "" {
+						before := levenshtein.ComputeDistance(groundText, append(newText[:l-1], text[i+1:]...))
+						after := levenshtein.ComputeDistance(groundText, append(newText[:l], text[i+1:]...))
+						if before < after {
+							insEdits[l] = "worse"
+						} else if before == after {
+							insEdits[l] = "same"
+						} else {
+							insEdits[l] = "better"
+						}
 					} else {
-						insEdits[l] = "better"
+						insEdits[l] = "same"
 					}
 					if _, exists := newVoteLogs[primaryDocumentID][endPoint - 1]; !exists {
 						newVoteLogs[primaryDocumentID][endPoint - 1] = common.Vote{
