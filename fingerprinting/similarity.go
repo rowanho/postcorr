@@ -13,6 +13,7 @@ import (
 	metro "github.com/dgryski/go-metro"
 
 	inverted "github.com/rowanho/Inverted-Index-Generator/invertedindex"
+	"github.com/schollz/progressbar"
 )
 
 var total int = 0
@@ -111,6 +112,7 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 
 func mhash(b []byte) uint64 { return metro.Hash64(b, 0) }
 func getSimilarLsh(docs []common.Document) {
+	bar := progressbar.New(100)
 	ms := make([]*minhash.MinWise, len(docs))
 	for i, doc := range(docs) {
 		ms[i] = minhash.NewMinWise(spooky.Hash64, mhash, 100)
@@ -118,7 +120,8 @@ func getSimilarLsh(docs []common.Document) {
 			ms[i].Push([]byte(string(doc.Text[j : j+flags.K])))
 		}
 	}
-
+	prev := 0
+	c := 0
 	for i := range(docs) {
 		score[i] = make(map[int]float64)
 		bools[i] = make(map[int]bool)
@@ -133,30 +136,54 @@ func getSimilarLsh(docs []common.Document) {
 			totalSum += s
 			scores = append(scores, s)
 		}
+		c += 1
+		prog := c * 100 / len(docs)
+		if prog > prev {
+			prev = prog
+			bar.Add(1)
+		}
 	}
 }
 
 func getSimilarModP(docs []common.Document) {
+	bar := progressbar.New(100)
 	fps := make([]map[uint64]int, len(docs))
 	for i, doc := range docs {
 		fp := ModP(preProcess(string(doc.Text)), flags.K, flags.P)
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)
+	prev := 0
+	c := 0
 	for i := range fps {
 		invertedIndexHighScores(fps, i, invertedIndex)
+		c += 1
+		prog := c * 100 / len(fps)
+		if prog > prev {
+			prev = prog
+			bar.Add(1)
+		}
 	}
 }
 
 func getSimilarWinnowing(docs []common.Document) {
+	bar := progressbar.New(100)
 	fps := make([]map[uint64]int, len(docs))
 	for i, doc := range docs {
 		fp := Winnowing(preProcess(string(doc.Text)), flags.K, flags.WinnowingT)
 		fps[i] = fp
 	}
 	invertedIndex := inverted.GenerateInvertedIndex(fps)
+	prev := 0
+	c := 0
 	for i := range fps {
 		invertedIndexHighScores(fps, i, invertedIndex)
+		c += 1
+		prog := c * 100 / len(fps)
+		if prog > prev {
+			prev = prog
+			bar.Add(1)
+		}
 	}
 }
 

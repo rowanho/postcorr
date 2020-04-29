@@ -78,6 +78,7 @@ func execute() {
 		docMap[doc.ID] = i
 	}
 
+	fmt.Println("Running candidate selection...")
 	documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
 
 	numPairs := 0
@@ -87,7 +88,7 @@ func execute() {
 	}
 	fmt.Printf("Found %d high scoring pairs \n", numPairs / 2)
 
-	fmt.Println("Aligning")
+	fmt.Println("Running Alignment...")
 	var alignments map[string]common.Alignment
 	var alignmentsPerDocument map[string][]string
 	fmt.Println(flags.Affine)
@@ -101,12 +102,9 @@ func execute() {
 	if flags.Logging {
 		readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
 	}
-	scoreSum := 0
-	for _, al := range alignments {
-		scoreSum += al.Score
-	}
 
-	fmt.Printf("Score sum: %d \n", scoreSum)
+	fmt.Println("Running Correction")
+
 	alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
 	correctedDocs, totalCorrections = correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
 	fmt.Println("Number of corrections made: ", totalCorrections)
@@ -114,6 +112,7 @@ func execute() {
 
 	// Evaluation
 	if len(flags.Groundtruth) > 0 {
+		fmt.Println("Running Evaluation...")
 		originalStats, correctedStats,  originalWordStats, correctedWordStats, _ := evaluation.GetEvaluationStats(docList, docMap, correctedDocs)
 
 		fmt.Printf("Total character distance before correction: %d\n", originalStats.Total)
