@@ -2,30 +2,32 @@ package readWrite
 
 import (
 	"postCorr/common"
-	
+
 	"fmt"
 	"os"
-	"strings"
-	"strconv"
 	"path"
+	"strconv"
+	"strings"
 )
+
 var first = true
 var outdir = common.OutDir
+
 func PlaintextWrite(docId string, text []rune) error {
 
 	if first {
 		i := 0
 		newDir := common.OutDir
 		_, err := os.Stat(newDir)
-		for  !os.IsNotExist(err){
-			i +=  1
-			newDir =  common.OutDir + strconv.Itoa(i)
-			_, err = os.Stat(newDir);
+		for !os.IsNotExist(err) {
+			i += 1
+			newDir = common.OutDir + strconv.Itoa(i)
+			_, err = os.Stat(newDir)
 		}
 		first = false
 		outdir = newDir
 	}
-	
+
 	split := strings.Split(docId, "/")
 	fn := split[len(split)-1]
 	dirName := path.Join(common.OutDir, docId[:len(docId)-len(fn)])

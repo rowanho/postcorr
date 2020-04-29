@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"sort"
 
-	minhash "github.com/rowanho/go-minhash"
-	spooky "github.com/dgryski/go-spooky"
 	metro "github.com/dgryski/go-metro"
+	spooky "github.com/dgryski/go-spooky"
+	minhash "github.com/rowanho/go-minhash"
 
 	inverted "github.com/rowanho/Inverted-Index-Generator/invertedindex"
 	"github.com/schollz/progressbar"
@@ -30,7 +30,6 @@ func ResetRuntime() {
 	bools = make(map[int]map[int]bool, 0)
 
 }
-
 
 func max_int(x int, y int) int {
 	if x > y {
@@ -59,7 +58,7 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 		if flags.JaccardType == common.WeightedJaccard {
 			for _, c := range contains {
 				// Add the minimum of the two counts
-					numMatches[c] += min_int(fpList[c][fp], fpList[targetDoc][fp])
+				numMatches[c] += min_int(fpList[c][fp], fpList[targetDoc][fp])
 			}
 		} else {
 			for _, c := range contains {
@@ -72,7 +71,7 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 	bools[targetDoc] = make(map[int]bool)
 	for i, n := range numMatches {
 		if i == targetDoc {
-			continue;
+			continue
 		}
 		jaccard := 0.0
 		if flags.JaccardType == common.WeightedJaccard {
@@ -86,7 +85,7 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 			}
 			for fp, freq := range fpList[targetDoc] {
 				if _, exists := fpList[i][fp]; !exists {
-					maxSum +=  freq
+					maxSum += freq
 				}
 			}
 			if maxSum > 0 {
@@ -97,7 +96,7 @@ func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedInd
 			// Jaccard Index
 			l := len(fpList[i]) + len(fpList[targetDoc]) - n
 			if l > 0 {
-				jaccard = (float64(n) / float64(len(fpList[i]) + len(fpList[targetDoc]) - n))
+				jaccard = (float64(n) / float64(len(fpList[i])+len(fpList[targetDoc])-n))
 			}
 		}
 
@@ -114,20 +113,20 @@ func mhash(b []byte) uint64 { return metro.Hash64(b, 0) }
 func getSimilarLsh(docs []common.Document) {
 	bar := progressbar.New(100)
 	ms := make([]*minhash.MinWise, len(docs))
-	for i, doc := range(docs) {
+	for i, doc := range docs {
 		ms[i] = minhash.NewMinWise(spooky.Hash64, mhash, 100)
-		for j := 0; j+flags.K < len(doc.Text) + 1; j++ {
+		for j := 0; j+flags.K < len(doc.Text)+1; j++ {
 			ms[i].Push([]byte(string(doc.Text[j : j+flags.K])))
 		}
 	}
 	prev := 0
 	c := 0
-	for i := range(docs) {
+	for i := range docs {
 		score[i] = make(map[int]float64)
 		bools[i] = make(map[int]bool)
-		for j := range(docs) {
+		for j := range docs {
 			if i == j {
-				continue;
+				continue
 			}
 			s := ms[i].Similarity(ms[j])
 			score[i][j] = s
@@ -187,7 +186,6 @@ func getSimilarWinnowing(docs []common.Document) {
 	}
 }
 
-
 func GetAllPairwise(docs []common.Document) (map[int]map[int]float64, []float64) {
 	fmt.Println(flags.JaccardType)
 	if flags.FpType == common.MinhashFP {
@@ -200,7 +198,7 @@ func GetAllPairwise(docs []common.Document) (map[int]map[int]float64, []float64)
 	return score, scores
 }
 
-func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool  {
+func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	var documentAdjacencyList map[int]map[int]bool
 	if flags.FpType == common.MinhashFP {
 		getSimilarLsh(docs)
@@ -219,13 +217,13 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool  {
 	numPairs := l*l - l
 	threshold := 0.0
 	numP := int(proportion * float64(numPairs))
-	if  numP < len(scores) {
-		threshold = scores[len(scores) - 1]
+	if numP < len(scores) {
+		threshold = scores[len(scores)-1]
 
-		threshold = scores[len(scores) - 1 - numP]
+		threshold = scores[len(scores)-1-numP]
 
-		for doc1 := range(score) {
-			for doc2, s := range(score[doc1]) {
+		for doc1 := range score {
+			for doc2, s := range score[doc1] {
 				if s < threshold {
 					delete(bools[doc1], doc2)
 				}

@@ -6,7 +6,7 @@ import (
 
 	"os"
 	"path/filepath"
-	
+
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -31,10 +31,10 @@ func TraverseDocs() ([]common.Document, error) {
 				return err
 			}
 			if info.IsDir() == false {
-				subpath := path[len(flags.DirName) + 1:]
+				subpath := path[len(flags.DirName)+1:]
 				doc, readErr := plaintextRead(path, subpath)
 				docs = append(docs, doc)
-				
+
 				if readErr != nil {
 					return readErr
 				}

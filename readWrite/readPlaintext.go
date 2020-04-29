@@ -21,9 +21,7 @@ func plaintextRead(filepath string, subpath string) (common.Document, error) {
 	return newDoc, nil
 }
 
-
-
-func ReadRunes(filepath string) ([]rune, error){
+func ReadRunes(filepath string) ([]rune, error) {
 	text, err := ioutil.ReadFile(filepath)
 	return ConvToStandardUnicode(text), err
 }

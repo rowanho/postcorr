@@ -19,10 +19,10 @@ type alignMap = struct {
 	End                 int
 }
 
-func modifyText(primaryDocumentID string, text []rune) []rune{
+func modifyText(primaryDocumentID string, text []rune) []rune {
 	var groundText []rune
 	if flags.Logging && flags.Groundtruth != "" {
-			groundText, _ = readWrite.ReadRunes(path.Join(flags.Groundtruth, primaryDocumentID))
+		groundText, _ = readWrite.ReadRunes(path.Join(flags.Groundtruth, primaryDocumentID))
 	}
 	subEdits := make(map[int]string)
 	delEdits := make(map[int]string)
@@ -44,9 +44,9 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 			newText = append(newText, text[i])
 		}
 		endPoint = len(newText)
-		if flags.Logging  && modified {
+		if flags.Logging && modified {
 			if sub {
-				if flags.Groundtruth != ""{
+				if flags.Groundtruth != "" {
 					before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint-1], text[i:]...))
 					after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
 					if before < after {
@@ -54,19 +54,19 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 					} else if before == after {
 						subEdits[endPoint-1] = "same"
 					} else {
-							subEdits[endPoint-1] = "better"
+						subEdits[endPoint-1] = "better"
 					}
 				} else {
 					subEdits[endPoint-1] = "same"
 				}
-				if _, exists := newVoteLogs[primaryDocumentID][endPoint - 1]; !exists {
-					newVoteLogs[primaryDocumentID][endPoint - 1] = common.Vote{
-						EditDict: map[string]int{},
+				if _, exists := newVoteLogs[primaryDocumentID][endPoint-1]; !exists {
+					newVoteLogs[primaryDocumentID][endPoint-1] = common.Vote{
+						EditDict:   map[string]int{},
 						InsertDict: map[string]int{},
 					}
 				}
 				for key, val := range mVoteLogs[primaryDocumentID][i].EditDict {
-					newVoteLogs[primaryDocumentID][endPoint - 1].EditDict[key] = val
+					newVoteLogs[primaryDocumentID][endPoint-1].EditDict[key] = val
 				}
 			} else {
 				if flags.Groundtruth != "" {
@@ -75,9 +75,9 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 					if before < after {
 						delEdits[i] = "worse"
 					} else if before == after {
-							delEdits[i] = "same"
+						delEdits[i] = "same"
 					} else {
-							delEdits[i] = "better"
+						delEdits[i] = "better"
 					}
 				} else {
 					delEdits[i] = "same"
@@ -89,7 +89,7 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 			endPoint = len(newText)
 			newText = append(newText, additionIndices[primaryDocumentID][i]...)
 			if flags.Logging {
-				for l := endPoint; l < endPoint + len(additionIndices[primaryDocumentID][i]); l++ {
+				for l := endPoint; l < endPoint+len(additionIndices[primaryDocumentID][i]); l++ {
 					if flags.Groundtruth != "" {
 						before := levenshtein.ComputeDistance(groundText, append(newText[:l-1], text[i+1:]...))
 						after := levenshtein.ComputeDistance(groundText, append(newText[:l], text[i+1:]...))
@@ -103,14 +103,14 @@ func modifyText(primaryDocumentID string, text []rune) []rune{
 					} else {
 						insEdits[l] = "same"
 					}
-					if _, exists := newVoteLogs[primaryDocumentID][endPoint - 1]; !exists {
-						newVoteLogs[primaryDocumentID][endPoint - 1] = common.Vote{
-							EditDict: map[string]int{},
+					if _, exists := newVoteLogs[primaryDocumentID][endPoint-1]; !exists {
+						newVoteLogs[primaryDocumentID][endPoint-1] = common.Vote{
+							EditDict:   map[string]int{},
 							InsertDict: map[string]int{},
 						}
 					}
 					for key, val := range mVoteLogs[primaryDocumentID][i].InsertDict {
-						newVoteLogs[primaryDocumentID][endPoint - 1].InsertDict[key] = val
+						newVoteLogs[primaryDocumentID][endPoint-1].InsertDict[key] = val
 					}
 				}
 			}
@@ -150,17 +150,15 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 		}
 	}
 
-	for primaryDocumentID, _ := range correctedDocs {
+	for primaryDocumentID := range correctedDocs {
 		correctedDocText := modifyText(primaryDocumentID, documents[docMap[primaryDocumentID]].Text)
 		documents[docMap[primaryDocumentID]].Text = correctedDocText
 	}
 	if flags.WriteOutput {
-		for  docID := range correctedDocs {
+		for docID := range correctedDocs {
 			readWrite.PlaintextWrite(docID, documents[docMap[docID]].Text)
 		}
 	}
-
-
 
 	if flags.Logging {
 		readWrite.SerialiseVote(reuseGraph)

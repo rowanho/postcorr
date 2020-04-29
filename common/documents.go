@@ -7,8 +7,7 @@ type Document struct {
 	ComponentLengths []int  `json:"componentLengths"`
 }
 
-
 type Vote = struct {
-	EditDict map[string]int
+	EditDict   map[string]int
 	InsertDict map[string]int
 }

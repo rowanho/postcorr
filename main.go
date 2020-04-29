@@ -1,17 +1,18 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"postCorr/alignment"
 	"postCorr/common"
 	"postCorr/correction"
-	"postCorr/flags"
-	"postCorr/fingerprinting"
-	"postCorr/readWrite"
 	"postCorr/evaluation"
-	"flag"
-	"fmt"
+	"postCorr/fingerprinting"
+	"postCorr/flags"
+	"postCorr/readWrite"
 )
-func main2(){
+
+func main2() {
 	EvaluateK()
 	//EvaluateJaccard()
 }
@@ -50,13 +51,13 @@ func main() {
 	flags.AlignThreshold = *alignThreshold
 	flags.Groundtruth = *groundTruth
 	flags.FastAlign = *fastAlign
-	flags.BandWidth = * bandWidth
+	flags.BandWidth = *bandWidth
 	flags.NumAligns = *numAligns
 	flags.Affine = *affine
 	flags.UseLM = *useLM
 	flags.LmThreshold = *lmThreshold
 	flags.HandleInsertionDeletion = *handleInsertionDeletion
-	flags.LInsert= *lInsert
+	flags.LInsert = *lInsert
 	flags.LDelete = *lDelete
 	execute()
 
@@ -67,7 +68,7 @@ func main() {
 **/
 func execute() {
 	var totalCorrections int
- 	var correctedDocs map[string] bool
+	var correctedDocs map[string]bool
 	docList, docsErr := readWrite.TraverseDocs()
 
 	if docsErr != nil {
@@ -89,7 +90,7 @@ func execute() {
 		numPairs += len(similarDocs)
 	}
 	fmt.Println("")
-	fmt.Printf("Found %d high scoring pairs \n", numPairs / 2)
+	fmt.Printf("Found %d high scoring pairs \n", numPairs/2)
 
 	fmt.Println("Running Alignment...")
 	var alignments map[string]common.Alignment
@@ -112,11 +113,10 @@ func execute() {
 	correctedDocs, totalCorrections = correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
 	fmt.Println("Number of corrections made: ", totalCorrections)
 
-
 	// Evaluation
 	if len(flags.Groundtruth) > 0 {
 		fmt.Println("Running Evaluation...")
-		originalStats, correctedStats,  originalWordStats, correctedWordStats, _ := evaluation.GetEvaluationStats(docList, docMap, correctedDocs)
+		originalStats, correctedStats, originalWordStats, correctedWordStats, _ := evaluation.GetEvaluationStats(docList, docMap, correctedDocs)
 
 		fmt.Printf("Total character distance before correction: %d\n", originalStats.Total)
 		fmt.Printf("Total character distance after correction: %d \n", correctedStats.Total)
@@ -132,7 +132,7 @@ func execute() {
 
 		if len(correctedDocs) > 0 {
 			fmt.Printf("Out of %d the corrected documents, mean edit distance changed from %5.2f to %5.2f \n",
-							len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
+				len(correctedDocs), originalStats.MeanInCorrected, correctedStats.MeanInCorrected)
 		} else {
 			fmt.Println("No documents corrected!")
 		}
