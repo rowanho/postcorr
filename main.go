@@ -27,6 +27,7 @@ func main() {
 	winnowingT := flag.Int("t", 15, "Size of winnowing threshold t, must be >= k")
 	affine := flag.Bool("affine", false, "Whether or not to use affine gap scoring")
 	fastAlign := flag.Bool("fast_align", false, "Whether or not to use heuristic alignment (faster but less accurate)")
+	bandWidth := flag.Int("band_width", 200, "The dynamic programming band width w for the heuristic algorithm.")
 	p := flag.Int("p", 3, "P to mod by when using modp")
 	numAligns := flag.Int("num_aligns", 2, "The number of disjoint alignments we attempt to make")
 	alignThreshold := flag.Int("align_threshold", 0, "The minimum previous alignment score with which to keep aligning 2 documents.")
@@ -49,6 +50,7 @@ func main() {
 	flags.AlignThreshold = *alignThreshold
 	flags.Groundtruth = *groundTruth
 	flags.FastAlign = *fastAlign
+	flags.BandWidth = * bandWidth
 	flags.NumAligns = *numAligns
 	flags.Affine = *affine
 	flags.UseLM = *useLM
@@ -86,6 +88,7 @@ func execute() {
 	for _, similarDocs := range documentAdjacencyList {
 		numPairs += len(similarDocs)
 	}
+	fmt.Println("")
 	fmt.Printf("Found %d high scoring pairs \n", numPairs / 2)
 
 	fmt.Println("Running Alignment...")
@@ -102,7 +105,7 @@ func execute() {
 	if flags.Logging {
 		readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
 	}
-
+	fmt.Println("")
 	fmt.Println("Running Correction")
 
 	alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)

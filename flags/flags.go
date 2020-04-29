@@ -23,3 +23,4 @@ var LmThreshold float64
 var HandleInsertionDeletion bool
 var LDelete int
 var LInsert int
+var BandWidth int

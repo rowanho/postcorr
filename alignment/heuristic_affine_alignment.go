@@ -2,31 +2,31 @@ package alignment
 
 import (
     "postCorr/flags"
-    
+
     "math"
 )
 
 
 func HeuristicAffineAlignment(matchReward int, gapOp int, gapEx int, a []rune, b []rune) (int, []int, []int) {
     k := flags.K
-    bandSize := 300
-    
+    bandSize := flags.BandWidth
+
     tableA := getKwords(a, k)
     tableB := getKwords(b, k)
     diagonalSums := getDiagonalSums(k - len(b), len(a) - k, tableA, tableB)
-    
+
     maxMatchSum, bestAbDiff := findPeakRegion(diagonalSums, bandSize)
-    
+
     if maxMatchSum == 0 {
         return 0.0, []int{}, []int{}
     }
-    
-    bestBaDiff := - bestAbDiff 
+
+    bestBaDiff := - bestAbDiff
     maxBaDiff := Min(bestBaDiff + bandSize / 2, len(b) - 1)
     minBaDiff := Max(bestBaDiff - bandSize / 2, 1 - len(a))
-    
+
     if maxBaDiff - minBaDiff <= 0 {
-        return 0.0, []int{}, []int{}        
+        return 0.0, []int{}, []int{}
     }
     return bandedAffineDp(matchReward, gapOp, gapEx, a, b, maxBaDiff, minBaDiff)
 }
@@ -34,16 +34,16 @@ func HeuristicAffineAlignment(matchReward int, gapOp int, gapEx int, a []rune, b
 func bandedAffineDp(matchReward int, gapOp int, gapEx int, a []rune , b []rune, maxBaDiff int, minBaDiff int) (int, []int, []int) {
     lenA := len(a)
     lenB := len(b)
-    
+
     w := maxBaDiff - minBaDiff + 1
-    
+
     d := make([][]int, lenA + 1)
     d_bc := make([][]int, lenA + 1)
     p := make([][]int, lenA + 1)
     p_bc := make([][]int, lenA + 1)
     q := make([][]int, lenA + 1)
     q_bc := make([][]int, lenA + 1)
-    
+
     for i := 0; i < lenA + 1; i++ {
         d[i] = make([]int, w + 2)
         d_bc[i] = make([]int, w + 2)
@@ -52,7 +52,7 @@ func bandedAffineDp(matchReward int, gapOp int, gapEx int, a []rune , b []rune, 
         q[i] = make([]int, w + 2)
         q_bc[i] = make([]int, w + 2)
     }
-    
+
     hiDiag := w
     var loDiag int
     if minBaDiff > 0 {
@@ -62,19 +62,19 @@ func bandedAffineDp(matchReward int, gapOp int, gapEx int, a []rune , b []rune, 
     } else {
         loDiag = 2 - minBaDiff
     }
-        
+
     loRow := Max(0, - maxBaDiff)
     hiRow := Min(lenA, lenB - minBaDiff)
-    
+
     score :=  math.MinInt32
-    
+
     maxI := loRow
     maxJ := loDiag - 1
-    
-    
+
+
     for j := loDiag - 1; j < hiDiag + 2; j++ {
         p[loRow][j] = math.MinInt32
-        q[loRow][j] = math.MinInt32        
+        q[loRow][j] = math.MinInt32
     }
 
     for i := loRow + 1; i < hiRow + 1; i ++ {
@@ -84,7 +84,7 @@ func bandedAffineDp(matchReward int, gapOp int, gapEx int, a []rune , b []rune, 
         if i > lenB - maxBaDiff {
             hiDiag -= 1
         }
-        
+
         d[i][loDiag - 1] = math.MinInt32
         p[i][loDiag - 1] = math.MinInt32
         q[i][loDiag - 1] = math.MinInt32
@@ -98,38 +98,38 @@ func bandedAffineDp(matchReward int, gapOp int, gapEx int, a []rune , b []rune, 
             q[i][j] = Max(q[i][j-1] - gapEx, q[i][j-1] - gapOp)
             p[i][j] = Max(p[i-1][j+1] - gapEx, d[i-1][j+1] - gapOp)
             d[i][j] = Max(d[i-1][j] + match, Max(p[i][j], Max(q[i][j], 0)))
-            
+
             if score < d[i][j] {
                 score = d[i][j]
                 maxI = i
                 maxJ = j
             }
-            
+
             if d[i][j-1] - gapOp < q[i][j-1] - gapEx {
                 q_bc[i][j] = 1
             }
-            
+
             if  d[i-1][j+1] - gapOp < p[i-1][j+1] - gapEx {
                 p_bc[i][j] = 1
             }
-            
+
             if d[i][j] == d[i-1][j] + match {
                 d_bc[i][j] = 1
             }
-            
+
             if d[i][j] == p[i][j] {
                 d_bc[i][j] += 10
             }
-            
+
             if d[i][j] == q[i][j] {
                 d_bc[i][j] += 100
-            }            
+            }
         }
     }
-    
+
     aIndices := make([]int, 0)
     bIndices := make([]int, 0)
-    
+
     i := maxI
     j := maxJ
     level := 0
@@ -154,7 +154,7 @@ func bandedAffineDp(matchReward int, gapOp int, gapEx int, a []rune , b []rune, 
             if q_bc[i][j] == 0 {
                 level = 0
             }
-            j -= 1                
+            j -= 1
         }
     }
 

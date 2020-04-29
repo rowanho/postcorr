@@ -3,7 +3,7 @@ package alignment
 import (
     "postCorr/flags"
     "postCorr/fingerprinting"
-    
+
     "math"
 )
 
@@ -33,7 +33,7 @@ func getKwords(seq []rune, k int) map[uint64][]int{
 
 func getDiagonalSums(start int, end int, tableA map[uint64][]int, tableB map[uint64][]int) map[int]int {
     sums := make(map[int]int)
-    
+
     for fp, indiceListA := range tableA {
         if indiceListB, exists := tableB[fp]; exists {
             for _, a := range indiceListA {
@@ -49,7 +49,7 @@ func getDiagonalSums(start int, end int, tableA map[uint64][]int, tableB map[uin
 
 func updateArray(i int, j int, r [][]int, match int, delete int, insert int) {
     m := Max(match, Max(Max(delete, insert), 0))
-    
+
     if insert == m {
         r[i][j] = 2
     } else if delete == m {
@@ -64,16 +64,16 @@ func updateArray(i int, j int, r [][]int, match int, delete int, insert int) {
 func bandedDp(matchReward int, gapCost int, a []rune , b []rune, maxBaDiff int, minBaDiff int) (int, []int, []int) {
     lenA := len(a)
     lenB := len(b)
-    
+
     w := maxBaDiff - minBaDiff + 1
-    
+
     h := make([][]int, lenA + 1)
     r := make([][]int, lenA + 1)
     for i := 0; i < lenA + 1; i++ {
         h[i] = make([]int, w + 2)
         r[i] = make([]int, w + 2)
     }
-    
+
     hiDiag := w
     var loDiag int
     if minBaDiff > 0 {
@@ -83,17 +83,17 @@ func bandedDp(matchReward int, gapCost int, a []rune , b []rune, maxBaDiff int, 
     } else {
         loDiag = 2 - minBaDiff
     }
-        
+
     loRow := Max(0, - maxBaDiff)
     hiRow := Min(lenA, lenB - minBaDiff)
-    
+
     score :=  math.MinInt32
-    
+
     maxI := loRow
     maxJ := loDiag - 1
-    
+
     h[loRow][loDiag - 1]  = math.MinInt32
-    
+
     for i := loRow + 1; i < hiRow + 1; i ++ {
         if loDiag > 1 {
             loDiag -= 1
@@ -101,9 +101,9 @@ func bandedDp(matchReward int, gapCost int, a []rune , b []rune, maxBaDiff int, 
         if i > lenB - maxBaDiff {
             hiDiag -= 1
         }
-        
+
         h[i][loDiag - 1] = math.MinInt32
-        
+
         var delete, insert, match int
         for j := loDiag; j < hiDiag + 1; j++ {
             delete = h[i-1][j+1] - gapCost
@@ -114,7 +114,7 @@ func bandedDp(matchReward int, gapCost int, a []rune , b []rune, maxBaDiff int, 
                 match = h[i-1][j] - matchReward
             }
             h[i][j] = Max(match, Max(Max(delete, insert), 0))
-            
+
             if score < h[i][j] {
                 score = h[i][j]
                 maxI = i
@@ -123,10 +123,10 @@ func bandedDp(matchReward int, gapCost int, a []rune , b []rune, maxBaDiff int, 
             updateArray(i, j, r, match, delete, insert)
         }
     }
-    
+
     aIndices := make([]int, 0)
     bIndices := make([]int, 0)
-    
+
     i := maxI
     j := maxJ
     for r[i][j] != 0 {
@@ -152,23 +152,23 @@ func findPeakRegion(diagonalSums map[int]int, width int) (int, int) {
     for d, value := range diagonalSums {
         if d < min {
             min = d
-        } 
+        }
         if d > max {
             max = d
-        } 
+        }
         if  value > maxVal {
             maxVal = d
         }
     }
-        
+
     if width <= max - min {
         return maxVal, (max + min) / 2
     }
-    
+
     bestAbDiff := 0
     maxMatchSum := 0
     for i:= min; i < min + width; i++ {
-        maxMatchSum += diagonalSums[i] 
+        maxMatchSum += diagonalSums[i]
     }
     currentSum := maxMatchSum
     bestAbDiff = min / 2
@@ -186,25 +186,24 @@ func findPeakRegion(diagonalSums map[int]int, width int) (int, int) {
 
 func HeuristicAlignment(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
     k := flags.K
-    bandSize := 200
-    
+    bandSize := flags.BandWidth
+
     tableA := getKwords(a, k)
     tableB := getKwords(b, k)
     diagonalSums := getDiagonalSums(k - len(b), len(a) - k, tableA, tableB)
-    
+
     maxMatchSum, bestAbDiff := findPeakRegion(diagonalSums, bandSize)
-    
+
     if maxMatchSum == 0 {
         return 0.0, []int{}, []int{}
     }
-    
-    bestBaDiff := - bestAbDiff 
+
+    bestBaDiff := - bestAbDiff
     maxBaDiff := Min(bestBaDiff + bandSize / 2, len(b) - 1)
     minBaDiff := Max(bestBaDiff - bandSize / 2, 1 - len(a))
-    
+
     if maxBaDiff - minBaDiff <= 0 {
-        return 0.0, []int{}, []int{}        
+        return 0.0, []int{}, []int{}
     }
     return bandedDp(matchReward, gapCost, a, b, maxBaDiff, minBaDiff)
 }
-
