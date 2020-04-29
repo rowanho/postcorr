@@ -37,15 +37,18 @@ All instructions are for mac/linux. I can't guarantee there won't be issues on w
 * Install go: https://golang.org/doc/install
 * Build the code with `go build`, this will create an executable called **postCorr**
 #### Command Line Parameters
-* Run the executable with the relevant command line flags.
+* The executable must be run with the relevant command line flags. Command line flags are set with a dash (-) and equals (=), for example: 
+``` 
+./postCorr -input=datasets/dataset -fp=winnowing -k=20 -affine=true 
+```
 * To view flags and their descriptions, run `./postCorr -h`
 
-A table of command line flags and their interactions
+A table of command line flags and their interactions can be found below.
 
 | Flags     | Datatype and Possible Values | Default Value | Description  | Interaction With Other Flags |
 | ------------- | ---------------------------- | ------------- | ------------ | --------------------------------- |
-| **input**     | string | None | Path to directory containing OCR dataset |  |
-| **groundtruth**     | string| None  |   Path to directory containing groundtruth dataset |  |
+| **input**     | string | None | Path to directory containing OCR dataset, this is the only flag which must be set. |  |
+| **groundtruth**     | string| None  |   Path to directory containing groundtruth dataset. If set, the program performs analysis on how well it performed when making edits to **input**.|  |
 | **write** | boolean: 'true' or 'false'      |   true | Whether or not to write corrected output to the 'corrected' directory | None |
 | **logging** | boolean | true | whether or not to generate log files in the 'logs' directory|   |
 |**fp**|string: 'modp', 'winnowing' or 'minhash'|'modp'| Method of fingerprinting - 0 mod p, winnowing, or minhash, as described in the paper| The flag **k** should also be set to a preferred value. Choosing 0 mod p means the flag **p** should also be set. Choosing winnowing means the flag **t** should also be set. |
