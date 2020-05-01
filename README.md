@@ -61,7 +61,8 @@ A table of command line flags and their interactions can be found below.
 | **affine**| boolean | false | Whether of not to use affine alignment | |
 | **fast_align**| boolean | false | Whether or not to use heuristic alignment| **band_width** should be set|
 | **band_width**| integer | 200 | The heuristic algorithm's dynamic programming band width *w* | |
-| **use_lm**| boolean | false | Whether to use a language model - this requires running additional python code as described below|
+| **use_lm**| boolean | false | Whether to use a language model - this requires running additional python code as described below| **lm_threshold** should be set|
+|**lm_threshold**| float | 0.2 | The threshold *p<sub>t</sub>* - the language model prevents edits on words that have >*p<sub>t</sub>* probability score from taking place.
 | **insert_delete** | boolean | true | Whether to use insert/deletion to correct errors as well as substitution, as laid out in the paper| The flags **l_delete** and **l_insert** should be set|
 | **l_delete**| integer > 0 | 2 | The maximum length of character sequence that the algorithm will attempt considers an erroneous deletion in consensus vote. | |
 | **l_insert**| integer > 0 | 2 | The maximum length of character sequence that the algorithm will attempt considers an erroneous insertion in consensus vote.| |
