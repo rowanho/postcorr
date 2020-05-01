@@ -102,7 +102,7 @@ func applyDeletions(primaryDocumentID string, alignmentMaps []alignMap, document
 			count += 1
 		}
 
-		if count > 2 && notAlignedInPrim > ( count / 2) {
+		if count > 1 && notAlignedInPrim > ( (count + 1) / 2) {
 			if !gapSection {
 				pairStart = ind
 				gapSection = true

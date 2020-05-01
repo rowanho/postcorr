@@ -37,9 +37,9 @@ All instructions are for mac/linux. I can't guarantee there won't be issues on w
 * Install go: https://golang.org/doc/install
 * Build the code with `go build`, this will create an executable called **postCorr**
 #### Command Line Parameters
-* The executable must be run with the relevant command line flags. Command line flags are set with a dash (-) and equals (=), for example: 
-``` 
-./postCorr -input=datasets/dataset -fp=winnowing -k=20 -affine=true 
+* The executable must be run with the relevant command line flags. Command line flags are set with a dash (-) and equals (=), for example:
+```
+./postCorr -input=datasets/dataset -fp=winnowing -k=20 -affine=true
 ```
 * To view flags and their descriptions, run `./postCorr -h`
 
@@ -88,4 +88,4 @@ nltk is the relevant dependency here, and requires some extra steps to get data 
 The browser based tool relies on the a run of the main program being completed with the *logging* flag being set to true. After this, the usage steps are as follows:
 
 * Run the python server with `python python-utils/visualiser/server.py *input-directory*`, where \*input\* directory is the name of the directory containing the original OCR data.
-* To view a file in the browser tool, navigate to `localhost:3000?filename=*file*`, where \*file\* is the path to the file within the OCR data directory.
+* To view files in the browser tool, navigate to the page at `localhost:3000`, which displays a list of the files edited by the tool, and click on each file's link. 

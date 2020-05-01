@@ -6,11 +6,18 @@ var pathname = params.get("filename");
 $(document).ready(function(){
 	var globaldict;
 	var modal = document.getElementById("reuse-modal");
-	$.post( "/serve_reuse", {"filename": pathname}, function( data ) {
-		console.log(data)
-		$("#main").html(data['segments']);
-		globaldict = data;
-	});
+	if (pathname) {
+		$.post( "/serve_reuse", {"filename": pathname}, function( data ) {
+			console.log(data)
+			$("#main").html(data['segments']);
+			globaldict = data;
+		});
+	} else {
+		console.log('links')
+		$.post( "/serve_links",{}, function( data ) {
+			$("#main").html(data['links']);
+		});
+	}
 
 	$(".close").on("click", function() {
 		modal.style.display = "none";

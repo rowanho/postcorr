@@ -25,7 +25,15 @@ del_edit_json = open_log_json('edit_graph_del.json')
 ins_edit_json = open_log_json('edit_graph_ins.json')
 vote_json = open_log_json('vote_details.json')
 
-@app.route('/serve_reuse', methods=['post'])
+
+@app.route('/serve_links', methods=['post'])
+def serve_links():
+	links = []
+	for key in text_json.keys():
+		links.append(f'<a href="/?filename={key}"> {key} </a>')
+	return jsonify({'links':'<br>'.join(links)})
+
+@app.route('/serve_reuse', methods = ['post'])
 def serve_reuse():
 	filename = request.form['filename']
 	with open(os.path.join(corrected_dir, filename)) as b:
