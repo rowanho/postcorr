@@ -3,6 +3,8 @@ import random
 import sys
 import shutil
 
+common_mistakes = {'m':['n', 'w'], 'n':['m', 'o'], 'o':['a', 'u'], 'a':['o', 'u'],
+'o':['a', 'u'], 'e':['a'], 'l':['I'], 'I':['l'], 'F':['E'], 'E':['F'], 'j':['i'], 'i':['j', 'l'], 'd':['b'], 'b':['d']}
 # Randomnly seeds documents with errors
 def seed_errors(dirname, new_dir, error_prob):
     print(dirname)
@@ -11,7 +13,8 @@ def seed_errors(dirname, new_dir, error_prob):
             charlist = list(file.read())
         for i, c in enumerate(charlist):
             if random.random() < error_prob:
-                charlist[i] = str(chr(random.randint(35, 120)))
+                if charlist[i] in common_mistakes:
+                    charlist[i] = random.choice(common_mistakes[charlist[i]])
         content = ''.join(charlist)
         with open(os.path.join(new_dir, filename), 'w') as file:
             file.write(content)
@@ -36,4 +39,3 @@ def main():
     seed_errors_rec(src_dir, dst, error_rate)
 if __name__ == "__main__":
     main()
-        

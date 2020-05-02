@@ -13,7 +13,6 @@ $(document).ready(function(){
 			globaldict = data;
 		});
 	} else {
-		console.log('links')
 		$.post( "/serve_links",{}, function( data ) {
 			$("#main").html(data['links']);
 		});
