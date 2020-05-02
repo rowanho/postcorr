@@ -4,6 +4,7 @@ import os
 import json#
 import html
 from uuid import uuid4
+from natsort import natsorted
 
 original_dir = sys.argv[1]
 corrected_dir = 'corrected'
@@ -29,7 +30,10 @@ vote_json = open_log_json('vote_details.json')
 @app.route('/serve_links', methods=['post'])
 def serve_links():
 	links = []
+	ks = []
 	for key in text_json.keys():
+		ks.append(key)
+	for key in natsorted(ks):
 		links.append(f'<a href="/?filename={key}"> {key} </a>')
 	return jsonify({'links':'<br>'.join(links)})
 
