@@ -110,7 +110,7 @@ func execute() {
 
 	alignmentAdjacencyList := alignment.GetSimilarAlignments(alignments, alignmentsPerDocument)
 	correctedDocs, totalCorrections = correction.ClusterAndCorrectAlignments(alignmentAdjacencyList, alignments, docList, docMap)
-	fmt.Println("Number of corrections made: ", totalCorrections)
+	fmt.Println("Number of edits made: ", totalCorrections)
 
 	// Evaluation
 	if len(flags.Groundtruth) > 0 {
