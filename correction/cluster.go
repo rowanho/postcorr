@@ -20,6 +20,14 @@ type alignMap = struct {
 	End                 int
 }
 
+
+func getCopies(a1 []rune, a2 []rune)  ([]rune, []rune){
+	c1 := make([]rune, len(a1))
+	copy(c1, a1)
+	c2 := make([]rune, len(a2))
+	copy(c2, a2)
+	return c1, c2
+}
 func modifyText(primaryDocumentID string, text []rune) []rune {
 	var groundText []rune
 	if flags.Logging && flags.Groundtruth != "" {
@@ -48,8 +56,10 @@ func modifyText(primaryDocumentID string, text []rune) []rune {
 		if flags.Logging && modified {
 			if sub {
 				if flags.Groundtruth != "" {
-					before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint-1], text[i:]...))
-					after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
+					newTextCP, textCP := getCopies(newText, text)
+					before := levenshtein.ComputeDistance(groundText, append(newTextCP[:endPoint-1], textCP[i:]...))
+					newTextCP, textCP = getCopies(newText, text)
+					after := levenshtein.ComputeDistance(groundText, append(newTextCP[:endPoint], textCP[i+1:]...))
 					if before < after {
 						subEdits[endPoint-1] = "worse"
 					} else if before == after {
@@ -71,8 +81,10 @@ func modifyText(primaryDocumentID string, text []rune) []rune {
 				}
 			} else {
 				if flags.Groundtruth != "" {
-					before := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i:]...))
-					after := levenshtein.ComputeDistance(groundText, append(newText[:endPoint], text[i+1:]...))
+					newTextCP, textCP := getCopies(newText, text)
+					before := levenshtein.ComputeDistance(groundText, append(newTextCP[:endPoint], textCP[i:]...))
+					newTextCP, textCP = getCopies(newText, text)
+					after := levenshtein.ComputeDistance(groundText, append(newTextCP[:endPoint], textCP[i+1:]...))
 					if before < after {
 						delEdits[i] = "worse"
 					} else if before == after {
@@ -92,8 +104,10 @@ func modifyText(primaryDocumentID string, text []rune) []rune {
 			if flags.Logging {
 				for l := endPoint; l < endPoint+len(additionIndices[primaryDocumentID][i]); l++ {
 					if flags.Groundtruth != "" {
-						before := levenshtein.ComputeDistance(groundText, append(newText[:l-1], text[i+1:]...))
-						after := levenshtein.ComputeDistance(groundText, append(newText[:l], text[i+1:]...))
+						newTextCP, textCP := getCopies(newText, text)
+						before := levenshtein.ComputeDistance(groundText, append(newTextCP[:l-1], textCP[i+1:]...))
+						newTextCP, textCP = getCopies(newText, text)
+						after := levenshtein.ComputeDistance(groundText, append(newTextCP[:l], textCP[i+1:]...))
 						if before < after {
 							insEdits[l] = "worse"
 						} else if before == after {

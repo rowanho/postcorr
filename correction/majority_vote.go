@@ -342,35 +342,42 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 					counts[r] = 1
 				}
 
-				if counts[r] > max {
-					max = counts[r]
-					maxRune = r
-				}
 			}
+		}
+		for r := range counts {
+			if counts[r] > max {
+				max = counts[r]
+				maxRune = r
+			}	
 		}
 		prevCorrections := noCorrections
 		//fmt.Println(counts)
 		//fmt.Println(primText[ind])
-		if primText[ind] != maxRune && max > numVotes/2 {
-			if flags.UseLM && len(words) > 0 && !isNewLineSpace(primText[ind]) {
-				end := len(words) - 1
-				start := end - n
-				if start < 0 {
-					start = 0
-				}
-				joined := strings.Join(words[start:end], " ")
-				score := getLmScore(currentWord, joined)
-				if score != "inf" {
-					f, _ := strconv.ParseFloat(score, 64)
-					if f > threshold {
+		if primText[ind] != maxRune && max > numVotes/2 && numVotes > 2 {
+			if flags.UseLM  && !isNewLineSpace(primText[ind]) {
+				if len(words) > 0 {
+					end := len(words) - 1
+					start := end - n
+					if start < 0 {
+						start = 0
+					}
+					joined := strings.Join(words[start:end], " ")
+					score := getLmScore(currentWord, joined)
+					if score != "inf" {
+						f, _ := strconv.ParseFloat(score, 64)
+						if f > threshold {
+							editIndices[primaryDocumentID][ind] = maxRune
+							noCorrections += 1
+						} else {
+							prevCount += 1
+						}
+					} else {
 						editIndices[primaryDocumentID][ind] = maxRune
 						noCorrections += 1
-					} else {
-						prevCount += 1
 					}
 				} else {
-					editIndices[primaryDocumentID][ind] = maxRune
-					noCorrections += 1
+						editIndices[primaryDocumentID][ind] = maxRune
+						noCorrections += 1
 				}
 			} else if !isNewLineSpace(primText[ind]) {
 				editIndices[primaryDocumentID][ind] = maxRune
