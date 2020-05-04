@@ -21,7 +21,7 @@ func main() {
 	groundTruth := flag.String("groundtruth", "", "Path to directory containing groundtruth dataset")
 	writeOutput := flag.Bool("write", true, "Whether or not to write output to file in the folder 'corrected'")
 	logging := flag.Bool("logging", true, "Whether to generate log files in the folder 'logs'")
-	fpType := flag.String("fp", common.ModFP, "Fingerprinting method: 'minhash', 'modp' or 'winnowing'")
+	fpType := flag.String("candidate_method", common.ModFP, "Candidate selection method: 'minhash', 'modp' or 'winnowing'")
 	similarityProportion := flag.Float64("candidate_proportion", 0.05, "The proportion of document pairs to align")
 	jaccardType := flag.String("jaccard", common.WeightedJaccard, "The type of jaccard similarity, 'regular' or 'weighted'")
 	shingleSize := flag.Int("k", 7, "Length of k-grams used for shingling")
