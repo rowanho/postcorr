@@ -101,32 +101,33 @@ func modifyText(primaryDocumentID string, text []rune) []rune {
 		if _, exists := additionIndices[primaryDocumentID][i]; exists {
 			endPoint = len(newText)
 			newText = append(newText, additionIndices[primaryDocumentID][i]...)
+			l := len(additionIndices[primaryDocumentID][i])
 			if flags.Logging {
-				for l := endPoint; l < endPoint+len(additionIndices[primaryDocumentID][i]); l++ {
-					if flags.Groundtruth != "" {
-						newTextCP, textCP := getCopies(newText, text)
-						before := levenshtein.ComputeDistance(groundText, append(newTextCP[:l-1], textCP[i+1:]...))
-						newTextCP, textCP = getCopies(newText, text)
-						after := levenshtein.ComputeDistance(groundText, append(newTextCP[:l], textCP[i+1:]...))
+				if flags.Groundtruth != "" {
+					newTextCP, textCP := getCopies(newText, text)
+					before := levenshtein.ComputeDistance(groundText, append(newTextCP[:endPoint - l], textCP[i+1:]...))
+					newTextCP, textCP = getCopies(newText, text)
+					after := levenshtein.ComputeDistance(groundText, append(newTextCP, textCP[i+1:]...))
+					for j := endPoint; j < endPoint + l; j++ {
 						if before < after {
-							insEdits[l] = "worse"
+							insEdits[j] = "worse"
 						} else if before == after {
-							insEdits[l] = "same"
+							insEdits[j] = "same"
 						} else {
-							insEdits[l] = "better"
-						}
-					} else {
-						insEdits[l] = "same"
-					}
-					if _, exists := newVoteLogs[primaryDocumentID][endPoint-1]; !exists {
-						newVoteLogs[primaryDocumentID][endPoint-1] = common.Vote{
-							EditDict:   map[string]int{},
-							InsertDict: map[string]int{},
+							insEdits[j] = "better"
 						}
 					}
-					for key, val := range mVoteLogs[primaryDocumentID][i].InsertDict {
-						newVoteLogs[primaryDocumentID][endPoint-1].InsertDict[key] = val
+				} else {
+					insEdits[l] = "same"
+				}
+				if _, exists := newVoteLogs[primaryDocumentID][endPoint-1]; !exists {
+					newVoteLogs[primaryDocumentID][endPoint-1] = common.Vote{
+						EditDict:   map[string]int{},
+						InsertDict: map[string]int{},
 					}
+				}
+				for key, val := range mVoteLogs[primaryDocumentID][i].InsertDict {
+					newVoteLogs[primaryDocumentID][endPoint-1].InsertDict[key] = val
 				}
 			}
 		}

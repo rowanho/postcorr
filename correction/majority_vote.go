@@ -207,36 +207,42 @@ func applyInsertions(primaryDocumentID string, alignmentMaps []alignMap, documen
 
 		}
 		prevInsertions := insertions
-		for str, freq := range commonStrings {
-			if freq >= count/2 && count > 2 {
-				if flags.UseLM && len(words) > 0 {
-					end := len(words) - 1
-					start := end - n
-					if start < 0 {
-						start = 0
-					}
-					joined := strings.Join(words[start:end], " ")
-					score := getLmScore(currentWord, joined)
-					if score != "inf" {
-						f, _ := strconv.ParseFloat(score, 64)
-						if f > threshold {
-							additionIndices[primaryDocumentID][ind] = []rune(str)
-							insertions += len(str)
-						} else {
-							prevCount += len(str)
-						}
-					} else {
+		mfreq := 0
+		str := ""
+		for s, freq := range commonStrings {
+			if freq >  mfreq {
+				str = s
+				mfreq = freq
+			}
+		}
+
+		if mfreq >= count/2 && count > 2 {
+			if flags.UseLM && len(words) > 0 {
+				end := len(words) - 1
+				start := end - n
+				if start < 0 {
+					start = 0
+				}
+				joined := strings.Join(words[start:end], " ")
+				score := getLmScore(currentWord, joined)
+				if score != "inf" {
+					f, _ := strconv.ParseFloat(score, 64)
+					if f > threshold {
 						additionIndices[primaryDocumentID][ind] = []rune(str)
 						insertions += len(str)
+					} else {
+						prevCount += len(str)
 					}
 				} else {
 					additionIndices[primaryDocumentID][ind] = []rune(str)
 					insertions += len(str)
 				}
-
-				break
+			} else {
+				additionIndices[primaryDocumentID][ind] = []rune(str)
+				insertions += len(str)
 			}
 		}
+
 		if prevInsertions < insertions {
 			if _, exists := mVoteLogs[primaryDocumentID][ind]; !exists {
 				mVoteLogs[primaryDocumentID][ind] = common.Vote{
@@ -348,7 +354,7 @@ func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents 
 			if counts[r] > max {
 				max = counts[r]
 				maxRune = r
-			}	
+			}
 		}
 		prevCorrections := noCorrections
 		//fmt.Println(counts)
