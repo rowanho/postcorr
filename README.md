@@ -36,7 +36,14 @@ All instructions are for mac/linux. I can't guarantee there won't be issues on w
 #### Installing and Building
 * Install go: https://golang.org/doc/install
 * Build the code with `go build`, this will create an executable called **postCorr**
-#### Command Line Parameters
+#### Providing Datasets
+* The main dataset must be provided with the flag *input*, and should consist of exclusively .txt files. The program will look for text reuse between any 2 of these files. The dataset can be split into any number of sub folders, and all utf-8 unicode characters are valid file contents. The program will avoid changing any newline, tab or space characters.
+* A gold standard dataset for benchmarking can be provided with the flag *groundtruth*. This must have exactly the same file/folder structure as the input dataset. Providing this dataset automatically means an evaluation is run by the program after other stages have been completed.
+#### Output
+* If the *write* flag is set to true (default true), a folder *corrected* is created at runtime containing the new versions of the files changed by the program (unchanged files are not written).
+* If the *logging* flag is set to true (default true), a folder *logs* is created at runtime containing json log files.
+* Note: The *logs* directories should be renamed before the program is re-run, if the user wants them to be preserved and not overwritten. The *corrected* directory will not be overwritten, the program will instead create directories *corrected1*, *corrected2*... etc.
+#### Command Line Flags
 * The executable must be run with the relevant command line flags. Command line flags are set with a dash (-) and equals (=), for example:
 ```
 ./postCorr -input=datasets/dataset -fp=winnowing -k=20 -affine=true
@@ -62,7 +69,7 @@ A table of command line flags and their interactions can be found below.
 | **fast_align**| boolean | false | Whether or not to use heuristic alignment| **band_width** should be set|
 | **band_width**| integer | 200 | The heuristic algorithm's dynamic programming band width *w* | |
 | **use_lm**| boolean | false | Whether to use a language model - this requires running additional python code as described below| **lm_threshold** should be set|
-|**lm_threshold**| float | 0.2 | The threshold *p<sub>t</sub>* - the language model prevents edits on words that have >*p<sub>t</sub>* probability score from taking place.
+|**lm_threshold**| float | 0.1 | The threshold *p<sub>t</sub>* - the language model prevents edits on words that have >*p<sub>t</sub>* probability score from taking place.
 | **insert_delete** | boolean | true | Whether to use insert/deletion to correct errors as well as substitution, as laid out in the paper| The flags **l_delete** and **l_insert** should be set|
 | **l_delete**| integer > 0 | 2 | The maximum length of character sequence that the algorithm will attempt considers an erroneous deletion in consensus vote. | |
 | **l_insert**| integer > 0 | 2 | The maximum length of character sequence that the algorithm will attempt considers an erroneous insertion in consensus vote.| |

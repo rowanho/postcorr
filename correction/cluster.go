@@ -192,6 +192,7 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 		readWrite.SerialiseEdits(deletionGraph, "del")
 		readWrite.SerialiseEdits(insertionGraph, "ins")
 		readWrite.SerialiseMVote(newVoteLogs)
+		readWrite.SerialiseDirname()
 	}
 	if flags.UseLM {
 		fmt.Printf("Prevented %d\n", prevCount)

@@ -33,7 +33,7 @@ func main() {
 	numAligns := flag.Int("num_aligns", 2, "The number of disjoint alignments we attempt to make")
 	alignThreshold := flag.Int("align_threshold", 0, "The minimum previous alignment score with which to keep aligning 2 documents.")
 	useLM := flag.Bool("use_lm", false, "Whether to use a language model to inform correction")
-	lmThreshold := flag.Float64("lm_threshold", 0.001, "The probability score under which language model permits correction")
+	lmThreshold := flag.Float64("lm_threshold", 0.1, "The probability score under which language model permits correction")
 	handleInsertionDeletion := flag.Bool("insert_delete", true, "The correction algorithm tries to handle insertion and deletion errors.")
 	lInsert := flag.Int("l_insert", 2, "The maximum length of character sequence that the algorithm will attempt considers an erroneous insertion in consensus vote.")
 	lDelete := flag.Int("l_delete", 2, "The maximum length of character sequence that the algorithm will attempt considers an erroneous deletion in consensus vote. ")

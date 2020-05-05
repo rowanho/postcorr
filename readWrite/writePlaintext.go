@@ -30,7 +30,7 @@ func PlaintextWrite(docId string, text []rune) error {
 
 	split := strings.Split(docId, "/")
 	fn := split[len(split)-1]
-	dirName := path.Join(common.OutDir, docId[:len(docId)-len(fn)])
+	dirName := path.Join(outdir, docId[:len(docId)-len(fn)])
 	os.MkdirAll(dirName, os.ModePerm)
 	f, err := os.Create(path.Join(dirName, fn))
 

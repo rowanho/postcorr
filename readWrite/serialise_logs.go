@@ -73,3 +73,9 @@ func SerialiseMVote(e map[string]map[int]common.Vote) {
 	fn := "vote_details.json"
 	ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
 }
+
+func SerialiseDirname() {
+	fn := "dirname.txt"
+	bytes := []byte(outdir)
+	ioutil.WriteFile(path.Join(common.LogDir, fn), bytes, 0644)
+}

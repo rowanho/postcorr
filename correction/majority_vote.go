@@ -483,13 +483,13 @@ func getLmScore(word string, context string) string {
 
 	resp, err := http.Post("http://localhost:5000/", "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		return "0.0"
+		return "inf"
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "0.0"
+		return "inf"
 	}
 	s := string(body)
 	return s

@@ -6,8 +6,13 @@ import html
 from uuid import uuid4
 from natsort import natsorted
 
+
+def get_corrected_dir():
+	with open(os.path.join('logs', 'dirname.txt')) as b:
+		return str(b.read())
+
 original_dir = sys.argv[1]
-corrected_dir = 'corrected'
+corrected_dir = get_corrected_dir()
 app = Flask(__name__)
 def to_html(text):
 	return html.escape(text).replace("\n", "<br>")
