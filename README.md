@@ -56,7 +56,7 @@ A table of command line flags and their interactions can be found below.
 | ------------- | ---------------------------- | ------------- | ------------ | --------------------------------- |
 | **input**     | string | None | Path to directory containing OCR dataset, this is the only flag which must be set. |  |
 | **groundtruth**     | string| None  |   Path to directory containing groundtruth dataset. If set, the program performs analysis on how well it performed when making edits to **input**.|  |
-| **write** | boolean: 'true' or 'false'      |   true | Whether or not to write corrected output to the 'corrected' directory | None |
+| **write** | boolean: 'true' or 'false'      |   true | Whether or not to write corrected output to the 'corrected' directory |  |
 | **logging** | boolean | true | whether or not to generate log files in the 'logs' directory|   |
 |**candidate_method**|string: 'modp', 'winnowing' or 'minhash'|'modp'| Method of candidate selection - 0 mod p, winnowing, or minhash, as described in the paper| The flag **k** should also be set to a preferred value. Choosing 0 mod p means the flag **p** should also be set. Choosing winnowing means the flag **t** should also be set. |
 | **jaccard**| string: 'weighted' or 'regular'| 'weighted' | The type of jaccard index used for candidate selection| When setting **fp** to minhash, there is no implementation for the weighted jaccard, so the program reverts back to using the regular non weighted method.|
