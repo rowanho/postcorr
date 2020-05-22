@@ -46,7 +46,7 @@ All instructions are for mac/linux. I can't guarantee there won't be issues on w
 #### Command Line Flags
 * The executable must be run with the relevant command line flags. Command line flags are set with a dash (-) and equals (=), for example:
 ```
-./postCorr -input=datasets/dataset -fp=winnowing -k=20 -affine=true
+./postCorr -input=datasets/dataset -fp=winnowing -k=20 -affine
 ```
 * To view flags and their descriptions, run `./postCorr -h`
 
