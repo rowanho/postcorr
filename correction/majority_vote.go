@@ -15,24 +15,27 @@ import (
 	//"fmt"
 )
 
-var words = []string{}
-var n = 1
-var reuseGraph = make(map[string][]map[string]string)
-var reuseStartEndGraph = make(map[string][]map[string]int)
-var oldStartEndGraph = make(map[string][]map[string]int)
-var prevCount = 0
-var substitutionGraph = make(map[string]map[int]string)
-var deletionGraph = make(map[string]map[int]string)
-var insertionGraph = make(map[string]map[int]string)
+var (
+	words = []string{}
+	n = 1
+	reuseGraph = make(map[string][]map[string]string)
+	reuseStartEndGraph = make(map[string][]map[string]int)
+	oldStartEndGraph = make(map[string][]map[string]int)
+	prevCount = 0
+	substitutionGraph = make(map[string]map[int]string)
+	deletionGraph = make(map[string]map[int]string)
+	insertionGraph = make(map[string]map[int]string)
 
 // Marks the indices for removal
-var removeIndices = make(map[string]map[int]bool)
-var editIndices = make(map[string]map[int]rune)
-var additionIndices = make(map[string]map[int][]rune)
-var deletionsAt = make(map[string]map[int]int)
-var insertionsAt = make(map[string]map[int]int)
-var mVoteLogs = make(map[string]map[int]common.Vote)
-var newVoteLogs = make(map[string]map[int]common.Vote)
+	removeIndices = make(map[string]map[int]bool)
+	editIndices = make(map[string]map[int]rune)
+	additionIndices = make(map[string]map[int][]rune)
+	deletionsAt = make(map[string]map[int]int)
+	insertionsAt = make(map[string]map[int]int)
+	mVoteLogs = make(map[string]map[int]common.Vote)
+	newVoteLogs = make(map[string]map[int]common.Vote)
+
+)
 
 
 func isNewLineSpace(r rune) bool {

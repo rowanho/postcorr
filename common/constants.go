@@ -1,44 +1,46 @@
 package common
 
+const (
 /**
 * Define the index names here
 **/
 
-const MinHashIndex = "test_minhash_fingerprints"
-const FpIndex = "test_fingerprints"
-const DocumentIndex = "test_documents"
-const AlignmentIndex = "test_alignments"
+	MinHashIndex = "test_minhash_fingerprints"
+	FpIndex = "test_fingerprints"
+	DocumentIndex = "test_documents"
+	AlignmentIndex = "test_alignments"
 
 /**
 * Define the types of files here, thus avoiding magic strings
 **/
 
-const Plaintext = "plaintext"
+	Plaintext = "plaintext"
 
 /**
 * Define different hashing/reuse detection algorithms here
 **/
 
-const MinhashFP = "minhash"
-const ModFP = "modp"
-const Winnowing = "winnowing"
+	MinhashFP = "minhash"
+	ModFP = "modp"
+	Winnowing = "winnowing"
 
 /**
 * Define different alignment algorithms here
 **/
 
-const HeuristicAlignment = "blast"
-const SwAlignment = "smith_waterman"
+	HeuristicAlignment = "blast"
+	SwAlignment = "smith_waterman"
 
 /**
 * Define similarity algorithms here
 **/
 
-const Jaccard = "regular"
-const WeightedJaccard = "weighted"
+	Jaccard = "regular"
+	WeightedJaccard = "weighted"
 
 /**
 * Directory names
 **/
-const LogDir = "logs"
-const OutDir = "corrected"
+	LogDir = "logs"
+	OutDir = "corrected"
+)

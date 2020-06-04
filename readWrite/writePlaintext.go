@@ -10,8 +10,10 @@ import (
 	"strings"
 )
 
-var first = true
-var outdir = common.OutDir
+var (
+	first = true
+	outdir = common.OutDir
+)
 
 func PlaintextWrite(docId string, text []rune) error {
 

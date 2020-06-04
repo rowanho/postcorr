@@ -16,11 +16,13 @@ import (
 	"github.com/schollz/progressbar"
 )
 
-var total int = 0
-var totalSum float64 = 0.0
-var scores []float64 = []float64{}
-var score map[int]map[int]float64 = make(map[int]map[int]float64, 0)
-var bools map[int]map[int]bool = make(map[int]map[int]bool, 0)
+var (
+	total int = 0
+	totalSum float64 = 0.0
+	scores []float64 = []float64{}
+	score map[int]map[int]float64 = make(map[int]map[int]float64, 0)
+	bools map[int]map[int]bool = make(map[int]map[int]bool, 0)
+)
 
 func ResetRuntime() {
 	total = 0

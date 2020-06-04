@@ -28,6 +28,8 @@ func getCopies(a1 []rune, a2 []rune)  ([]rune, []rune){
 	copy(c2, a2)
 	return c1, c2
 }
+
+
 func modifyText(primaryDocumentID string, text []rune) []rune {
 	var groundText []rune
 	if flags.Logging && flags.Groundtruth != "" {
