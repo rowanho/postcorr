@@ -13,12 +13,11 @@ Contains functions to perform local alignment(smith waterman algorithm + a faste
 
 ### Fingerprinting
 
- Contains code for making representation of documents/strings into fingerprints - sets of hashed numerical values.
+Contains code for making representation of documents/strings into fingerprints - sets of hashed numerical values.
 
 ### Iohandler
 
-Functions that help convert from OCR format to our common document format and back again. Plans to support some commonly used formats like
-ALTO and PAGE.
+Functions that help read / write to text files.
 
 ### Correction
 
@@ -26,7 +25,7 @@ Contains implementation of a consensus method to produce a common output from an
 
 ## python-utils
 
-Contains python code for implementing a language model, and
+Contains python code for implementing a language model, and toy dataset generation
 
 
 ## Running the Code
