@@ -3,13 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"postCorr/alignment"
-	"postCorr/common"
-	"postCorr/correction"
-	"postCorr/evaluation"
-	"postCorr/fingerprinting"
-	"postCorr/flags"
-	"postCorr/readWrite"
+	"postcorr/alignment"
+	"postcorr/common"
+	"postcorr/correction"
+	"postcorr/evaluation"
+	"postcorr/fingerprinting"
+	"postcorr/flags"
+	"postcorr/iohandler"
 )
 
 func main2() {
@@ -69,7 +69,7 @@ func main() {
 func execute() {
 	var totalCorrections int
 	var correctedDocs map[string]bool
-	docList, docsErr := readWrite.TraverseDocs()
+	docList, docsErr := iohandler.TraverseDocs()
 
 	if docsErr != nil {
 		fmt.Printf("Error reading documents %s", docsErr)
@@ -103,7 +103,7 @@ func execute() {
 	}
 
 	if flags.Logging {
-		readWrite.SerialiseGraph(alignments, alignmentsPerDocument)
+		iohandler.SerialiseGraph(alignments, alignmentsPerDocument)
 	}
 	fmt.Println("")
 	fmt.Println("Running Correction")

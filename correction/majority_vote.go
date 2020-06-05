@@ -1,8 +1,8 @@
 package correction
 
 import (
-	"postCorr/common"
-	"postCorr/flags"
+	"postcorr/common"
+	"postcorr/flags"
 
 	"bytes"
 	"encoding/json"

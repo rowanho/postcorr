@@ -4,7 +4,7 @@ Post OCR correction through local text reuse detection (work in progress!)
 
 ## Structure of the Project
 
-The code is structured into folders which are all parts of the golang module "postCorr".
+The code is structured into folders which are all parts of the golang module "postcorr".
 Each folder is a package of the folder's name.
 
 ### Alignment
@@ -15,7 +15,7 @@ Contains functions to perform local alignment(smith waterman algorithm + a faste
 
  Contains code for making representation of documents/strings into fingerprints - sets of hashed numerical values.
 
-### Readwrite
+### Iohandler
 
 Functions that help convert from OCR format to our common document format and back again. Plans to support some commonly used formats like
 ALTO and PAGE.
@@ -35,7 +35,7 @@ Contains python code for implementing a language model, and
 All instructions are for mac/linux. I can't guarantee there won't be issues on windows, but nothing is hardcoded which prevents windows use.
 #### Installing and Building
 * Install go: https://golang.org/doc/install
-* Build the code with `go build`, this will create an executable called **postCorr**
+* Build the code with `go build`, this will create an executable called **postcorr**
 #### Providing Datasets
 * The main dataset must be provided with the flag *input*, and should consist of exclusively .txt files. The program will look for text reuse between any 2 of these files. The dataset can be split into any number of sub folders, and all utf-8 unicode characters are valid file contents. The program will avoid changing any newline, tab or space characters.
 * A gold standard dataset for benchmarking can be provided with the flag *groundtruth*. This must have exactly the same file/folder structure as the input dataset. Providing this dataset automatically means an evaluation is run by the program after other stages have been completed.
@@ -46,9 +46,9 @@ All instructions are for mac/linux. I can't guarantee there won't be issues on w
 #### Command Line Flags
 * The executable must be run with the relevant command line flags. Command line flags are set with a dash (-) and equals (=), for example:
 ```
-./postCorr -input=datasets/dataset -fp=winnowing -k=20 -affine
+./postcorr -input=datasets/dataset -fp=winnowing -k=20 -affine
 ```
-* To view flags and their descriptions, run `./postCorr -h`
+* To view flags and their descriptions, run `./postcorr -h`
 
 A table of command line flags and their interactions can be found below.
 
@@ -90,7 +90,7 @@ nltk is the relevant dependency here, and requires some extra steps to get data 
 >>> nltk.download('brown')
 ```
 * Next, in the base directory of the code, run the model with `python python-utils/language_model/language_model.py`, and wait until the code finishes training and displays a server ready message.
-* We can now run the **postCorr** executable with the flag `-use_lm=true`
+* We can now run the **postcorr** executable with the flag `-use_lm=true`
 
 #### Running the Browser Based Visualisation Tool
 The browser based tool relies on the a run of the main program being completed with the *logging* flag being set to true. After this, the usage steps are as follows:

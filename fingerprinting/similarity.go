@@ -1,9 +1,9 @@
 package fingerprinting
 
 import (
-	"postCorr/common"
-	"postCorr/flags"
-	"postCorr/readWrite"
+	"postcorr/common"
+	"postcorr/flags"
+	"postcorr/iohandler"
 
 	"fmt"
 	"sort"
@@ -236,7 +236,7 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	documentAdjacencyList = bools
 
 	if flags.Logging {
-		readWrite.SerialiseJaccards(scores[pos:])
+		iohandler.SerialiseJaccards(scores[pos:])
 	}
 
 	return documentAdjacencyList

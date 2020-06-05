@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"postCorr/alignment"
-	"postCorr/common"
-	"postCorr/fingerprinting"
-	"postCorr/flags"
-	"postCorr/readWrite"
+	"postcorr/alignment"
+	"postcorr/common"
+	"postcorr/fingerprinting"
+	"postcorr/flags"
+	"postcorr/iohandler"
 
 	"sort"
 )
 
 func aligns() (map[int]map[int]int, []int) {
-	docList, _ := readWrite.TraverseDocs()
+	docList, _ := iohandler.TraverseDocs()
 
 	alScores := make(map[int]map[int]int)
 	alScoreList := make([]int, 0)
@@ -31,7 +31,7 @@ func aligns() (map[int]map[int]int, []int) {
 func getTopKPrecision(alScores map[int]map[int]int, alScoreList []int, kProportion float64) float64 {
 	cutoff_a := (1.0 - kProportion) * float64((len(alScoreList) - 1))
 	topKScore := alScoreList[int(cutoff_a)]
-	docList, _ := readWrite.TraverseDocs()
+	docList, _ := iohandler.TraverseDocs()
 	documentScores, docScoreList := fingerprinting.GetAllPairwise(docList)
 	fingerprinting.ResetRuntime()
 	sort.Float64s(docScoreList)

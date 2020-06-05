@@ -1,11 +1,11 @@
 package main
 
 import (
-	"postCorr/alignment"
-	"postCorr/common"
-	"postCorr/fingerprinting"
-	"postCorr/flags"
-	"postCorr/readWrite"
+	"postcorr/alignment"
+	"postcorr/common"
+	"postcorr/fingerprinting"
+	"postcorr/flags"
+	"postcorr/iohandler"
 
 	"fmt"
 	"testing"
@@ -26,7 +26,7 @@ func benchmarkAlignment(b *testing.B, length int, affine bool, heuristic bool) {
 	setup(length)
 	flags.Affine = affine
 	flags.FastAlign = heuristic
-	docList, _ := readWrite.TraverseDocs()
+	docList, _ := iohandler.TraverseDocs()
 	documentAdjacencyList := fingerprinting.GetSimilarDocuments(docList)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {

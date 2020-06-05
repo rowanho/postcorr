@@ -1,7 +1,7 @@
 package alignment
 
 import (
-	"postCorr/flags"
+	"postcorr/flags"
 
 	"math"
 )

@@ -1,9 +1,9 @@
 package evaluation
 
 import (
-	"postCorr/common"
-	"postCorr/flags"
-	"postCorr/readWrite"
+	"postcorr/common"
+	"postcorr/flags"
+	"postcorr/iohandler"
 
 	"fmt"
 	"os"
@@ -40,8 +40,8 @@ func editDistances(docs []common.Document, docMap map[string]int, correctedDocs 
 				var groundTruth []rune
 				var corrected []rune
 
-				original, readErr := readWrite.ReadRunes(pth)
-				groundTruth, readErr = readWrite.ReadRunes(path.Join(flags.Groundtruth, right))
+				original, readErr := iohandler.ReadRunes(pth)
+				groundTruth, readErr = iohandler.ReadRunes(path.Join(flags.Groundtruth, right))
 				if correctable {
 					corrected = docs[docMap[right]].Text
 				}

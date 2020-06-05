@@ -1,9 +1,9 @@
 package correction
 
 import (
-	"postCorr/common"
-	"postCorr/flags"
-	"postCorr/readWrite"
+	"postcorr/common"
+	"postcorr/flags"
+	"postcorr/iohandler"
 
 	"fmt"
 	"path"
@@ -33,7 +33,7 @@ func getCopies(a1 []rune, a2 []rune)  ([]rune, []rune){
 func modifyText(primaryDocumentID string, text []rune) []rune {
 	var groundText []rune
 	if flags.Logging && flags.Groundtruth != "" {
-		groundText, _ = readWrite.ReadRunes(path.Join(flags.Groundtruth, primaryDocumentID))
+		groundText, _ = iohandler.ReadRunes(path.Join(flags.Groundtruth, primaryDocumentID))
 	}
 	subEdits := make(map[int]string)
 	delEdits := make(map[int]string)
@@ -182,19 +182,19 @@ func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]
 	}
 	if flags.WriteOutput {
 		for docID := range correctedDocs {
-			readWrite.PlaintextWrite(docID, documents[docMap[docID]].Text)
+			iohandler.PlaintextWrite(docID, documents[docMap[docID]].Text)
 		}
 	}
 
 	if flags.Logging {
-		readWrite.SerialiseVote(reuseGraph)
-		readWrite.SerialiseStartEnds(oldStartEndGraph, "old")
-		readWrite.SerialiseStartEnds(reuseStartEndGraph, "new")
-		readWrite.SerialiseEdits(substitutionGraph, "sub")
-		readWrite.SerialiseEdits(deletionGraph, "del")
-		readWrite.SerialiseEdits(insertionGraph, "ins")
-		readWrite.SerialiseMVote(newVoteLogs)
-		readWrite.SerialiseDirname()
+		iohandler.SerialiseVote(reuseGraph)
+		iohandler.SerialiseStartEnds(oldStartEndGraph, "old")
+		iohandler.SerialiseStartEnds(reuseStartEndGraph, "new")
+		iohandler.SerialiseEdits(substitutionGraph, "sub")
+		iohandler.SerialiseEdits(deletionGraph, "del")
+		iohandler.SerialiseEdits(insertionGraph, "ins")
+		iohandler.SerialiseMVote(newVoteLogs)
+		iohandler.SerialiseDirname()
 	}
 	if flags.UseLM {
 		fmt.Printf("Prevented %d\n", prevCount)

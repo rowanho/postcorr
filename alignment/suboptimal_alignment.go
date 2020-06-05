@@ -1,8 +1,8 @@
 package alignment
 
 import (
-	"postCorr/common"
-	"postCorr/flags"
+	"postcorr/common"
+	"postcorr/flags"
 
 	"github.com/google/uuid"
 )

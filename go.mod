@@ -9,6 +9,6 @@ require (
 	golang.org/x/text v0.3.2
 )
 
-module postCorr
+module postcorr
 
 go 1.13

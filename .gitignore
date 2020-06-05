@@ -1,7 +1,7 @@
 *.txt
 *.png
 *.jpg
-postCorr
+postcorr
 test_dataset
 corrected*
 image_dataset

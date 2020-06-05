@@ -1,7 +1,7 @@
 package alignment
 
 import (
-	"postCorr/common"
+	"postcorr/common"
 )
 
 func checkOverlap(al1 common.Alignment, al2 common.Alignment) bool {

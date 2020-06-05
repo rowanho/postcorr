@@ -1,8 +1,8 @@
 package alignment
 
 import (
-	"postCorr/fingerprinting"
-	"postCorr/flags"
+	"postcorr/fingerprinting"
+	"postcorr/flags"
 
 	"math"
 )
