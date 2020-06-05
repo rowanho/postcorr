@@ -23,7 +23,7 @@ Functions that help read / write to text files.
 
 Contains implementation of a consensus method to produce a common output from an alignment cluster.
 
-## python-utils
+### python-utils
 
 Contains python code for implementing a language model, and toy dataset generation
 
