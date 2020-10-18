@@ -22,6 +22,4 @@ if __name__ == "__main__":
     G = build_graph(filepath)
     pos = nx.fruchterman_reingold_layout(G)
     nx.draw(G, pos)
-    #labels = nx.get_edge_attributes(G, 'weight')
-    #nx.draw_networkx_edge_labels(G, pos, labels=labels)
     plt.show()

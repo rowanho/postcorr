@@ -4,7 +4,6 @@ import (
 	"postcorr/common"
 
 	"io/ioutil"
-	//"github.com/google/uuid"
 )
 
 func plaintextRead(filepath string, subpath string) (common.Document, error) {

@@ -5,11 +5,9 @@ import (
 	"hash/fnv"
 )
 
-/**
-* Function ComputeMd5
-* parameter text - The string to hash
-* returns string - The md5 hash of the string
- */
+// Function ComputeMd5
+// parameter text - The string to hash
+// returns string - The md5 hash of the string
 func ComputeMd5(text string) []byte {
 	h := md5.New()
 	h.Write([]byte(text))

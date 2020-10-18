@@ -14,10 +14,8 @@ import (
 	"github.com/rowanho/levenshtein"
 )
 
-/**
-* Traverses the input and output directories, and sums the edit distances of each file
-* Between the data and the ground truth data
-**/
+// Traverses the input and output directories, and sums the edit distances of each file
+// Between the data and the ground truth data
 func editDistances(docs []common.Document, docMap map[string]int, correctedDocs map[string]bool) ([]string, []int, []int, []int, []int, error) {
 	originalDistances := make([]int, 0)
 	correctedDistances := make([]int, 0)

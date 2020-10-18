@@ -12,10 +12,6 @@ import (
 	"postcorr/iohandler"
 )
 
-func main2() {
-	EvaluateK()
-	//EvaluateJaccard()
-}
 func main() {
 	dirName := flag.String("input", "", "Path to directory containing OCR dataset")
 	groundTruth := flag.String("groundtruth", "", "Path to directory containing groundtruth dataset")
@@ -63,9 +59,7 @@ func main() {
 
 }
 
-/**
-* Executes the main program pipeline
-**/
+// Executes the main program pipeline
 func execute() {
 	var totalCorrections int
 	var correctedDocs map[string]bool

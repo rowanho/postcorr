@@ -49,9 +49,7 @@ func min_int(x int, y int) int {
 	}
 }
 
-/**
-* Using the inverted index, outputs the documents that have higher matches than the threshold docs
-**/
+// Using the inverted index, outputs the documents that have higher matches than the threshold docs
 func invertedIndexHighScores(fpList []map[uint64]int, targetDoc int, invertedIndex inverted.InvertedIndex) {
 	numMatches := make([]int, len(fpList))
 
@@ -209,9 +207,7 @@ func GetSimilarDocuments(docs []common.Document) map[int]map[int]bool {
 	} else if flags.FpType == common.Winnowing {
 		getSimilarWinnowing(docs)
 	}
-	//fmt.Println(total)
-	//fmt.Printf("Average jaccard index was %6.3f \n", totalSum / float64(total))
-
+	
 	pos := 0
 	proportion := flags.SimilarityProportion
 	sort.Float64s(scores)

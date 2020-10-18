@@ -266,14 +266,11 @@ func applyInsertions(primaryDocumentID string, alignmentMaps []alignMap, documen
 	return insertions
 }
 
-/**
-*   Performs a majority vote across all parts of the alignment
-*   If indices were counted as aligning, they are used in the vote
-*   The relationship between alignments in a cluster is such that
-*   the primary alignment region is very similar in both
-*   Also eturns an integer representing the number of corrections made
-**/
-
+//   Performs a majority vote across all parts of the alignment
+//   If indices were counted as aligning, they are used in the vote
+//  The relationship between alignments in a cluster is such that
+//  the primary alignment region is very similar in both
+//  Also eturns an integer representing the number of corrections made
 func MajorityVote(primaryDocumentID string, alignmentMaps []alignMap, documents []common.Document, docMap map[string]int) int {
 
 	if _, exists := removeIndices[primaryDocumentID]; !exists {

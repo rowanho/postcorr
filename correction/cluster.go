@@ -140,13 +140,11 @@ func modifyText(primaryDocumentID string, text []rune) []rune {
 	return newText
 }
 
-/**
-* There needs to be a function here that takes in the alignment graph and produces clusters
-* We can ideally produce 1 cluster per alignment, if it's too small, we can stop
-* The max distance level is how far we want to traverse the neighbours of the master's neighbours
-* High max distances can lead to worse time complexity
-**/
 
+// Takes in the alignment graph and produces clusters
+// We can ideally produce 1 cluster per alignment, if it's too small, we can stop
+// The max distance level is how far we want to traverse the neighbours of the master's neighbours
+// High max distances can lead to worse time complexity
 func ClusterAndCorrectAlignments(clustersList [][]string, alignments map[string]common.Alignment, documents []common.Document, docMap map[string]int) (map[string]bool, int) {
 	bar := progressbar.New(100)
 	totalCorrections := 0

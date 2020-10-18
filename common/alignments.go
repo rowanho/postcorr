@@ -1,10 +1,7 @@
 package common
 
-/**
-* An alignment lines up a primary string a secondary string
-* Type Alignment has indexes for the full string of the document
-**/
-
+// An alignment lines up a primary string a secondary string
+// Type Alignment has indexes for the full string of the document
 type Alignment = struct {
 	ID string `json:"id"`
 

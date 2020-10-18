@@ -1,8 +1,7 @@
 package alignment
 
-/**
-* The needleman wunsch local alignment algorithm,  simplified
-**/
+
+// The needleman wunsch local alignment algorithm,  simplified
 func NeedlemanWunsch(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
 	l1 := len(a)
 	l2 := len(b)

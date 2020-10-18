@@ -20,13 +20,11 @@ func Kgrams(text string, k int) []uint64 {
 
 }
 
-/**
-* Function ModP - Simple overlap fingerprinting with downsampling
-* parameter text - The string to turn into fingerprints
-* parameter windowSize - The size of the sliding window to use
-* parameter p - The mod divisor
-* returns array of byte arrays - the array of fingerprints
- */
+// Performs simple overlap fingerprinting with downsampling
+// parameter text - The string to turn into fingerprints
+// parameter windowSize - The size of the sliding window to use
+// parameter p - The mod divisor
+// returns the array of fingerprints
 
 func ModP(text string, windowSize int, p int) map[uint64]int {
 	pU := uint64(p)
@@ -52,10 +50,8 @@ func min(hashes []uint64) uint64 {
 	return currentMin
 }
 
-/**
-Winnowing algorithm
-*/
 
+// Winnowing algorithm
 func Winnowing(text string, k int, t int) map[uint64]int {
 	fps := make(map[uint64]int)
 	kgrams := Kgrams(text, k)

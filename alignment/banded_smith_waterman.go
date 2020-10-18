@@ -149,11 +149,9 @@ func hirschberg(matchReward int, gapCost int, a []rune, b []rune, offsetA int, o
 
 }
 
-/**
-* A banded implementation of the Smith Waterman algorithm
-* Uses O(n) space, and O(mn) time
-**/
 
+// A banded implementation of the Smith Waterman algorithm 
+// Uses O(n) space, and O(mn) time
 func SmithWaterman(matchReward int, gapCost int, a []rune, b []rune) (int, []int, []int) {
 	if len(a) == 0 || len(b) == 0 {
 		return 0, []int{}, []int{}

@@ -1,8 +1,6 @@
 package flags
 
-/**
-* Values that are changed via command line flags go here
-**/
+// Values that are changed via command line flags go here
 var (
 	DirName string
 	Logging bool

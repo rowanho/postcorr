@@ -17,7 +17,6 @@ def lower_list(l):
     return keep
         
 train, vocab = padded_everygram_pipeline(n, [lower_list(sent) for sent in (brown.sents() + reuters.sents())])
-#train, vocab = padded_everygram_pipeline(n, [['then', 'she', 'said'], ['then', 'he', 'said']])
 lang_model = MLE(n)
 lang_model.fit(train, vocab)
 
