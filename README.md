@@ -5,7 +5,6 @@ Post OCR correction through local text reuse detection (work in progress!)
 ## Structure of the Project
 
 The code is structured into folders which are all parts of the golang module "postcorr".
-Each folder is a package of the folder's name.
 
 ### Alignment
 
