@@ -42,7 +42,7 @@ All instructions are for mac/linux. I can't guarantee there won't be issues on w
 * If the *logging* flag is set to true (default true), a folder *logs* is created at runtime containing json log files.
 * Note: The *logs* directories should be renamed before the program is re-run, if the user wants them to be preserved and not overwritten. The *corrected* directory will not be overwritten, the program will instead create directories *corrected1*, *corrected2*... etc.
 #### Command Line Flags
-* The executable must be run with the relevant command line flags. Command line flags are set with a dash (-) and equals (=), for example:
+* The executable must be run with the relevant command line flags. For example:
 ```
 ./postcorr -input=datasets/dataset -fp=winnowing -k=20 -affine
 ```
